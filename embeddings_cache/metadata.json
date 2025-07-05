@@ -628,5 +628,95 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "medieval_test:test_knight:knight.n.01": {
+    "concept_id": "medieval_test:test_knight:knight.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:16:52",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "test_medieval:integration_test_knight": {
+    "concept_id": "test_medieval:integration_test_knight",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:18:11",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "medieval domain:test_knight": {
+    "concept_id": "medieval domain:test_knight",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:24:16",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "test_domain:working_service_layer_test_concept": {
+    "concept_id": "test_domain:working_service_layer_test_concept",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:30:32",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "test_domain:service_layer_test_concept": {
+    "concept_id": "test_domain:service_layer_test_concept",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T21:30:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "medieval_domain:medieval_knight": {
+    "concept_id": "medieval_domain:medieval_knight",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:33:05",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "medieval_domain:castle": {
+    "concept_id": "medieval_domain:castle",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:33:05",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "weapons_domain:sword": {
+    "concept_id": "weapons_domain:sword",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:33:05",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "fantasy_domain:wizard": {
+    "concept_id": "fantasy_domain:wizard",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:33:05",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "fantasy_domain:spell": {
+    "concept_id": "fantasy_domain:spell",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T21:33:06",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

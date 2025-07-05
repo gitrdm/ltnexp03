@@ -1,0 +1,2 @@
+#! bash
+lsof -ti:8321 | xargs kill -9

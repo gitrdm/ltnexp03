@@ -25,7 +25,8 @@ API MODEL CATEGORIES:
 - System Status: Health, metrics, configuration
 """
 
-from typing import TypedDict, List, Dict, Optional, Any, Union
+from typing_extensions import TypedDict
+from typing import List, Dict, Optional, Any, Union
 import numpy as np
 
 
