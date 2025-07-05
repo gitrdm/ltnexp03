@@ -2,10 +2,13 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    """Create a test client for the FastAPI app."""
+    return TestClient(app)
 
 
-def test_health_check():
+def test_health_check(client):
     """Test the health check endpoint"""
     response = client.get("/health")
     assert response.status_code == 200
@@ -14,10 +17,9 @@ def test_health_check():
     assert data["service"] == "ltnexp03"
 
 
-def test_root_endpoint():
-    """Test the root endpoint"""
-    response = client.get("/")
-    assert response.status_code == 200
-    data = response.json()
-    assert "message" in data
-    assert "version" in data
+def test_root_endpoint(client):
+    """Test the root endpoint - it redirects to API docs"""
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 307  # RedirectResponse uses 307
+    assert "location" in response.headers
+    assert "/api/docs" in response.headers["location"]

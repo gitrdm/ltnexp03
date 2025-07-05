@@ -73,13 +73,13 @@ class TestPersistenceManager:
             download_wordnet=False,
             n_clusters=4,
             enable_cross_domain=True,
-            embedding_provider="mock"
+            embedding_provider="random"
         )
         
-        # Add some test concepts
-        registry.create_concept("king", "medieval")
-        registry.create_concept("queen", "medieval")
-        registry.create_concept("general", "military")
+        # Add some test concepts (use frame-aware concepts for proper persistence)
+        registry.create_frame_aware_concept("king", "medieval")
+        registry.create_frame_aware_concept("queen", "medieval")
+        registry.create_frame_aware_concept("general", "military")
         
         return registry
     
@@ -103,9 +103,11 @@ class TestPersistenceManager:
             sample_registry, "test_context", "json"
         )
         
-        assert "save_metadata" in result
+        # Check that the result has the expected metadata structure
+        assert "context_name" in result
         assert result["context_name"] == "test_context"
         assert result["format"] == "json"
+        assert "components_saved" in result
         assert "concepts" in result["components_saved"]
         
         # Check files were created

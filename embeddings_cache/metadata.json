@@ -718,5 +718,140 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "medieval:knight:knight.n.01": {
+    "concept_id": "medieval:knight:knight.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:30:10",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_0": {
+    "concept_id": "performance_test:test_concept_0",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:30:13",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "weapon:sword:sword.n.01": {
+    "concept_id": "weapon:sword:sword.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:33:31",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "architecture:castle:castle.n.01": {
+    "concept_id": "architecture:castle:castle.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:33:31",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "medieval:knight": {
+    "concept_id": "medieval:knight",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:40:51",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "test:test": {
+    "concept_id": "test:test",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:44",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_1": {
+    "concept_id": "performance_test:test_concept_1",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_2": {
+    "concept_id": "performance_test:test_concept_2",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_3": {
+    "concept_id": "performance_test:test_concept_3",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_4": {
+    "concept_id": "performance_test:test_concept_4",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_5": {
+    "concept_id": "performance_test:test_concept_5",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_6": {
+    "concept_id": "performance_test:test_concept_6",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_7": {
+    "concept_id": "performance_test:test_concept_7",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_8": {
+    "concept_id": "performance_test:test_concept_8",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "performance_test:test_concept_9": {
+    "concept_id": "performance_test:test_concept_9",
+    "embedding_model": "random",
+    "created_at": "2025-07-05T22:43:45",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

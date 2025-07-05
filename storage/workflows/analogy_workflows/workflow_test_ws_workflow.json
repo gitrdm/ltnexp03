@@ -1,0 +1,14 @@
+{
+  "workflow_id": "test_ws_workflow",
+  "workflow_type": "analogy_creation",
+  "status": "completed",
+  "created_at": "2025-07-05T23:11:43.728984+00:00",
+  "updated_at": "2025-07-05T23:11:43.841520+00:00",
+  "items_total": 1,
+  "items_processed": 1,
+  "error_count": 0,
+  "metadata": {
+    "batch_size": 1
+  },
+  "error_log": []
+}

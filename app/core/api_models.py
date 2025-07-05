@@ -25,7 +25,7 @@ API MODEL CATEGORIES:
 - System Status: Health, metrics, configuration
 """
 
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, NotRequired
 from typing import List, Dict, Optional, Any, Union
 import numpy as np
 
@@ -146,9 +146,9 @@ class FrameCreateRequest(TypedDict):
     name: str
     definition: str
     core_elements: List[str]
-    peripheral_elements: Optional[List[str]]
-    lexical_units: Optional[List[str]]
-    metadata: Optional[Dict[str, Any]]
+    peripheral_elements: NotRequired[List[str]]
+    lexical_units: NotRequired[List[str]]
+    metadata: NotRequired[Dict[str, Any]]
 
 
 class FrameCreateResponse(TypedDict):
@@ -162,11 +162,10 @@ class FrameCreateResponse(TypedDict):
 
 class FrameInstanceRequest(TypedDict):
     """Request model for creating frame instances."""
-    frame_id: str
     instance_id: str
     concept_bindings: Dict[str, str]
     context: str
-    confidence: Optional[float]
+    confidence: NotRequired[float]
 
 
 class FrameInstanceResponse(TypedDict):
@@ -180,10 +179,10 @@ class FrameInstanceResponse(TypedDict):
 
 class FrameQueryRequest(TypedDict):
     """Request model for frame queries."""
-    concept: Optional[str]
-    frame_pattern: Optional[Dict[str, str]]
-    context: Optional[str]
-    max_results: int
+    concept: NotRequired[str]
+    frame_pattern: NotRequired[Dict[str, str]]
+    context: NotRequired[str]
+    max_results: NotRequired[int]
 
 
 class FrameQueryResponse(TypedDict):
@@ -322,8 +321,8 @@ class BatchEmbeddingResponse(TypedDict):
 class AnalogiesBatch(TypedDict):
     """Request model for batch analogy creation."""
     analogies: List[Dict[str, Any]]
-    workflow_id: Optional[str]
-    metadata: Optional[Dict[str, Any]]
+    workflow_id: NotRequired[str]
+    metadata: NotRequired[Dict[str, Any]]
 
 
 class BatchWorkflowResponse(TypedDict):
