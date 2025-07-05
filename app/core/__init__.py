@@ -13,6 +13,16 @@ from .abstractions import (
 from .parsers import AxiomParser, AxiomParseError
 from .concept_registry import ConceptRegistry, SynsetInfo
 
+# Frame and clustering extensions
+from .frame_cluster_abstractions import (
+    SemanticFrame, FrameElement, FrameInstance, ConceptCluster,
+    FrameAwareConcept, FrameRelation, AnalogicalMapping,
+    FrameElementType, FrameRelationType
+)
+
+from .frame_cluster_registry import FrameRegistry, ClusterRegistry
+from .hybrid_registry import HybridConceptRegistry
+
 __all__ = [
     "Concept",
     "Axiom", 
@@ -24,5 +34,10 @@ __all__ = [
     "AxiomParser",
     "AxiomParseError",
     "ConceptRegistry",
-    "SynsetInfo"
+    "SynsetInfo",
+    # Frame and cluster extensions
+    "SemanticFrame", "FrameElement", "FrameInstance", "ConceptCluster",
+    "FrameAwareConcept", "FrameRelation", "AnalogicalMapping",
+    "FrameElementType", "FrameRelationType",
+    "FrameRegistry", "ClusterRegistry", "HybridConceptRegistry"
 ]
