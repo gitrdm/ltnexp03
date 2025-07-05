@@ -1,0 +1,587 @@
+{
+  "animal:lion": {
+    "concept_id": "animal:lion",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:tiger": {
+    "concept_id": "animal:tiger",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:wolf": {
+    "concept_id": "animal:wolf",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:eagle": {
+    "concept_id": "animal:eagle",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:shark": {
+    "concept_id": "animal:shark",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:king": {
+    "concept_id": "royalty:king",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:queen": {
+    "concept_id": "royalty:queen",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:prince": {
+    "concept_id": "royalty:prince",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:princess": {
+    "concept_id": "royalty:princess",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:emperor": {
+    "concept_id": "royalty:emperor",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:general": {
+    "concept_id": "military:general",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:colonel": {
+    "concept_id": "military:colonel",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:captain": {
+    "concept_id": "military:captain",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:sergeant": {
+    "concept_id": "military:sergeant",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:soldier": {
+    "concept_id": "military:soldier",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "business:ceo": {
+    "concept_id": "business:ceo",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "business:manager": {
+    "concept_id": "business:manager",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "business:director": {
+    "concept_id": "business:director",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "business:supervisor": {
+    "concept_id": "business:supervisor",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "business:employee": {
+    "concept_id": "business:employee",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "sports:quarterback": {
+    "concept_id": "sports:quarterback",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "sports:striker": {
+    "concept_id": "sports:striker",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "sports:captain_sports": {
+    "concept_id": "sports:captain_sports",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "sports:coach": {
+    "concept_id": "sports:coach",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "sports:player": {
+    "concept_id": "sports:player",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:36:40",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:duke": {
+    "concept_id": "royalty:duke",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:duchess": {
+    "concept_id": "royalty:duchess",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:baron": {
+    "concept_id": "royalty:baron",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:knight": {
+    "concept_id": "royalty:knight",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:wizard": {
+    "concept_id": "magic:wizard",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:sorcerer": {
+    "concept_id": "magic:sorcerer",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:witch": {
+    "concept_id": "magic:witch",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:39:49",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:enchanter": {
+    "concept_id": "magic:enchanter",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:alchemist": {
+    "concept_id": "magic:alchemist",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:druid": {
+    "concept_id": "magic:druid",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:cleric": {
+    "concept_id": "magic:cleric",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "magic:paladin": {
+    "concept_id": "magic:paladin",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:dragon": {
+    "concept_id": "creatures:dragon",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:griffin": {
+    "concept_id": "creatures:griffin",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:unicorn": {
+    "concept_id": "creatures:unicorn",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:phoenix": {
+    "concept_id": "creatures:phoenix",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:basilisk": {
+    "concept_id": "creatures:basilisk",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:hydra": {
+    "concept_id": "creatures:hydra",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:wyvern": {
+    "concept_id": "creatures:wyvern",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "creatures:pegasus": {
+    "concept_id": "creatures:pegasus",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:archer": {
+    "concept_id": "military:archer",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:cavalry": {
+    "concept_id": "military:cavalry",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:infantry": {
+    "concept_id": "military:infantry",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "military:guard": {
+    "concept_id": "military:guard",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:castle": {
+    "concept_id": "locations:castle",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:tower": {
+    "concept_id": "locations:tower",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:dungeon": {
+    "concept_id": "locations:dungeon",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:19",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:fortress": {
+    "concept_id": "locations:fortress",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:temple": {
+    "concept_id": "locations:temple",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:monastery": {
+    "concept_id": "locations:monastery",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:village": {
+    "concept_id": "locations:village",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "locations:city": {
+    "concept_id": "locations:city",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:sword": {
+    "concept_id": "artifacts:sword",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:shield": {
+    "concept_id": "artifacts:shield",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:crown": {
+    "concept_id": "artifacts:crown",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:scepter": {
+    "concept_id": "artifacts:scepter",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:orb": {
+    "concept_id": "artifacts:orb",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:tome": {
+    "concept_id": "artifacts:tome",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:staff": {
+    "concept_id": "artifacts:staff",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "artifacts:amulet": {
+    "concept_id": "artifacts:amulet",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T15:40:20",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  }
+}

@@ -158,8 +158,8 @@ class HybridConceptRegistry(ConceptRegistry):
         if concept_id in self.frame_aware_concepts:
             self.frame_aware_concepts[concept_id].embedding = embedding
         
-        # Auto-update clusters if enabled
-        if self.auto_cluster and len(self.cluster_registry.concept_embeddings) > 10:
+        # Auto-update clusters if enabled and we have enough concepts
+        if self.auto_cluster and len(self.cluster_registry.concept_embeddings) >= self.cluster_registry.n_clusters:
             self.update_clusters()
     
     def update_clusters(self) -> None:

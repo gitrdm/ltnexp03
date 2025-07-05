@@ -23,6 +23,17 @@ from .frame_cluster_abstractions import (
 from .frame_cluster_registry import FrameRegistry, ClusterRegistry
 from .hybrid_registry import HybridConceptRegistry
 
+# Enhanced semantic reasoning
+from .enhanced_semantic_reasoning import (
+    EnhancedHybridRegistry, CrossDomainAnalogy, SemanticField
+)
+
+# Vector embeddings
+from .vector_embeddings import (
+    VectorEmbeddingManager, EmbeddingProvider, SemanticEmbeddingProvider,
+    RandomEmbeddingProvider, EmbeddingMetadata
+)
+
 __all__ = [
     "Concept",
     "Axiom", 
@@ -39,5 +50,10 @@ __all__ = [
     "SemanticFrame", "FrameElement", "FrameInstance", "ConceptCluster",
     "FrameAwareConcept", "FrameRelation", "AnalogicalMapping",
     "FrameElementType", "FrameRelationType",
-    "FrameRegistry", "ClusterRegistry", "HybridConceptRegistry"
+    "FrameRegistry", "ClusterRegistry", "HybridConceptRegistry",
+    # Enhanced semantic reasoning
+    "EnhancedHybridRegistry", "CrossDomainAnalogy", "SemanticField",
+    # Vector embeddings
+    "VectorEmbeddingManager", "EmbeddingProvider", "SemanticEmbeddingProvider",
+    "RandomEmbeddingProvider", "EmbeddingMetadata"
 ]
