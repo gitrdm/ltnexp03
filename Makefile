@@ -110,11 +110,32 @@ test-demos:
 	done
 	@echo "$(GREEN)All demonstrations completed!$(NC)"
 
+# Test targets
+test-persistence:
+	@echo "$(YELLOW)Running persistence layer tests...$(NC)"
+	$(PYTHON) -m pytest tests/test_core/test_persistence.py -v
+	@echo "$(GREEN)Persistence tests completed$(NC)"
+
+test-persistence-integration:
+	@echo "$(YELLOW)Running persistence integration tests...$(NC)"
+	$(PYTHON) -m pytest tests/test_core/test_persistence.py::TestIntegrationPersistence -v
+	@echo "$(GREEN)Persistence integration tests completed$(NC)"
+
+test-persistence-performance:
+	@echo "$(YELLOW)Running persistence performance tests...$(NC)"
+	$(PYTHON) -m pytest tests/test_core/test_persistence.py::TestPerformancePersistence -v -m performance
+	@echo "$(GREEN)Persistence performance tests completed$(NC)"
+
+test-batch-workflows:
+	@echo "$(YELLOW)Running batch workflow tests...$(NC)"
+	$(PYTHON) -m pytest tests/test_core/test_persistence.py::TestBatchPersistenceManager -v
+	@echo "$(GREEN)Batch workflow tests completed$(NC)"
+
 # Comprehensive test suites
 test: test-unit test-phase3a test-contracts
 	@echo "$(GREEN)All primary tests completed successfully!$(NC)"
 
-test-all: test-unit test-integration test-phase3a test-contracts test-demos
+test-all: test-unit test-integration test-phase3a test-contracts test-demos test-persistence
 	@echo "$(GREEN)Complete test suite finished!$(NC)"
 
 test-regression: clean type-check lint test-all

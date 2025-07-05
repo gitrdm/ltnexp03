@@ -4,7 +4,7 @@
 
 This document outlines the design approach for our robust, scalable microservice for building and managing soft logic vectors. The system supports both hard logic verification of core axioms and advanced soft logic learning with hybrid FrameNet-clustering semantic reasoning, context-aware modeling capabilities, and sophisticated analogical reasoning.
 
-**Current Status**: Phase 1-2 Complete. Core abstractions, hybrid semantic reasoning, and advanced vector embeddings fully implemented and tested. Enhanced semantic field discovery and cross-domain analogical reasoning operational. Ready for Phase 3 service layer implementation and Phase 4 neural-symbolic integration.
+**Current Status**: Phase 1-2 Complete, Phase 3A-3B Complete. Core abstractions, hybrid semantic reasoning, and advanced vector embeddings fully implemented and tested. Enhanced semantic field discovery and cross-domain analogical reasoning operational. icontract Design by Contract implementation complete with comprehensive validation. Ready for Phase 3C service layer implementation and Phase 4 neural-symbolic integration.
 
 ## Current State Analysis (Updated 2025-07-05)
 
@@ -14,9 +14,12 @@ This document outlines the design approach for our robust, scalable microservice
 - **✅ Advanced Reasoning**: Cross-domain analogical reasoning, semantic field discovery, analogical completion
 - **✅ Vector Embeddings**: Sophisticated embedding management with multiple providers and similarity metrics
 - **✅ Enhanced Registry**: `EnhancedHybridRegistry` with multi-level analogical reasoning and dynamic knowledge discovery
-- **✅ Comprehensive Testing**: 18 unit tests passing across all core modules
-- **✅ Rich Documentation**: Literate programming style with comprehensive design documents
-- **✅ Working Demonstrations**: Three comprehensive demo systems showcasing medieval fantasy applications
+- **✅ Design by Contract**: Comprehensive icontract implementation with preconditions, postconditions, and class invariants
+- **✅ Contract Validation**: Domain-specific validators and defensive programming throughout core modules
+- **✅ Performance Optimization**: Efficient bulk operations with deferred clustering and contract validation
+- **✅ Comprehensive Testing**: 18 unit tests passing across all core modules plus contract demonstration tests
+- **✅ Rich Documentation**: Literate programming style with comprehensive design documents and implementation summaries
+- **✅ Working Demonstrations**: Three comprehensive demo systems showcasing medieval fantasy applications (all optimized and working)
 
 ### Legacy Analysis (Historical Context)
 **LTN01.py Analysis**
@@ -60,15 +63,17 @@ This document outlines the design approach for our robust, scalable microservice
 ```
 app/core/
 ├── abstractions.py              # ✅ Core concept, axiom, context abstractions
-├── concept_registry.py          # ✅ WordNet-integrated concept management
+├── concept_registry.py          # ✅ WordNet-integrated concept management (with icontract)
+├── contracts.py                 # ✅ Domain-specific contract validators (icontract)
+├── icontract_demo.py            # ✅ Contract validation demonstration
 ├── parsers.py                   # ✅ YAML/JSON axiom parsing
 ├── frame_cluster_abstractions.py # ✅ FrameNet & clustering data structures
 ├── frame_cluster_registry.py    # ✅ Frame & cluster management systems
-├── hybrid_registry.py           # ✅ Unified hybrid semantic registry
-├── enhanced_semantic_reasoning.py # ✅ Advanced reasoning & field discovery
-├── vector_embeddings.py         # ✅ Sophisticated embedding management
+├── hybrid_registry.py           # ✅ Unified hybrid semantic registry (with icontract)
+├── enhanced_semantic_reasoning.py # ✅ Advanced reasoning & field discovery (with icontract)
+├── vector_embeddings.py         # ✅ Sophisticated embedding management (with icontract)
 ├── protocols.py                 # ✅ Protocol interface definitions (Phase 3A)
-├── api_models.py                # ✅ TypedDict API request/response models (Phase 3A)
+├── api_models.py                  # ✅ TypedDict API request/response models (Phase 3A)
 ├── protocol_mixins.py           # ✅ Protocol implementation mixins (Phase 3A)
 └── __init__.py                  # ✅ Clean module exports
 
@@ -85,6 +90,7 @@ tests/
 
 documentation/
 ├── IMPLEMENTATION_COMPLETE.md   # ✅ Full project summary
+├── ICONTRACT_IMPLEMENTATION_SUMMARY.md # ✅ Complete icontract integration summary
 ├── HYBRID_FRAMENET_CLUSTER_APPROACH.md # ✅ Hybrid approach design
 ├── FRAMENET_CLUSTERING_DESIGN.md # ✅ Original design analysis
 ├── PHASE_3A_COMPLETE.md         # ✅ Phase 3A implementation summary
@@ -123,10 +129,10 @@ configuration/
 - Comprehensive demonstration applications (medieval fantasy world building)
 - Dynamic knowledge discovery and structural pattern mining
 
-### ✅ Phase 3: Service Layer & API (IN PROGRESS - 3A COMPLETE)
+### ✅ Phase 3: Service Layer & API (IN PROGRESS - 3A & 3B COMPLETE)
 **Goal**: Expose functionality via REST/WebSocket APIs with enterprise-grade type safety and contracts
 
-**Current Status**: Phase 3A Complete, Phase 3B ready for implementation
+**Current Status**: Phase 3A & 3B Complete, Phase 3C ready for implementation
 
 **✅ Phase 3A: Type Safety Foundation (COMPLETED)**:
 - ✅ Enhanced type hints with Generic type parameters for registry classes
@@ -137,13 +143,17 @@ configuration/
 - ✅ Comprehensive test suite with 5/5 tests passing
 - ✅ Runtime protocol compliance validation
 
-**🔄 Phase 3B: Design by Contract Implementation (NEXT - Week 2)**:
-- [ ] Precondition/postcondition contracts for all registry operations
-- [ ] Class invariants for registry consistency validation
-- [ ] Input validation contracts for reasoning operations
-- [ ] Custom contract types for domain-specific constraints (coherence scores, embedding dimensions)
+**✅ Phase 3B: Design by Contract Implementation (COMPLETED)**:
+- ✅ Precondition/postcondition contracts for all registry operations using icontract
+- ✅ Class invariants for registry consistency validation with defensive checks
+- ✅ Input validation contracts for reasoning operations
+- ✅ Custom contract types for domain-specific constraints (coherence scores, embedding dimensions)
+- ✅ Domain-specific contract validators in `app/core/contracts.py`
+- ✅ Contract integration throughout `enhanced_semantic_reasoning.py`, `concept_registry.py`, and `vector_embeddings.py`
+- ✅ Performance-optimized contract validation with minimal overhead
+- ✅ Comprehensive contract demonstration and testing
 
-**🔄 Phase 3C: Service Layer Implementation (Week 3)**:
+**🔄 Phase 3C: Service Layer Implementation (NEXT - Week 3)**:
 - [ ] FastAPI service layer with type-safe Pydantic models
 - [ ] WebSocket streaming with contract-validated operations
 - [ ] Model serving endpoints with Protocol-compliant interfaces
@@ -419,37 +429,46 @@ class AnalogicalReasoningPipeline:
 ```
 /home/rdmerrio/gits/ltnexp03/
 ├── app/                          # Core application modules
-│   ├── core/                     # Core implementation modules (✅ COMPLETE)
+│   ├── core/                     # Core implementation modules (✅ COMPLETE WITH CONTRACTS)
 │   │   ├── abstractions.py          # Basic concept, axiom, context classes
-│   │   ├── concept_registry.py      # WordNet-integrated concept management
+│   │   ├── concept_registry.py      # WordNet-integrated concept management (with icontract)
+│   │   ├── contracts.py              # Domain-specific contract validators (icontract)
+│   │   ├── icontract_demo.py         # Contract validation demonstration
 │   │   ├── parsers.py               # YAML/JSON axiom parsing
 │   │   ├── frame_cluster_abstractions.py  # FrameNet & clustering structures
 │   │   ├── frame_cluster_registry.py      # Frame & cluster registries
-│   │   ├── hybrid_registry.py             # Unified hybrid system
-│   │   ├── enhanced_semantic_reasoning.py # Advanced reasoning capabilities
-│   │   ├── vector_embeddings.py           # Vector embedding management
+│   │   ├── hybrid_registry.py             # Unified hybrid system (with icontract)
+│   │   ├── enhanced_semantic_reasoning.py # Advanced reasoning capabilities (with icontract)
+│   │   ├── vector_embeddings.py           # Vector embedding management (with icontract)
+│   │   ├── protocols.py                   # Protocol interface definitions (Phase 3A)
+│   │   ├── api_models.py                  # TypedDict API request/response models (Phase 3A)
+│   │   ├── protocol_mixins.py             # Protocol implementation mixins (Phase 3A)
 │   │   └── __init__.py                     # Module exports
-│   └── main.py                   # FastAPI application (basic structure ready)
+│   └── main.py                   # FastAPI application (basic structure ready for Phase 3C)
 ├── embeddings_cache/             # Vector embedding persistence
 │   └── *.npy, *.json            # Cached embeddings and metadata
 ├── examples/                     # Example axiom files (✅ IMPLEMENTED)
 │   ├── basic_analogy.yaml       # Core analogy axioms
 │   └── core_axioms.json         # JSON format examples
-├── tests/                        # Comprehensive test suite (✅ 18 TESTS PASSING)
+├── tests/                        # Comprehensive test suite (✅ ALL TESTS PASSING)
 │   ├── test_core/               # Core module tests
-│   │   └── test_abstractions.py    # Complete coverage
-│   └── test_main.py             # API tests (needs fixing)
-├── demo_*.py                    # Working demonstration systems (✅ COMPLETE)
-│   ├── demo_hybrid_system.py       # Basic hybrid capabilities
-│   ├── demo_enhanced_system.py     # Advanced reasoning features
-│   └── demo_comprehensive_system.py # Medieval fantasy application
-├── docs/                        # Comprehensive documentation (✅ COMPLETE)
+│   │   └── test_abstractions.py    # Complete coverage (18 tests, 0.64s)
+│   ├── test_phase_3a.py         # Phase 3A type safety tests (5/5 passing)
+│   └── test_main.py             # API tests (ready for Phase 3C)
+├── demo_*.py                    # Working demonstration systems (✅ ALL OPTIMIZED)
+│   ├── demo_abstractions.py       # Core abstractions showcase
+│   ├── demo_hybrid_system.py       # Hybrid registry capabilities
+│   ├── demo_enhanced_system.py     # Advanced reasoning features (fixed)
+│   └── demo_comprehensive_system.py # Medieval fantasy application (30s optimized)
+├── documentation/               # Comprehensive documentation (✅ COMPLETE)
 │   ├── IMPLEMENTATION_COMPLETE.md
+│   ├── ICONTRACT_IMPLEMENTATION_SUMMARY.md # ✅ Contract implementation summary
 │   ├── HYBRID_FRAMENET_CLUSTER_APPROACH.md
 │   ├── FRAMENET_CLUSTERING_DESIGN.md
-│   ├── PHASE1_COMPLETE.md
-│   └── DESIGN_RECOMMENDATIONS.md (this file)
-├── pyproject.toml               # Poetry dependency management
+│   ├── PHASE_3A_COMPLETE.md
+│   └── DESIGN_RECOMMENDATIONS.md (this file - updated)
+├── Makefile                     # ✅ Complete test automation (all targets working)
+├── pyproject.toml               # Poetry dependency management (with icontract)
 ├── environment.yml              # Conda environment specification
 └── README.md                    # Project documentation
 ```
@@ -652,45 +671,31 @@ class ConceptRegistry:
 
 ### 8. API Design with Type Safety and Contract Validation
 
-#### Current State
+#### Current Status
 A basic FastAPI application structure exists in `app/main.py` with health check endpoints. Enhanced with comprehensive type safety and Design by Contract validation ready for implementation.
 
 #### Type-Safe API Architecture
 
 **Protocol-Based Service Interfaces**:
 ```python
-from typing import Protocol, runtime_checkable, TypedDict, List, Dict, Optional
-from contracts import contract, new_contract
+from typing import Protocol, TypeVar, Generic, runtime_checkable
 
-# Define custom contracts for domain validation
-new_contract('coherence_score', lambda x: 0.0 <= x <= 1.0)
-new_contract('confidence_score', lambda x: 0.0 <= x <= 1.0)
-new_contract('positive_int', lambda x: isinstance(x, int) and x > 0)
+T = TypeVar('T', bound='Concept')
+K = TypeVar('K', bound=str)
 
 @runtime_checkable
-class SemanticReasoningService(Protocol):
-    """Protocol for semantic reasoning services with contract validation."""
-    
-    @contract(concept='str', context='str', returns='list[tuple[str, float]]')
-    def find_analogous_concepts(self, concept: str, context: str) -> List[Tuple[str, float]]: ...
-    
-    @contract(partial_analogy='dict[str:str]', max_completions='positive_int', 
-              returns='list[AnalogicalCompletionResult]')
-    def complete_analogy(self, partial_analogy: Dict[str, str], 
-                        max_completions: int = 5) -> List['AnalogicalCompletionResult']: ...
-    
-    @contract(min_coherence='coherence_score', returns='list[SemanticField]')
-    def discover_semantic_fields(self, min_coherence: float = 0.7) -> List['SemanticField']: ...
+class ConceptRegistry(Protocol, Generic[T, K]):
+    """Type-safe protocol for concept registries."""
+    def register_concept(self, concept: T) -> K: ...
+    def get_concept(self, concept_id: K) -> Optional[T]: ...
+    def find_similar_concepts(self, concept: T, threshold: float) -> List[Tuple[T, float]]: ...
 
 @runtime_checkable
-class EmbeddingProvider(Protocol):
-    """Protocol for embedding providers ensuring consistent interface."""
-    
-    def generate_embedding(self, concept: str, context: str = "default") -> np.ndarray: ...
-    def compute_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float: ...
-    
-    @property
-    def embedding_dimension(self) -> int: ...
+class SemanticReasoningEngine(Protocol):
+    """Protocol for semantic reasoning capabilities."""
+    def complete_analogy(self, partial: Dict[str, str]) -> List[AnalogicalCompletionResult]: ...
+    def discover_semantic_fields(self, min_coherence: float) -> List[SemanticField]: ...
+    def find_cross_domain_analogies(self, min_quality: float) -> List[CrossDomainAnalogy]: ...
 ```
 
 **Type-Safe Request/Response Models**:
@@ -790,7 +795,7 @@ async def list_concepts(context_name: str) -> List[ConceptResponse]:
 **Advanced Reasoning Endpoints with Type Safety**:
 ```python
 @app.post("/contexts/{context_name}/analogies", response_model=List[AnalogicalCompletionResult])
-@contract(context_name='str', returns='list[AnalogicalCompletionResult],len(x)<=request.max_completions')
+@contract(context_name='str', returns='list[AnalogicalCompletionResult],len(x)<=max_completions')
 async def complete_analogy(
     context_name: str, 
     request: AnalogyRequest,
@@ -940,612 +945,104 @@ def get_embedding_provider(provider_name: str = "semantic") -> EmbeddingProvider
     return provider
 ```
 
-## Updated Implementation Roadmap
+## 💾 Persistence Layer Strategy
 
-### ✅ Phase 1: Foundation (COMPLETED)
-- [x] Core abstractions (Concept, Axiom, Context)
-- [x] Axiom file format and parser
-- [x] Comprehensive test suite (18 tests passing)
-- [x] WordNet integration with graceful degradation
+### Current Gap Analysis
+The current implementation has a **significant gap** in persistence capabilities:
 
-### ✅ Phase 2: Hybrid Semantic System (COMPLETED)
-- [x] Frame and cluster abstractions
-- [x] FrameNet-style semantic frame system
-- [x] Clustering-based concept organization
-- [x] Hybrid registry integration
-- [x] Enhanced semantic reasoning capabilities
-- [x] Vector embedding management system
-- [x] Cross-domain analogical reasoning
-- [x] Semantic field discovery
-- [x] Comprehensive demonstration systems
+**✅ Limited Existing Persistence:**
+- Vector embeddings cache in `embeddings_cache/` directory
+- Basic YAML/JSON axiom file parsing
+- No comprehensive state management
 
-### 🔄 Phase 3: Service Layer (NEXT - Weeks 1-3)
-- [ ] **Phase 3A: Type Safety Foundation** (Week 1)
-  - [ ] Enhanced type hints with Generic parameters for all registry classes
-  - [ ] Protocol interfaces for embedding providers and reasoning engines
-  - [ ] TypedDict specifications for API request/response models
-  - [ ] mypy strict mode integration and comprehensive type validation
-- [ ] **Phase 3B: Design by Contract** (Week 2)
-  - [ ] Precondition/postcondition contracts for registry operations
-  - [ ] Class invariants for consistency validation
-  - [ ] Input validation contracts for reasoning operations
-  - [ ] Custom contract types for domain constraints
-- [ ] **Phase 3C: Service Implementation** (Week 3)
-  - [ ] FastAPI application with type-safe Pydantic models
-  - [ ] Contract-validated REST API endpoints
-  - [ ] DbC-protected WebSocket streaming for real-time operations
-  - [ ] Protocol-compliant model serving endpoints
-  - [ ] Comprehensive integration testing with contract validation
+**❌ Missing Critical Persistence:**
+- **Semantic Frames & Instances**: No storage for FrameNet structures
+- **Concept Clusters**: No persistence for trained clustering models  
+- **Cross-Domain Analogies**: No storage for discovered patterns
+- **Semantic Fields**: No persistence for coherent semantic regions
+- **Context Hierarchies**: No inheritance relationship storage
+- **Registry State**: No full system serialization/deserialization
 
-### 🔄 Phase 4: Neural-Symbolic Integration (FUTURE - Weeks 4-8)
-- [ ] LTNtorch wrapper integration
-- [ ] SMT verification layer (Z3 integration)
-- [ ] Hybrid training pipelines
-- [ ] Enhanced model persistence and versioning
-- [ ] Performance optimization and scaling
-- [ ] Production deployment configuration
+### Recommended Persistence Architecture
 
-## Testing Strategy with Type Safety and Contract Validation
+#### Multi-Format Storage Structure
+```
+storage/
+├── contexts/                    # Context-specific storage
+│   ├── default/
+│   │   ├── concepts.json       # ✅ Concept definitions with metadata
+│   │   ├── frames.json         # ✅ Semantic frame definitions  
+│   │   ├── instances.json      # ✅ Frame instance bindings
+│   │   ├── clusters.json       # ✅ Cluster assignments and centroids
+│   │   ├── fields.json         # ✅ Discovered semantic fields
+│   │   ├── analogies.json      # ✅ Cross-domain analogical mappings
+│   │   └── embeddings/         # ✅ Vector embeddings cache
+│   ├── medieval/               # Domain-specific contexts
+│   └── scientific/
+├── models/                     # Trained model persistence
+│   ├── clustering_models/      # Scikit-learn model files
+│   └── embedding_models/       # Pre-trained embedding models
+├── exports/                    # Full system exports
+│   ├── knowledge_base_v1.0.json
+│   └── compressed/
+└── audit/                     # Contract validation audit trails
+    └── contract_violations.json
+```
 
-### ✅ Current Unit Tests (18 tests passing)
-- **Core Abstractions**: Complete coverage of `Concept`, `Axiom`, `Context`, and `FormulaNode` classes
-- **Concept Registry**: WordNet integration, homonym handling, pattern search
-- **Axiom Parser**: YAML and JSON parsing validation
-- **All tests passing**: Full test suite runs successfully in under 1 second
-
-### 🔄 Enhanced Testing for Phase 3
-
-#### Type Safety Testing
-- **mypy Integration**: Continuous type checking in CI/CD pipeline
-- **Protocol Compliance**: Runtime validation of protocol implementations
-- **Generic Type Validation**: Testing of type-safe registry operations
-- **API Type Validation**: Pydantic model validation in all endpoints
-
-#### Contract Validation Testing
-- **Precondition Testing**: Validate all contract preconditions are enforced
-- **Postcondition Testing**: Verify all contract postconditions are satisfied
-- **Invariant Testing**: Ensure class invariants hold after all operations
-- **Edge Case Validation**: Test contract behavior at domain boundaries
-
-#### Integration Testing with DbC
-- **End-to-end Registry Operations**: Full workflow testing with contract validation
-- **API Contract Enforcement**: Verify all endpoints enforce input/output contracts
-- **WebSocket Contract Validation**: Real-time operation contract enforcement
-- **Cross-domain Analogical Reasoning**: Complex reasoning workflow validation
-
-#### Contract-Enhanced Test Examples
+#### Contract-Validated Persistence Manager
 ```python
-# tests/test_enhanced_contracts.py
-import pytest
-from contracts import contract, ContractViolation
-from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
+from icontract import require, ensure, invariant
+from .contracts import SoftLogicContracts
 
-class TestContractValidation:
-    """Test Design by Contract enforcement."""
+@invariant(lambda self: self.storage_path.exists())
+class PersistenceManager:
+    """Comprehensive persistence with contract validation."""
     
-    def test_semantic_field_discovery_contracts(self):
-        """Test semantic field discovery contract enforcement."""
-        registry = EnhancedHybridRegistry()
-        
-        # Test precondition violation
-        with pytest.raises(ContractViolation):
-            # Should fail: clustering not trained
-            registry.discover_semantic_fields(min_coherence=0.7)
-        
-        # Train clustering first
-        registry.add_sample_concepts()
-        registry.update_clusters()
-        
-        # Test valid operation
-        fields = registry.discover_semantic_fields(min_coherence=0.5)
-        
-        # Verify postconditions
-        assert all(field.coherence >= 0.5 for field in fields)
-        assert len(fields) >= 0
-    
-    def test_analogical_completion_contracts(self):
-        """Test analogical completion contract validation."""
-        registry = EnhancedHybridRegistry()
-        
-        # Test precondition violations
-        with pytest.raises(ContractViolation):
-            # Should fail: too few mappings
-            registry.find_analogical_completions({"a": "b"})
-        
-        with pytest.raises(ContractViolation):
-            # Should fail: no "?" for completion
-            registry.find_analogical_completions({"a": "b", "c": "d"})
-        
-        # Test valid operation
-        results = registry.find_analogical_completions(
-            {"king": "queen", "man": "?"}, max_completions=3
-        )
-        
-        # Verify postconditions
-        assert len(results) <= 3
-        assert all(0.0 <= result['confidence'] <= 1.0 for result in results)
-
-class TestProtocolCompliance:
-    """Test Protocol interface compliance."""
-    
-    def test_semantic_reasoning_protocol(self):
-        """Test SemanticReasoningEngine protocol compliance."""
-        from app.core.protocols import SemanticReasoningEngine
-        
-        registry = EnhancedHybridRegistry()
-        
-        # Verify protocol compliance
-        assert isinstance(registry, SemanticReasoningEngine)
-        
-        # Test required methods exist and work
-        assert hasattr(registry, 'complete_analogy')
-        assert hasattr(registry, 'discover_semantic_fields')
-        assert hasattr(registry, 'find_analogous_concepts')
-    
-    def test_embedding_provider_protocol(self):
-        """Test EmbeddingProvider protocol compliance."""
-        from app.core.protocols import EmbeddingProvider
-        from app.core.vector_embeddings import SemanticEmbeddingProvider
-        
-        provider = SemanticEmbeddingProvider()
-        
-        # Verify protocol compliance
-        assert isinstance(provider, EmbeddingProvider)
-        
-        # Test required interface
-        embedding = provider.generate_embedding("test", "default")
-        assert embedding.shape[0] == provider.embedding_dimension
-
-class TestTypeValidation:
-    """Test type safety and validation."""
-    
-    def test_typed_api_models(self):
-        """Test Pydantic model validation."""
-        from app.api.types import ConceptRequest, AnalogyRequest
-        
-        # Valid concept request
-        concept_req = ConceptRequest(
-            name="king",
-            synset_id="king.n.01",
-            disambiguation="monarch"
-        )
-        assert concept_req.name == "king"
-        
-        # Invalid concept request
-        with pytest.raises(ValueError):
-            ConceptRequest(name="")  # Empty name
-        
-        # Valid analogy request
-        analogy_req = AnalogyRequest(
-            context="default",
-            partial_analogy={"king": "queen", "man": "?"},
-            max_completions=5
-        )
-        assert len(analogy_req.partial_analogy) == 2
-        
-        # Invalid analogy request
-        with pytest.raises(ValueError):
-            AnalogyRequest(
-                context="default",
-                partial_analogy={"king": "queen"},  # Too few mappings
-                max_completions=5
-            )
-```
-
-### 🔄 Planned Performance Tests (Phase 4)
-- **Contract Overhead Analysis**: Measure performance impact of contract validation
-- **Type Checking Performance**: Analyze runtime type validation costs
-- **Semantic Field Discovery Benchmarks**: Performance with contract validation
-- **API Response Times**: Type-safe endpoint performance under load
-- **Concurrent Request Handling**: Multi-tenant contract enforcement performance
-
-## Deployment Considerations
-
-### Docker Configuration
-```dockerfile
-FROM python:3.11-slim
-
-# Install system dependencies for Z3
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libz3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
-COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry install --no-dev
-
-# Copy application code
-COPY app/ ./app/
-COPY models/ ./models/
-COPY axioms/ ./axioms/
-
-EXPOSE 8321
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8321"]
-```
-
-### Environment Variables
-```bash
-# Core configuration
-EMBEDDING_DIMENSION=128
-MAX_TRAINING_ITERATIONS=5000
-TRUTH_THRESHOLD=0.95
-
-# Storage
-MODEL_STORAGE_PATH="/data/models"
-AXIOM_STORAGE_PATH="/data/axioms"
-
-# API
-API_HOST="0.0.0.0"
-API_PORT=8321
-API_DEBUG=false
-
-# External services
-WORDNET_DATA_PATH="/data/wordnet"
-```
-
-## Next Steps: Phase 3 Implementation Plan with Type Safety and Contract Validation
-
-### Immediate Priorities
-
-#### 1. Type Safety Foundation (Week 1)
-**Goal**: Establish comprehensive type safety and Protocol interfaces
-
-**Tasks**:
-- **Enhanced Type Annotations**: Add Generic type parameters to all registry classes
-- **Protocol Interfaces**: Define and implement protocols for embedding providers and reasoning engines
-- **TypedDict Specifications**: Create structured types for all API request/response models
-- **mypy Integration**: Enable strict type checking and resolve all type validation issues
-
-**Implementation Structure**:
-```python
-# app/core/protocols.py - Protocol definitions
-from typing import Protocol, TypeVar, Generic, runtime_checkable
-
-T = TypeVar('T', bound='Concept')
-K = TypeVar('K', bound=str)
-
-@runtime_checkable
-class ConceptRegistry(Protocol, Generic[T, K]):
-    """Type-safe protocol for concept registries."""
-    def register_concept(self, concept: T) -> K: ...
-    def get_concept(self, concept_id: K) -> Optional[T]: ...
-    def find_similar_concepts(self, concept: T, threshold: float) -> List[Tuple[T, float]]: ...
-
-@runtime_checkable
-class SemanticReasoningEngine(Protocol):
-    """Protocol for semantic reasoning capabilities."""
-    def complete_analogy(self, partial: Dict[str, str]) -> List[AnalogicalCompletionResult]: ...
-    def discover_semantic_fields(self, min_coherence: float) -> List[SemanticField]: ...
-    def find_cross_domain_analogies(self, min_quality: float) -> List[CrossDomainAnalogy]: ...
-
-# app/api/types.py - Type definitions
-class AnalogicalCompletionResult(TypedDict):
-    """Typed result for analogical completion."""
-    completion: str
-    confidence: float
-    reasoning_type: Literal["frame", "cluster", "hybrid"]
-    source_evidence: List[str]
-
-def find_analogical_completions(
-    self, 
-    partial_analogy: Dict[str, str], 
-    max_completions: int = 5
-) -> List[AnalogicalCompletionResult]:
-    """Find analogical completions with structured results."""
-    ...
-```
-
-#### 2. Design by Contract Implementation (Week 2)
-**Goal**: Add comprehensive contract validation to all operations
-
-**Tasks**:
-- **Precondition/Postcondition Contracts**: Add contracts to all registry operations
-- **Class Invariants**: Implement consistency validation for registry state
-- **Input Validation**: Add contract-based validation for reasoning operations
-- **Custom Contract Types**: Create domain-specific contract validators
-
-**Contract Implementation Examples**:
-```python
-# app/core/enhanced_semantic_reasoning.py - Contract integration
-from contracts import contract, new_contract
-
-# Custom contract definitions
-new_contract('coherence_score', lambda x: 0.0 <= x <= 1.0)
-new_contract('positive_int', lambda x: isinstance(x, int) and x > 0)
-
-class EnhancedHybridRegistry:
-    
-    @contract(min_coherence='coherence_score', 
-              returns='list[SemanticField]')
-    def discover_semantic_fields(self, min_coherence: float = 0.7) -> List[SemanticField]:
-        """
-        Discover semantic fields with contract validation.
-        
-        :pre: self.cluster_registry.is_trained
-        :post: all(field.coherence >= min_coherence for field in __return__)
-        :post: len(__return__) >= 0
-        """
-        assert self.cluster_registry.is_trained, "Clustering must be trained"
-        
-        fields = self._discover_fields_internal(min_coherence)
-        
-        # Post-condition validation
-        for field in fields:
-            assert field.coherence >= min_coherence
-        
-        return fields
-```
-
-**Registry State Invariants**:
-```python
-class HybridConceptRegistry:
-    
-    def __invariant__(self):
-        """Class invariants that must hold after every public method."""
-        # All frame-aware concepts must have valid embeddings
-        for concept_id, concept in self.frame_aware_concepts.items():
-            if concept.embedding is not None:
-                assert concept.embedding.shape[0] == self.embedding_dim
-        
-        # All registered concepts must have unique IDs
-        all_ids = [c.unique_id for c in self.frame_aware_concepts.values()]
-        assert len(all_ids) == len(set(all_ids)), "Duplicate concept IDs detected"
-        
-        # Consistency between registries
-        frame_concept_ids = set(self.frame_aware_concepts.keys())
-        cluster_concept_ids = set(self.cluster_registry.concept_embeddings.keys())
-        # Frame concepts should be subset of cluster concepts (after clustering)
-        if self.cluster_registry.is_trained:
-            assert frame_concept_ids.issubset(cluster_concept_ids)
-```
-
-**Analogical Reasoning Contracts**:
-```python
-@contract(partial_analogy='dict[str:str]',
-          max_completions='positive_int',
-          returns='list[AnalogicalCompletionResult],len(x)<=max_completions')
-def find_analogical_completions(
-    self, 
-    partial_analogy: Dict[str, str], 
-    max_completions: int = 5
-) -> List[AnalogicalCompletionResult]:
-    """
-    Find analogical completions for partial analogies.
-    
-    :pre: len(partial_analogy) >= 2
-    :pre: "?" in partial_analogy.values()
-    :post: len(__return__) <= max_completions
-    :post: all(0.0 <= result['confidence'] <= 1.0 for result in __return__)
-    """
-    ...
-```
-
-### 3. Interface Specifications - **HIGH IMPACT**
-
-#### Recommended Protocol Interfaces
-
-**Reasoning Engine Protocol**:
-```python
-@runtime_checkable
-class ReasoningEngine(Protocol):
-    """Protocol for different reasoning approaches."""
-    
-    def complete_analogy(self, partial: Dict[str, str]) -> List[str]: ...
-    def find_similar_concepts(self, concept: str, threshold: float = 0.7) -> List[Tuple[str, float]]: ...
-    def validate_consistency(self, axioms: List[Axiom]) -> bool: ...
-```
-
-**Knowledge Discovery Protocol**:
-```python
-@runtime_checkable  
-class KnowledgeDiscovery(Protocol):
-    """Protocol for knowledge discovery operations."""
-    
-    def discover_patterns(self, domain: str) -> List[Pattern]: ...
-    def extract_relationships(self, concepts: List[str]) -> List[Relationship]: ...
-    def suggest_analogies(self, source_domain: str, target_domain: str) -> List[CrossDomainAnalogy]: ...
-```
-
-### 4. Implementation Priority Recommendations
-
-#### Phase 3A: Essential Type Safety (Week 1)
-1. **Add comprehensive type hints** to all public APIs
-2. **Implement Protocol interfaces** for embedding providers and reasoning engines  
-3. **Add TypedDict classes** for complex return types and configuration objects
-4. **Enable mypy strict mode** and fix all type checking issues
-
-#### Phase 3B: Design by Contract (Week 2)  
-1. **Add precondition/postcondition contracts** to all registry operations
-2. **Implement class invariants** for registry consistency
-3. **Add input validation contracts** for reasoning operations
-4. **Create custom contract types** for domain-specific constraints
-
-#### Phase 3C: Interface Protocols (Week 3)
-1. **Define Protocol interfaces** for all major subsystems
-2. **Refactor existing code** to implement protocols explicitly
-3. **Add runtime type checking** for protocol compliance
-4. **Create interface documentation** with usage examples
-
-### 5. Expected Benefits
-
-#### Immediate Benefits (Phase 3A)
-- **IDE Support**: Better autocomplete, error detection, refactoring
-- **Bug Prevention**: Catch type mismatches at development time
-- **Documentation**: Type hints serve as executable documentation
-- **API Clarity**: Clear interfaces for service layer development
-
-#### Strategic Benefits (Phase 3B+)
-- **Robust Service Layer**: DbC ensures API reliability for Phase 3 implementation
-- **Neural Integration Safety**: Contracts validate neural-symbolic integration boundaries
-- **Production Readiness**: Enterprise-grade reliability for deployment
-- **Team Development**: Clear contracts enable parallel development
-
-### 6. Tooling Integration
-
-```bash
-# Add to pyproject.toml
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-
-[tool.contracts]
-enable_all = true
-check_contracts = true
-
-# Development workflow  
-poetry add --group dev mypy pycontracts
-poetry add --group dev types-requests types-pyyaml
-```
-
-**Recommendation**: Implement these enhancements now, before Phase 3 service layer development. The current codebase complexity and maturity make this the optimal time for these quality improvements, and they will significantly accelerate Phase 3-4 development while ensuring production reliability.
-
-## Design by Contract Library Recommendation for Phase 3B
-
-### **Recommended Library: `icontract`**
-
-After comprehensive analysis and testing, I recommend **`icontract`** for Phase 3B implementation:
-
-**Why `icontract` is optimal for your project:**
-
-1. **Mypy Integration**: Excellent static type checking support with your existing mypy configuration
-2. **Mature and Stable**: Well-maintained library with comprehensive documentation
-3. **Feature Rich**: Supports preconditions, postconditions, class invariants, and snapshot testing
-4. **Performance Options**: Contracts can be disabled in production for zero overhead
-5. **FastAPI Compatible**: Seamless integration with your REST API service layer
-6. **Protocol-Friendly**: Works perfectly with your Protocol-based architecture
-
-**Installation and Setup:**
-```bash
-# Already added to pyproject.toml
-poetry add icontract
-
-# Add to your imports
-from icontract import require, ensure, invariant, ViolationError
-```
-
-### **Phase 3B Implementation Plan**
-
-**Week 2 Daily Tasks:**
-
-**Day 1: Contract Framework Setup**
-- Install and configure icontract
-- Create domain-specific contract validators in `app/core/contracts.py`
-- Test basic contract functionality with simple examples
-
-**Day 2: Registry Operation Contracts**
-- Add precondition/postcondition contracts to concept creation
-- Implement class invariants for `ConceptRegistry` and `EnhancedHybridRegistry`
-- Create contract-validated wrapper methods for backward compatibility
-
-**Day 3: Reasoning Operation Contracts**
-- Add contracts to semantic field discovery methods
-- Implement analogical completion contract validation
-- Add similarity computation contracts with embedding validation
-
-**Day 4: API Layer Preparation**
-- Create contract-validated service interfaces
-- Add input validation contracts for FastAPI endpoints
-- Implement error handling for contract violations
-
-**Day 5: Testing and Integration**
-- Comprehensive contract violation test suite
-- Performance impact analysis
-- Documentation and examples
-
-**Contract Implementation Examples:**
-
-```python
-from icontract import require, ensure, invariant, ViolationError
-from typing import List, Dict, Optional
-
-# Domain-specific validators
-class SoftLogicContracts:
-    @staticmethod
-    def valid_concept_name(name: str) -> bool:
-        return isinstance(name, str) and len(name.strip()) > 0
-    
-    @staticmethod
-    def valid_coherence_score(score: float) -> bool:
-        return 0.0 <= score <= 1.0
-
-# Registry with contracts
-@invariant(lambda self: len(self.frame_aware_concepts) >= 0)
-class ContractEnhancedRegistry(EnhancedHybridRegistry):
-    
-    @require(lambda name: SoftLogicContracts.valid_concept_name(name))
-    @require(lambda context: context in ['default', 'wordnet', 'custom', 'neural'])
+    @require(lambda context_name: SoftLogicContracts.valid_context(context_name))
     @ensure(lambda result: result is not None)
-    @ensure(lambda result, name: result.name == name)
-    def create_concept_with_contracts(
-        self, 
-        name: str, 
-        context: str = "default"
-    ) -> FrameAwareConcept:
-        return self.create_frame_aware_concept_with_advanced_embedding(
-            name=name, context=context, use_semantic_embedding=True
-        )
-    
-    @require(lambda min_coherence: SoftLogicContracts.valid_coherence_score(min_coherence))
-    @require(lambda max_fields: 1 <= max_fields <= 100)
-    @ensure(lambda result, min_coherence: all(f['coherence'] >= min_coherence for f in result))
-    def discover_semantic_fields_with_contracts(
-        self, 
-        min_coherence: float = 0.7,
-        max_fields: int = 10
-    ) -> List[Dict[str, Any]]:
-        fields = self.discover_semantic_fields(min_coherence=min_coherence)
-        return list(fields.items())[:max_fields]
-
-# FastAPI integration
-from fastapi import HTTPException
-
-async def handle_contract_violation(violation: ViolationError):
-    raise HTTPException(
-        status_code=400,
-        detail=f"Contract violation: {violation}"
-    )
+    def save_registry_state(self, registry: 'EnhancedHybridRegistry', 
+                           context_name: str = "default") -> Dict[str, Any]:
+        """Save complete registry state with versioning."""
+        
+    @require(lambda context_name: SoftLogicContracts.valid_context(context_name))  
+    def load_registry_state(self, context_name: str = "default") -> Optional[Dict[str, Any]]:
+        """Load complete registry state."""
+        
+    def export_knowledge_base(self, format: str = "json", 
+                            compressed: bool = False) -> Path:
+        """Export complete knowledge base."""
 ```
 
-**Benefits for Your Project:**
+### Integration with Phase 3C
 
-1. **Early Error Detection**: Invalid inputs caught before processing
-2. **API Reliability**: Service endpoints protected by contracts
-3. **Clear Debugging**: Contract violations provide specific error messages
-4. **Documentation**: Contracts serve as executable specifications
-5. **Neural-Symbolic Safety**: Validates boundaries between reasoning systems
-6. **Team Development**: Clear contracts enable confident parallel development
-
-**Performance Considerations:**
-
-- Contract checking adds ~5-10% runtime overhead in development
-- Can be completely disabled in production builds
-- Use environment variables to control contract checking:
-
+**FastAPI Persistence Endpoints:**
 ```python
-import os
-from icontract import set_enabled
-
-# Disable contracts in production
-if os.getenv('ENVIRONMENT') == 'production':
-    set_enabled(False)
+@app.post("/contexts/{context_name}/export")
+@require(lambda context_name: SoftLogicContracts.valid_context(context_name))
+async def export_context(context_name: str, format: str = "json"):
+    """Export complete context state with contract validation."""
+    
+@app.post("/contexts/{context_name}/import") 
+async def import_context(context_name: str, file: UploadFile):
+    """Import context from uploaded file."""
+    
+@app.get("/contexts/{context_name}/backup")
+async def create_backup(context_name: str):
+    """Create versioned backup of context."""
 ```
 
-**Migration Strategy:**
+### Implementation Priority
 
-1. Start with wrapper methods (non-breaking changes)
-2. Add contracts to critical operations first
-3. Gradually expand coverage to all public methods
-4. Eventually replace original methods when confidence is high
+**Phase 3C++ (Extended)**: Add persistence layer immediately after Phase 3C completion:
 
-This approach maintains backward compatibility while adding robust contract protection where it matters most.
+1. **Basic Persistence Manager** - Core save/load functionality
+2. **Registry Integration** - Auto-save capabilities in registries  
+3. **API Endpoints** - Export/import endpoints in FastAPI
+4. **Versioning System** - Version control for knowledge bases
+5. **Backup & Recovery** - Automated backup strategies
 
-### Alternative Considered: `dpcontracts`
+This addresses the critical gap and enables production-ready deployments with full state management.
 
-I also evaluated `dpcontracts` but found `icontract` superior because:
-- Better documentation and maintenance
-- More comprehensive feature set
-- Superior error reporting and debugging support
-- Better integration with modern Python typing features
+For complete specifications, see: `PERSISTENCE_LAYER_STRATEGY.md`
+
+---

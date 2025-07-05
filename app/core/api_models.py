@@ -315,6 +315,96 @@ class BatchEmbeddingResponse(TypedDict):
 
 
 # ============================================================================
+# BATCH OPERATION MODELS
+# ============================================================================
+
+class AnalogiesBatch(TypedDict):
+    """Request model for batch analogy creation."""
+    analogies: List[Dict[str, Any]]
+    workflow_id: Optional[str]
+    metadata: Optional[Dict[str, Any]]
+
+
+class BatchWorkflowResponse(TypedDict):
+    """Response model for batch workflow operations."""
+    workflow_id: str
+    workflow_type: str
+    status: str
+    created_at: str
+    updated_at: str
+    items_total: int
+    items_processed: int
+    error_count: int
+    metadata: Dict[str, Any]
+    error_log: List[str]
+
+
+class DeleteCriteriaRequest(TypedDict):
+    """Request model for batch deletion criteria."""
+    domains: Optional[List[str]]
+    frame_types: Optional[List[str]]
+    quality_threshold: Optional[float]
+    created_before: Optional[str]  # ISO datetime string
+    created_after: Optional[str]   # ISO datetime string
+    tags: Optional[List[str]]
+
+
+class CompactionResult(TypedDict):
+    """Response model for compaction operations."""
+    status: str
+    records_removed: int
+    active_records: int
+    backup_created: Optional[str]
+
+
+class WorkflowListResponse(TypedDict):
+    """Response model for workflow listing."""
+    workflows: List[BatchWorkflowResponse]
+    total_count: int
+    filtered_by_status: Optional[str]
+
+
+# ============================================================================
+# PERSISTENCE API MODELS
+# ============================================================================
+
+class ExportRequest(TypedDict):
+    """Request model for knowledge base export."""
+    context_name: str
+    format: str  # "json", "compressed", "sqlite"
+    include_embeddings: bool
+    include_models: bool
+
+
+class ExportResponse(TypedDict):
+    """Response model for export operations."""
+    export_id: str
+    file_path: str
+    file_size: int
+    format: str
+    created_at: str
+    components_exported: List[str]
+
+
+class ImportRequest(TypedDict):
+    """Request model for knowledge base import."""
+    merge_strategy: str  # "overwrite", "merge", "skip_conflicts"
+    target_context: Optional[str]
+    import_embeddings: bool
+    import_models: bool
+
+
+class ImportResponse(TypedDict):
+    """Response model for import operations."""
+    import_id: str
+    status: str
+    items_imported: int
+    conflicts_found: int
+    merge_strategy_used: str
+    imported_at: str
+
+
+# ============================================================================
 # ERROR AND VALIDATION MODELS
 # ============================================================================
 

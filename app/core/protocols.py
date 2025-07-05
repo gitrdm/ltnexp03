@@ -310,6 +310,81 @@ class ClusterRegistryProtocol(Protocol):
         ...
 
 
+@runtime_checkable
+class PersistenceProtocol(Protocol):
+    """
+    Protocol for persistence layer implementations.
+    
+    Defines the interface for saving, loading, and managing persistent state
+    of the soft logic system components.
+    """
+    
+    @abstractmethod
+    def save_registry_state(self, registry: Any, context_name: str = "default", 
+                           format_type: str = "json") -> Dict[str, Any]:
+        """Save complete registry state with versioning."""
+        ...
+    
+    @abstractmethod
+    def load_registry_state(self, context_name: str = "default") -> Optional[Dict[str, Any]]:
+        """Load complete registry state."""
+        ...
+    
+    @abstractmethod
+    def export_knowledge_base(self, format: str = "json", 
+                            compressed: bool = False) -> Any:
+        """Export complete knowledge base in specified format."""
+        ...
+    
+    @abstractmethod
+    def import_knowledge_base(self, source_path: Any, 
+                            merge_strategy: str = "overwrite") -> bool:
+        """Import knowledge base with conflict resolution."""
+        ...
+
+
+@runtime_checkable
+class BatchPersistenceProtocol(Protocol):
+    """
+    Protocol for batch-aware persistence implementations.
+    
+    Extends basic persistence with batch operation support and workflow management.
+    """
+    
+    @abstractmethod
+    def create_analogy_batch(self, analogies: List[Dict[str, Any]], 
+                           workflow_id: Optional[str] = None) -> Any:
+        """Create batch of analogies with workflow tracking."""
+        ...
+    
+    @abstractmethod
+    def process_analogy_batch(self, workflow_id: str) -> Any:
+        """Process pending analogy batch."""
+        ...
+    
+    @abstractmethod
+    def delete_analogies_batch(self, criteria: Any, 
+                             workflow_id: Optional[str] = None) -> Any:
+        """Delete analogies matching criteria."""
+        ...
+    
+    @abstractmethod
+    def get_workflow_status(self, workflow_id: str) -> Optional[Any]:
+        """Get current workflow status."""
+        ...
+    
+    @abstractmethod
+    def stream_analogies(self, domain: Optional[str] = None, 
+                        min_quality: Optional[float] = None) -> Any:
+        """Stream analogies from storage with optional filtering."""
+        ...
+    
+    @abstractmethod
+    def compact_analogies_jsonl(self) -> Dict[str, Any]:
+        """Compact analogy storage by removing deleted records."""
+        ...
+
+
 # Utility type aliases for common protocol combinations
 SemanticSystemProtocol = SemanticReasoningProtocol
 HybridRegistryProtocol = ConceptRegistryProtocol[Any, str]
