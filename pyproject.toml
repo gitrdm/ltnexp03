@@ -10,6 +10,13 @@ packages = [{include = "app"}]
 python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = {extras = ["standard"], version = "^0.24.0"}
+z3-solver = "^4.15.1.0"
+ltntorch = "^1.0.2"
+scikit-learn = "^1.7.0"
+torch = "^2.7.1"
+matplotlib = "^3.10.3"
+wn = "^0.13.0"
+pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

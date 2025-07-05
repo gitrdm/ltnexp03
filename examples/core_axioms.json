@@ -1,0 +1,92 @@
+[
+  {
+    "axiom_id": "synonym_car_automobile",
+    "type": "synonym",
+    "classification": "core",
+    "context": "default",
+    "description": "Car and automobile are synonyms",
+    "formula": {
+      "similarity": {
+        "left": "car",
+        "right": "automobile"
+      }
+    },
+    "concepts": [
+      {
+        "name": "car",
+        "synset": "car.n.01",
+        "disambiguation": "motor vehicle"
+      },
+      {
+        "name": "automobile",
+        "synset": "car.n.01",
+        "disambiguation": "motor vehicle"
+      }
+    ],
+    "metadata": {
+      "created_by": "system",
+      "confidence": 1.0,
+      "source": "wordnet_synonyms"
+    }
+  },
+  {
+    "axiom_id": "antonym_hot_cold",
+    "type": "antonym",
+    "classification": "core",
+    "context": "default",
+    "description": "Hot and cold are antonyms",
+    "formula": {
+      "dissimilarity": {
+        "left": "hot",
+        "right": "cold"
+      }
+    },
+    "concepts": [
+      {
+        "name": "hot",
+        "synset": "hot.a.01",
+        "disambiguation": "having a high temperature"
+      },
+      {
+        "name": "cold",
+        "synset": "cold.a.01",
+        "disambiguation": "having a low temperature"
+      }
+    ],
+    "metadata": {
+      "created_by": "system",
+      "confidence": 1.0,
+      "source": "wordnet_antonyms"
+    }
+  },
+  {
+    "axiom_id": "homonym_bank_disambiguation",
+    "type": "dissimilarity",
+    "classification": "core",
+    "context": "default",
+    "description": "Different meanings of 'bank' should be distinct",
+    "formula": {
+      "dissimilarity": {
+        "left": "bank_financial",
+        "right": "bank_river"
+      }
+    },
+    "concepts": [
+      {
+        "name": "bank_financial",
+        "synset": "bank.n.01",
+        "disambiguation": "financial institution"
+      },
+      {
+        "name": "bank_river",
+        "synset": "bank.n.09",
+        "disambiguation": "sloping land beside water"
+      }
+    ],
+    "metadata": {
+      "created_by": "system",
+      "confidence": 0.9,
+      "source": "homonym_disambiguation"
+    }
+  }
+]

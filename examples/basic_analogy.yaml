@@ -1,0 +1,33 @@
+axiom_id: analogy_king_queen
+type: analogy
+classification: core
+context: default
+description: "Classic gender analogy: king is to man as queen is to woman"
+
+formula:
+  similarity:
+    left:
+      add:
+        - subtract: [king, man]
+        - woman
+    right: queen
+
+concepts:
+  - name: king
+    synset: king.n.01
+    disambiguation: "monarch ruler"
+  - name: man
+    synset: man.n.01
+    disambiguation: "adult male human"
+  - name: woman
+    synset: woman.n.01
+    disambiguation: "adult female human"
+  - name: queen
+    synset: queen.n.01
+    disambiguation: "female monarch"
+
+metadata:
+  created_by: system
+  created_at: 2025-01-15T10:00:00Z
+  confidence: 0.95
+  source: wordnet_analogy_bootstrap
