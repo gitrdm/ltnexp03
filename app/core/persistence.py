@@ -107,7 +107,9 @@ class PersistenceManager:
         self.logger.info(f"Initialized storage structure at {self.storage_path}")
     
     @require(lambda context_name: len(context_name.strip()) > 0)
-    @ensure(lambda result: "save_metadata" in result)
+    @ensure(lambda result: "components_saved" in result)
+    @ensure(lambda result: "context_name" in result)
+    @ensure(lambda result: "saved_at" in result)
     def save_registry_state(self, registry: 'EnhancedHybridRegistry', 
                            context_name: str = "default",
                            format_type: str = "json") -> Dict[str, Any]:

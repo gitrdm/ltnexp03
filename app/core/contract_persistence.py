@@ -16,7 +16,8 @@ from .persistence import PersistenceManager
 from .batch_persistence import BatchPersistenceManager, DeleteCriteria, BatchWorkflow
 from .protocols import PersistenceProtocol, BatchPersistenceProtocol
 from .contracts import (
-    validate_concept_name, validate_context, validate_coherence_score
+    validate_concept_name, validate_context, validate_coherence_score,
+    ConceptConstraints, EmbeddingConstraints, ReasoningConstraints
 )
 
 # Type hints
@@ -100,11 +101,12 @@ class ContractEnhancedPersistenceManager:
     # ========================================================================
     
     @require(lambda registry: registry is not None)
-    @require(lambda context_name: validate_context(context_name))
+    @require(lambda context_name: ConceptConstraints.valid_context(context_name))
     @require(lambda format_type: validate_format_type(format_type))
     @ensure(lambda result: isinstance(result, dict))
-    @ensure(lambda result: "save_metadata" in result)
+    @ensure(lambda result: "components_saved" in result)
     @ensure(lambda result: "context_name" in result)
+    @ensure(lambda result: "saved_at" in result)
     def save_registry_state(self, registry: 'EnhancedHybridRegistry', 
                            context_name: str = "default",
                            format_type: str = "json") -> Dict[str, Any]:
@@ -125,7 +127,7 @@ class ContractEnhancedPersistenceManager:
             self.logger.error(f"Failed to save registry state: {e}")
             raise ViolationError(f"Save operation failed: {e}")
     
-    @require(lambda context_name: validate_context(context_name))
+    @require(lambda context_name: ConceptConstraints.valid_context(context_name))
     def load_registry_state(self, context_name: str = "default") -> Optional[Dict[str, Any]]:
         """Load complete registry state with validation."""
         try:
