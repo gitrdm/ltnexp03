@@ -125,11 +125,11 @@ def demonstrate_semantic_fields():
     
     print(f"\n2. Discovered {len(fields)} semantic fields:")
     for field in fields:
-        print(f"\n   Field: {field.name}")
-        print(f"   Description: {field.description}")
-        print(f"   Core concepts: {list(field.core_concepts)}")
-        print(f"   Related concepts: {len(field.related_concepts)}")
-        print(f"   Associated frames: {list(field.associated_frames)}")
+        print(f"\n   Field: {field['name']}")
+        print(f"   Description: {field['description']}")
+        print(f"   Core concepts: {list(field['core_concepts'])}")
+        print(f"   Related concepts: {len(field['related_concepts'])}")
+        print(f"   Associated frames: {list(field['associated_frames'])}")
     
     return registry, concepts, fields
 

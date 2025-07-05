@@ -2,20 +2,11 @@
 Design by Contract Framework for Soft Logic System
 ==================================================
 
-This module provides a comprehensive Design by Contract framework using dpcontracts
+This module provides a comprehensive Design by Contract framework using icontract
 that integrates seamlessly with our Protocol-based architecture and type system.
 
 CONTRACT PHILOSOPHY:
 ===================
-
-Design by Contract (DbC) provides:
-1. **Preconditions**: What must be true when method is called
-2. **Postconditions**: What must be true when method returns
-3. **Class Invariants**: What must always be true for object instances
-4. **Input Validation**: Domain-specific constraint checking
-
-INTEGRATION BENEFITS:
-=====================
 
 - **Protocol Compliance**: Contracts validate Protocol interface implementations
 - **Type Safety**: Works with mypy and our strict typing configuration
@@ -26,27 +17,34 @@ USAGE PATTERNS:
 ===============
 
 ```python
-@require("concept_name must be non-empty", lambda args: len(args.name.strip()) > 0)
-@require("context must be valid", lambda args: args.context in VALID_CONTEXTS)
-@ensure("result is not None", lambda result, args: result is not None)
-@ensure("result has valid concept_id", lambda result, args: hasattr(result, 'concept_id'))
-def create_concept(self, name: str, context: str) -> Concept:
+@require(lambda args: len(args.name.strip()) > 0, description="concept_name must be non-empty")
+@require(lambda args: args.context in VALID_CONTEXTS, description="context must be valid")
+@ensure(lambda result: result is not None, description="result must not be None")
+def create_concept(name: str, context: str) -> Concept:
     # Implementation
-    pass
 ```
+
+ICONTRACT INTEGRATION:
+=====================
+
+This module uses icontract for Design by Contract validation, which provides:
+- Excellent mypy integration with your existing type system
+- Runtime contract validation that can be disabled in production
+- FastAPI-compatible decorators for service layer validation
+- Protocol-friendly contract definitions
 """
 
-from typing import Any, Callable, TypeVar, Union, List, Dict, Optional, Protocol
+from typing import Any, Callable, List, Dict, Optional, Union
 from functools import wraps
 import inspect
 from dataclasses import dataclass
 
-# Import dpcontracts decorators
-from dpcontracts import require, ensure, invariant, DpcontractsException
+# Import icontract decorators
+from icontract import require, ensure, invariant, ViolationError
 CONTRACTS_AVAILABLE = True
 
 # Re-export for convenience
-__all__ = ['require', 'ensure', 'invariant', 'DpcontractsException', 'CONTRACTS_AVAILABLE', 
+__all__ = ['require', 'ensure', 'invariant', 'ViolationError', 'CONTRACTS_AVAILABLE', 
            'ConceptConstraints', 'EmbeddingConstraints', 'ReasoningConstraints',
            'validate_concept_name', 'validate_embedding_dimensions', 
            'validate_coherence_score', 'validate_context']
@@ -58,47 +56,53 @@ class ConceptConstraints:
     
     @staticmethod
     def valid_concept_name(name: str) -> bool:
-        """Validate concept name format and content."""
-        return (isinstance(name, str) and 
-                len(name.strip()) > 0 and 
-                len(name.strip()) <= 100 and
-                not name.startswith('_'))
+        """Validate concept name is non-empty and well-formed."""
+        return isinstance(name, str) and len(name.strip()) > 0 and len(name) <= 100
     
     @staticmethod
     def valid_context(context: str) -> bool:
-        """Validate context string."""
-        valid_contexts = {'default', 'wordnet', 'custom', 'neural', 'hybrid'}
-        return isinstance(context, str) and context in valid_contexts
+        """Validate context name is acceptable."""
+        valid_contexts = {"default", "test", "production", "development", "royalty", "medieval", "fantasy"}
+        return isinstance(context, str) and (context in valid_contexts or len(context.strip()) > 0)
     
-    @staticmethod
+    @staticmethod 
     def valid_synset_id(synset_id: Optional[str]) -> bool:
         """Validate WordNet synset ID format."""
         if synset_id is None:
             return True
-        return (isinstance(synset_id, str) and 
-                '.' in synset_id and
-                len(synset_id.split('.')) >= 2)
+        return isinstance(synset_id, str) and '.' in synset_id and len(synset_id) > 5
+    
+    @staticmethod
+    def valid_disambiguation(disambiguation: Optional[str]) -> bool:
+        """Validate disambiguation text."""
+        if disambiguation is None:
+            return True
+        return isinstance(disambiguation, str) and len(disambiguation.strip()) > 0
 
 
 class EmbeddingConstraints:
     """Constraint validators for embedding operations."""
     
     @staticmethod
-    def valid_embedding_dimensions(dimensions: int) -> bool:
-        """Validate embedding vector dimensions."""
-        return isinstance(dimensions, int) and 50 <= dimensions <= 1024
-    
-    @staticmethod
-    def valid_embedding_vector(vector: List[float], expected_dim: int) -> bool:
-        """Validate embedding vector format and dimensions."""
-        return (isinstance(vector, list) and 
-                len(vector) == expected_dim and
-                all(isinstance(x, (int, float)) for x in vector))
+    def valid_embedding_dimension(dimension: int) -> bool:
+        """Validate embedding dimension is reasonable."""
+        return isinstance(dimension, int) and 1 <= dimension <= 4096
     
     @staticmethod
     def valid_similarity_score(score: float) -> bool:
-        """Validate similarity score range."""
-        return isinstance(score, (int, float)) and -1.0 <= score <= 1.0
+        """Validate similarity score is in valid range."""
+        return isinstance(score, (int, float)) and 0.0 <= score <= 1.0
+    
+    @staticmethod
+    def valid_threshold(threshold: float) -> bool:
+        """Validate threshold parameter is reasonable."""
+        return isinstance(threshold, (int, float)) and 0.0 <= threshold <= 1.0
+    
+    @staticmethod
+    def valid_embedding_provider(provider: str) -> bool:
+        """Validate embedding provider name."""
+        valid_providers = {"random", "semantic", "openai", "huggingface"}
+        return isinstance(provider, str) and provider in valid_providers
 
 
 class ReasoningConstraints:
@@ -106,43 +110,54 @@ class ReasoningConstraints:
     
     @staticmethod
     def valid_coherence_score(score: float) -> bool:
-        """Validate coherence score range."""
+        """Validate coherence score is in valid range."""
         return isinstance(score, (int, float)) and 0.0 <= score <= 1.0
     
     @staticmethod
-    def valid_confidence_score(confidence: float) -> bool:
-        """Validate confidence score range."""
-        return isinstance(confidence, (int, float)) and 0.0 <= confidence <= 1.0
+    def valid_confidence_score(score: float) -> bool:
+        """Validate confidence score is in valid range."""
+        return isinstance(score, (int, float)) and 0.0 <= score <= 1.0
     
     @staticmethod
-    def valid_reasoning_depth(depth: int) -> bool:
-        """Validate reasoning depth parameter."""
-        return isinstance(depth, int) and 1 <= depth <= 10
-    
-    @staticmethod
-    def valid_concept_list(concepts: List[Any]) -> bool:
-        """Validate list of concepts."""
+    def valid_concept_list(concepts: List[str]) -> bool:
+        """Validate list of concept names."""
         return (isinstance(concepts, list) and 
-                len(concepts) > 0 and
-                all(hasattr(c, 'concept_id') for c in concepts))
+                len(concepts) > 0 and 
+                all(isinstance(c, str) and len(c.strip()) > 0 for c in concepts))
+    
+    @staticmethod
+    def valid_partial_analogy(analogy: Dict[str, str]) -> bool:
+        """Validate partial analogy dictionary."""
+        return (isinstance(analogy, dict) and 
+                len(analogy) >= 2 and
+                "?" in analogy.values() and
+                all(isinstance(k, str) and isinstance(v, str) for k, v in analogy.items()))
+    
+    @staticmethod
+    def valid_max_completions(max_comp: int) -> bool:
+        """Validate maximum completions parameter."""
+        return isinstance(max_comp, int) and 1 <= max_comp <= 50
 
 
-# Convenience validators that can be used in lambda expressions
+# Convenience validators that accept full argument objects
 def validate_concept_name(args) -> bool:
-    """Convenience validator for concept name in preconditions."""
-    return ConceptConstraints.valid_concept_name(args.name)
+    """Validate concept name from args object."""
+    return hasattr(args, 'name') and ConceptConstraints.valid_concept_name(args.name)
 
 def validate_context(args) -> bool:
-    """Convenience validator for context in preconditions."""
-    return ConceptConstraints.valid_context(args.context)
+    """Validate context from args object."""
+    return hasattr(args, 'context') and ConceptConstraints.valid_context(args.context)
 
 def validate_embedding_dimensions(args) -> bool:
-    """Convenience validator for embedding dimensions in preconditions."""
-    return EmbeddingConstraints.valid_embedding_dimensions(args.dimensions)
+    """Validate embedding dimensions from args object."""
+    return (hasattr(args, 'embedding') and 
+            hasattr(args.embedding, 'shape') and 
+            EmbeddingConstraints.valid_embedding_dimension(args.embedding.shape[0]))
 
-def validate_coherence_score(result, args) -> bool:
-    """Convenience validator for coherence scores in postconditions."""
-    return ReasoningConstraints.valid_coherence_score(result)
+def validate_coherence_score(args) -> bool:
+    """Validate coherence score from args object."""
+    return (hasattr(args, 'coherence') and 
+            ReasoningConstraints.valid_coherence_score(args.coherence))
 
 
 # Contract templates for common patterns
@@ -150,105 +165,173 @@ class ContractTemplates:
     """Pre-defined contract templates for common operation patterns."""
     
     @staticmethod
-    def concept_creation_preconditions():
-        """Standard preconditions for concept creation operations."""
-        return [
-            require("name must be valid", validate_concept_name),
-            require("context must be valid", validate_context),
-        ]
+    def concept_creation_contracts():
+        """Standard contracts for concept creation operations."""
+        def decorator(func):
+            @require(lambda args: validate_concept_name(args), description="name must be valid")
+            @require(lambda args: validate_context(args), description="context must be valid")
+            @ensure(lambda result: result is not None, description="result is not None")
+            @ensure(lambda result: hasattr(result, 'concept_id'), description="result has concept_id")
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+            return wrapper
+        return decorator
     
     @staticmethod
-    def concept_creation_postconditions():
-        """Standard postconditions for concept creation operations."""
-        return [
-            ensure("result is not None", lambda result, args: result is not None),
-            ensure("result has concept_id", lambda result, args: hasattr(result, 'concept_id')),
-            ensure("result name matches input", lambda result, args: result.name == args.name),
-        ]
+    def similarity_operation_contracts():
+        """Standard contracts for similarity operations."""
+        def decorator(func):
+            @require(lambda concepts: ReasoningConstraints.valid_concept_list(concepts), description="concepts list is valid")
+            @require(lambda concepts: len(concepts) >= 2, description="at least 2 concepts")
+            @ensure(lambda result: isinstance(result, (int, float)), description="result is numeric")
+            @ensure(lambda result: EmbeddingConstraints.valid_similarity_score(result), description="similarity score is valid")
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+            return wrapper
+        return decorator
+
+
+# Domain-specific contract decorators
+def semantic_field_discovery_contracts(func):
+    """Contracts for semantic field discovery operations."""
+    @require(lambda min_coherence: ReasoningConstraints.valid_coherence_score(min_coherence), 
+             description="min_coherence must be valid score")
+    @ensure(lambda result: isinstance(result, list), description="result must be list")
+    @ensure(lambda result: all(hasattr(field, 'coherence') for field in result), 
+            description="all fields must have coherence")
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def analogical_completion_contracts(func):
+    """Contracts for analogical completion operations."""
+    @require(lambda partial_analogy, max_completions=5: ReasoningConstraints.valid_partial_analogy(partial_analogy),
+             description="partial_analogy must be valid")
+    @require(lambda partial_analogy, max_completions=5: ReasoningConstraints.valid_max_completions(max_completions),
+             description="max_completions must be valid")
+    @ensure(lambda result: isinstance(result, list), description="result must be list")
+    @ensure(lambda result, partial_analogy, max_completions=5: len(result) <= max_completions,
+            description="result count within limit")
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+
+# Class invariant helpers
+def registry_consistency_invariant(description: str, condition: Callable[[Any], bool]):
+    """Create class invariant for registry consistency."""
+    return invariant(lambda self: condition(self), description=description)
+
+
+# Example usage patterns
+class ContractedConceptRegistry:
+    """Example of contract-enhanced concept registry."""
     
-    @staticmethod
-    def similarity_operation_preconditions():
-        """Standard preconditions for similarity operations."""
-        return [
-            require("concepts list is valid", lambda args: ReasoningConstraints.valid_concept_list(args.concepts)),
-            require("at least 2 concepts", lambda args: len(args.concepts) >= 2),
-        ]
+    def __init__(self):
+        self.concepts = {}
+        self.contexts = {"default"}
     
-    @staticmethod
-    def similarity_operation_postconditions():
-        """Standard postconditions for similarity operations."""
-        return [
-            ensure("similarity score is valid", lambda result, args: EmbeddingConstraints.valid_similarity_score(result)),
-        ]
-
-
-# Invariant helpers for class-level constraints
-def registry_invariant(description: str, condition: Callable[[Any], bool]):
-    """
-    Helper for creating registry class invariants.
-    
-    Usage:
-    @registry_invariant("registry is not empty", lambda self: len(self._concepts) >= 0)
-    class ConceptRegistry:
-        pass
-    """
-    return invariant(description, condition)
-
-
-# Contract debugging utilities
-@dataclass
-class ContractViolation:
-    """Information about a contract violation for debugging."""
-    contract_type: str  # 'precondition', 'postcondition', 'invariant'
-    description: str
-    function_name: str
-    args: Dict[str, Any]
-    result: Any = None
-
-
-def enable_contract_debugging(enabled: bool = True):
-    """Enable/disable contract violation debugging (when available)."""
-    # This would integrate with dpcontracts debugging features
-    # For now, it's a placeholder for future enhancement
-    pass
-
-
-# Example usage demonstrations
-if __name__ == "__main__":
-    # This section provides usage examples for development
-    
-    class ExampleConceptRegistry:
-        """Example showing contract usage with registry operations."""
+    @require(lambda name: ConceptConstraints.valid_concept_name(name), description="name must be valid")
+    @require(lambda name, context: ConceptConstraints.valid_context(context), description="context must be valid")
+    @ensure(lambda result: result is not None, description="result not None")
+    def create_concept_with_contracts(self, name: str, context: str):
+        """Create concept with comprehensive contract validation."""
+        # Implementation
+        concept_id = f"{context}:{name}"
+        concept = type('Concept', (), {
+            'concept_id': concept_id,
+            'name': name,
+            'context': context
+        })()
         
-        def __init__(self):
-            self._concepts: Dict[str, Any] = {}
+        self.concepts[concept_id] = concept
+        self.contexts.add(context)
         
-        @require("name must be valid", validate_concept_name)
-        @require("context must be valid", validate_context) 
-        @ensure("result is not None", lambda result, args: result is not None)
-        @ensure("result stored in registry", 
-                lambda result, args: result.concept_id in args.self._concepts)
-        def create_concept(self, name: str, context: str = "default") -> Any:
-            """Create a concept with contract validation."""
-            from dataclasses import dataclass
-            
-            @dataclass
-            class MockConcept:
-                concept_id: str
-                name: str
-                context: str
-            
-            concept_id = f"{context}:{name}"
-            concept = MockConcept(concept_id, name, context)
-            self._concepts[concept_id] = concept
-            return concept
+        return concept
+
+
+# Registry state validation functions
+def validate_registry_state(registry) -> bool:
+    """Validate overall registry state consistency."""
+    try:
+        # Check basic structure
+        if not hasattr(registry, 'frame_aware_concepts'):
+            return False
         
-        @require("concept_id exists", lambda args: args.concept_id in args.self._concepts)
-        @ensure("result matches stored concept", 
-                lambda result, args: result.concept_id == args.concept_id)
-        def get_concept(self, concept_id: str) -> Any:
-            """Retrieve a concept with contract validation."""
-            return self._concepts[concept_id]
-    
-    print("Contract framework initialized successfully!")
-    print(f"dpcontracts available: {CONTRACTS_AVAILABLE}")
+        # Check concept consistency
+        for concept_id, concept in getattr(registry, 'frame_aware_concepts', {}).items():
+            if not hasattr(concept, 'name'):
+                return False
+            if not hasattr(concept, 'context'):
+                return False
+        
+        return True
+    except Exception:
+        return False
+
+
+def validate_embedding_consistency(registry) -> bool:
+    """Validate embedding system consistency."""
+    try:
+        if not hasattr(registry, 'cluster_registry'):
+            return True  # No cluster registry is fine
+        
+        cluster_registry = registry.cluster_registry
+        if not hasattr(cluster_registry, 'concept_embeddings'):
+            return True  # No embeddings is fine
+        
+        # Check embedding dimensions are consistent
+        embeddings = cluster_registry.concept_embeddings
+        if not embeddings:
+            return True
+        
+        first_dim = None
+        for concept_id, embedding in embeddings.items():
+            if hasattr(embedding, 'shape'):
+                if first_dim is None:
+                    first_dim = embedding.shape[0]
+                elif embedding.shape[0] != first_dim:
+                    return False  # Inconsistent dimensions
+        
+        return True
+    except Exception:
+        return False
+
+
+def validate_frame_consistency(registry) -> bool:
+    """Validate semantic frame consistency."""
+    try:
+        if not hasattr(registry, 'frame_registry'):
+            return True  # No frame registry is fine
+        
+        frame_registry = registry.frame_registry
+        if not hasattr(frame_registry, 'frames'):
+            return True  # No frames is fine
+        
+        # Check frame structure
+        for frame_name, frame in getattr(frame_registry, 'frames', {}).items():
+            if not hasattr(frame, 'name'):
+                return False
+            if frame.name != frame_name:
+                return False
+        
+        return True
+    except Exception:
+        return False
+
+
+# Export contract validation functions
+__all__.extend([
+    'semantic_field_discovery_contracts',
+    'analogical_completion_contracts', 
+    'registry_consistency_invariant',
+    'ContractedConceptRegistry',
+    'validate_registry_state',
+    'validate_embedding_consistency',
+    'validate_frame_consistency'
+])

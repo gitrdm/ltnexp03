@@ -592,5 +592,41 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "default:king": {
+    "concept_id": "default:king",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T18:58:01",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "default:queen": {
+    "concept_id": "default:queen",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T18:58:01",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "default:man": {
+    "concept_id": "default:man",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T18:58:01",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "default:test_concept": {
+    "concept_id": "default:test_concept",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T19:12:46",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

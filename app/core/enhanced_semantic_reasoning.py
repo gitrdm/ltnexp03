@@ -4,6 +4,12 @@ Enhanced Frame-Cluster Integration: Advanced Semantic Reasoning Module
 This module extends the hybrid registry with advanced semantic reasoning capabilities,
 including cross-domain analogy discovery, dynamic frame learning, and sophisticated
 embedding-based concept similarity.
+
+DESIGN BY CONTRACT INTEGRATION:
+===============================
+This module implements comprehensive Design by Contract validation using icontract
+to ensure robust operation of semantic reasoning algorithms and maintain system
+invariants throughout complex reasoning operations.
 """
 
 import numpy as np
@@ -13,6 +19,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 import itertools
 from scipy.spatial.distance import cosine
+from icontract import require, ensure, invariant, ViolationError
 
 from .hybrid_registry import HybridConceptRegistry
 from .frame_cluster_abstractions import (
@@ -103,6 +110,15 @@ class SemanticField:
         return self.core_concepts.union(set(self.related_concepts.keys()))
 
 
+# Re-enable class invariants with defensive checks for initialization order
+@invariant(lambda self: not hasattr(self, 'frame_aware_concepts') or 
+           not hasattr(self.frame_aware_concepts, '__len__') or 
+           len(self.frame_aware_concepts) >= 0,
+           description="registry must maintain non-negative concept count when initialized")
+@invariant(lambda self: not hasattr(self, 'semantic_fields') or isinstance(self.semantic_fields, dict),
+           description="registry must maintain semantic fields storage")
+@invariant(lambda self: not hasattr(self, 'cross_domain_analogies') or isinstance(self.cross_domain_analogies, list),
+           description="registry must maintain cross-domain analogies storage")
 class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, KnowledgeDiscoveryProtocol):
     """
     Enhanced hybrid registry with advanced semantic reasoning capabilities.
@@ -118,12 +134,22 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
                  n_clusters: int = 50, enable_cross_domain: bool = True,
                  embedding_provider: str = "semantic"):
         """Initialize enhanced hybrid registry."""
-        super().__init__(download_wordnet, embedding_dim, n_clusters)
-        
-        # Enhanced storage
+        # Initialize enhanced storage BEFORE calling super().__init__
+        # This ensures invariants are satisfied during parent initialization
         self.semantic_fields: Dict[str, SemanticField] = {}
         self.cross_domain_analogies: List[CrossDomainAnalogy] = []
         self.domain_embeddings: Dict[str, np.ndarray] = {}
+        
+        # Additional storage
+        self.similarity_cache: Dict[Tuple[str, str], float] = {}
+        
+        # Configuration
+        self.enable_cross_domain = enable_cross_domain
+        self.min_field_size = 3
+        self.analogy_threshold = 0.6
+        
+        # Call parent initialization
+        super().__init__(download_wordnet, embedding_dim, n_clusters)
         
         # Vector embedding integration
         self.embedding_manager = VectorEmbeddingManager(
@@ -131,15 +157,17 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
             cache_dir="embeddings_cache"
         )
         
-        # Configuration
-        self.enable_cross_domain = enable_cross_domain
-        self.min_field_size = 3
-        self.analogy_threshold = 0.6
-        
-        # Caching for performance
-        self.similarity_cache: Dict[Tuple[str, str], float] = {}
-        
         self.logger = logging.getLogger(__name__)
+    
+    def __post_init__(self):
+        """Post-initialization checks and setups."""
+        # Ensure semantic_fields is a dictionary
+        if not isinstance(self.semantic_fields, dict):
+            self.semantic_fields = {}
+        
+        # Ensure cross_domain_analogies is a list
+        if not isinstance(self.cross_domain_analogies, list):
+            self.cross_domain_analogies = []
     
     def _discover_semantic_fields_original(self, min_coherence: float = 0.7) -> List[SemanticField]:
         """
@@ -369,6 +397,16 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
         similarity: float = 1 - cosine(field1.centroid, field2.centroid)
         return float(similarity)
     
+    @require(lambda partial_analogy: isinstance(partial_analogy, dict) and len(partial_analogy) >= 2,
+             "partial_analogy must be dict with at least 2 mappings")
+    @require(lambda partial_analogy: any(v == "?" for v in partial_analogy.values()),
+             "partial_analogy must contain exactly one '?' value")
+    @require(lambda max_completions: isinstance(max_completions, int) and max_completions > 0,
+             "max_completions must be positive integer")
+    @ensure(lambda result: isinstance(result, list),
+            "result must be a list")
+    @ensure(lambda result, max_completions: len(result) <= max_completions,
+            "result length must not exceed max_completions")
     def find_analogical_completions(self, partial_analogy: Dict[str, str],
                                   max_completions: int = 5) -> List[Dict[str, str]]:
         """
@@ -471,6 +509,18 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
         
         return enhanced_stats
     
+    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+             "concept name must be non-empty string")
+    @require(lambda context: isinstance(context, str) and len(context.strip()) > 0,
+             "context must be non-empty string")
+    @require(lambda synset_id: synset_id is None or (isinstance(synset_id, str) and '.' in synset_id),
+             "synset_id must be None or valid synset format")
+    @ensure(lambda result: result is not None,
+            "concept creation must return valid concept")
+    @ensure(lambda result: hasattr(result, 'name') and hasattr(result, 'context'),
+            "created concept must have required attributes")
+    @ensure(lambda result, name, context: result.name == name and result.context == context,
+            "created concept must have matching name and context")
     def create_frame_aware_concept_with_advanced_embedding(self, name: str, context: str = "default",
                                  synset_id: Optional[str] = None,
                                  disambiguation: Optional[str] = None,

@@ -1,0 +1,749 @@
+\033[0;32mRunning unit tests...\033[0m 
+\033[1;33mTesting core abstractions...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-7.4.4, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+plugins: anyio-3.7.1
+collecting ... collected 18 items
+
+tests/test_core/test_abstractions.py::TestConcept::test_concept_creation PASSED [  5%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_normalization PASSED [ 11%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_unique_id PASSED [ 16%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_equality PASSED [ 22%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_validation PASSED [ 27%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_formula_creation PASSED [ 33%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_formula_validation PASSED [ 38%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_get_concepts PASSED [ 44%]
+tests/test_core/test_abstractions.py::TestAxiom::test_axiom_creation PASSED [ 50%]
+tests/test_core/test_abstractions.py::TestAxiom::test_axiom_concept_extraction PASSED [ 55%]
+tests/test_core/test_abstractions.py::TestContext::test_context_creation PASSED [ 61%]
+tests/test_core/test_abstractions.py::TestContext::test_context_axiom_management PASSED [ 66%]
+tests/test_core/test_abstractions.py::TestContext::test_context_concept_retrieval PASSED [ 72%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_concept_registration PASSED [ 77%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_homonym_handling PASSED [ 83%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_pattern_search PASSED [ 88%]
+tests/test_core/test_abstractions.py::TestAxiomParser::test_yaml_parsing PASSED [ 94%]
+tests/test_core/test_abstractions.py::TestAxiomParser::test_json_parsing PASSED [100%]
+
+============================== 18 passed in 0.21s ==============================
+\033[0;32mUnit tests completed!\033[0m 
+\033[0;32mRunning integration tests...\033[0m 
+\033[1;33mTesting API endpoints...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-7.4.4, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+plugins: anyio-3.7.1
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_main.py ______________________
+tests/test_main.py:5: in <module>
+    client = TestClient(app)
+../../miniconda3/envs/ltnexp03/lib/python3.11/site-packages/starlette/testclient.py:399: in __init__
+    super().__init__(
+E   TypeError: Client.__init__() got an unexpected keyword argument 'app'
+=========================== short test summary info ============================
+ERROR tests/test_main.py - TypeError: Client.__init__() got an unexpected key...
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.28s ===============================
+\033[1;33mAPI tests require Phase 3C completion\033[0m 
+\033[0;32mIntegration tests completed!\033[0m 
+\033[0;32mRunning Phase 3A type safety tests...\033[0m 
+==================================================
+PHASE 3A TYPE SAFETY FOUNDATION TESTS
+==================================================
+
+Running test_protocol_imports...
+✓ Protocol interfaces imported successfully
+
+Running test_api_models_imports...
+✓ API models imported successfully
+
+Running test_enhanced_registry_protocols...
+✓ EnhancedHybridRegistry implements required protocols
+
+Running test_semantic_reasoning_interface...
+✓ discover_semantic_fields returned 0 fields
+✓ complete_analogy returned 0 results
+✓ Semantic reasoning interface working
+
+Running test_api_model_validation...
+✓ Valid ConceptCreateRequest: test_concept
+✓ Valid AnalogyRequest with 2 mappings
+✓ API model validation working
+
+==================================================
+RESULTS: 5 passed, 0 failed
+==================================================
+\033[0;32mPhase 3A tests completed!\033[0m 
+\033[0;32mRunning Design by Contract demonstrations...\033[0m 
+=== icontract Design by Contract Demonstration ===
+Testing contract validation with your soft logic system...
+
+1. Testing valid concept creation...
+✅ Successfully created concept: knight in default
+
+2. Testing invalid concept name (empty)...
+✅ Contract correctly caught invalid name: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 129 in ContractEnhancedRegistry:
+Concept name must be valid (non-empty, reasonable length): SoftLogicContracts.valid_concept_name(name):
+SoftLogicContracts.valid_concept_name(name) was False
+context was 'default'
+disambiguation was None
+name was ''
+self was <__main__.ContractEnhancedRegistry object at 0x7fa91a1b10d0>
+synset_id was None
+
+3. Testing invalid context...
+✅ Contract correctly caught invalid context: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 131 in ContractEnhancedRegistry:
+Context must be one of the valid context types: SoftLogicContracts.valid_context(context):
+SoftLogicContracts.valid_context(context) was False
+context was 'invalid_context'
+disambiguation was None
+name was 'wizard'
+self was <__main__.ContractEnhancedRegistry object at 0x7fa91a1b10d0>
+synset_id was None
+
+4. Testing valid semantic field discovery...
+❌ Unexpected error: n_samples=1 should be >= n_clusters=4.
+
+5. Testing invalid coherence score...
+✅ Contract correctly caught invalid coherence: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 165 in ContractEnhancedRegistry:
+Coherence score must be between 0.0 and 1.0: SoftLogicContracts.valid_coherence_score(min_coherence):
+SoftLogicContracts.valid_coherence_score(min_coherence) was False
+max_fields was 3
+min_coherence was 1.5
+self was <__main__.ContractEnhancedRegistry object at 0x7fa91a1b10d0>
+
+6. Testing valid analogical completion...
+✅ Found 0 analogical completions
+
+7. Testing invalid analogy (too few mappings)...
+✅ Contract correctly caught invalid analogy: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 204 in ContractEnhancedRegistry:
+Partial analogy must have at least 2 mappings and contain '?' for completion: SoftLogicContracts.valid_analogy_mapping(partial_analogy):
+SoftLogicContracts.valid_analogy_mapping(partial_analogy) was False
+max_completions was 3
+partial_analogy was {'king': 'queen'}
+self was <__main__.ContractEnhancedRegistry object at 0x7fa91a1b10d0>
+
+8. Checking operation statistics...
+✅ Registry statistics:
+   - Total operations: 3
+   - Total concepts: 1
+   - Contracts enabled: True
+   - Contract library: icontract
+
+=== Contract validation demonstration complete ===
+
+Key Benefits Demonstrated:
+✅ Early error detection - invalid inputs caught before processing
+✅ Clear error messages - contracts provide specific violation details
+✅ Maintained functionality - existing code works with added safety
+✅ API reliability - service layer will benefit from these contracts
+\033[0;32mContract demonstrations completed!\033[0m 
+\033[0;32mRunning demonstration scripts...\033[0m 
+\033[1;33mRunning demo_abstractions.py...\033[0m 
+🚀 SOFT LOGIC CORE ABSTRACTIONS DEMO
+============================================================
+🏗️  Building Word Analogy Knowledge Base
+==================================================
+
+📝 Creating concepts...
+✅ Created 10 concepts
+
+⚖️  Creating axioms...
+✅ Created 4 axioms
+
+🌍 Creating context...
+✅ Created context with 4 axioms and 9 concepts
+
+🔍 Analyzing Knowledge Base
+==================================================
+
+📊 Context: word_analogies
+   Description: Knowledge base for word analogies, synonyms, and antonyms
+   Total axioms: 4
+   Core axioms: 4
+   Soft axioms: 0
+   Total concepts: 9
+
+📜 Axioms by type:
+   analogy: 1
+   synonym: 1
+   antonym: 1
+   dissimilarity: 1
+
+🏷️  Concepts by context:
+   royal: 4
+   transport: 2
+   weather: 2
+   finance: 1
+   geography: 1
+
+🎯 Example concepts:
+   king(king.n.01) - male monarch
+   man(man.n.01) - adult male
+   woman(woman.n.01) - adult female
+   queen(queen.n.01) - female monarch
+   car(car.n.01) - motor vehicle
+
+🔄 Homonym examples:
+   bank(bank.n.01) - financial institution
+   bank(bank.n.09) - land beside water
+
+🧪 Testing Knowledge Queries
+==================================================
+
+🔍 Concept retrieval tests:
+   Bank (finance): bank(bank.n.01)
+   Bank (geography): bank(bank.n.09)
+
+🎯 Pattern matching tests:
+   Royal concepts (king/queen): ['king(king.n.01)', 'queen(queen.n.01)']
+
+⚖️  Axiom analysis:
+   gender_analogy: analogy - core
+      Formula: similar(((king(king.n.01) - man(man.n.01)) + woman(woman.n.01)), queen(queen.n.01))
+      Concepts: ['king', 'man', 'woman', 'queen']
+
+   vehicle_synonym: synonym - core
+      Formula: similar(car(car.n.01), automobile(car.n.01))
+      Concepts: ['car', 'automobile']
+
+   temperature_antonym: antonym - core
+      Formula: dissimilar(hot(hot.a.01), cold(cold.a.01))
+      Concepts: ['hot', 'cold']
+
+   bank_disambiguation: dissimilarity - core
+      Formula: dissimilar(bank(bank.n.01), bank(bank.n.09))
+      Concepts: ['bank', 'bank']
+
+💾 Save/Load Demo
+==================================================
+
+📝 Axiom summaries:
+   gender_analogy:
+      Type: analogy
+      Classification: core
+      Description: Gender analogy: king is to man as queen is to woman
+      Concepts: 4
+
+   vehicle_synonym:
+      Type: synonym
+      Classification: core
+      Description: Car and automobile are synonyms
+      Concepts: 2
+
+   temperature_antonym:
+      Type: antonym
+      Classification: core
+      Description: Hot and cold are antonyms
+      Concepts: 2
+
+   bank_disambiguation:
+      Type: dissimilarity
+      Classification: core
+      Description: Different meanings of bank should be distinct
+      Concepts: 2
+
+
+🎉 Demo complete!
+
+Next steps:
+- Phase 2: Add SMT verification for core axioms
+- Phase 3: Add LTN training for soft axioms
+- Phase 4: Add REST API endpoints
+
+\033[1;33mRunning demo_hybrid_system.py...\033[0m 
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float64(0.41785948010894386)), (0, np.float64(0.1622881663476952))]
+   cat: [(2, np.float64(0.4142292851226383)), (1, np.float64(0.16010239299851958))]
+   lion: [(2, np.float64(0.43041407803101467)), (1, np.float64(0.1639536222405579))]
+   king: [(0, np.float64(0.42953487799066137)), (1, np.float64(0.1595363499787104))]
+   queen: [(0, np.float64(0.40965988195130787)), (1, np.float64(0.17695551974495166))]
+   man: [(0, np.float64(0.41996934991953033)), (2, np.float64(0.16373344053773684))]
+   woman: [(0, np.float64(0.399645234687147)), (1, np.float64(0.1719844962672687))]
+   car: [(3, np.float64(0.43742453431645234)), (2, np.float64(0.17390224097668214))]
+   bike: [(3, np.float64(0.4359080646580641)), (2, np.float64(0.1599642321975673))]
+   plane: [(3, np.float64(0.4678395709232968)), (1, np.float64(0.15235729599471626))]
+   money: [(4, np.float64(0.7244474773368528))]
+   dollar: [(1, np.float64(0.4555031863813121)), (2, np.float64(0.15627727628552476))]
+   price: [(1, np.float64(0.41816628910182496)), (0, np.float64(0.161083615775597))]
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float64(0.41785948010894386)), (0, np.float64(0.1622881663476952))]
+   cat: [(2, np.float64(0.4142292851226383)), (1, np.float64(0.16010239299851958))]
+   lion: [(2, np.float64(0.43041407803101467)), (1, np.float64(0.1639536222405579))]
+   king: [(0, np.float64(0.42953487799066137)), (1, np.float64(0.1595363499787104))]
+   queen: [(0, np.float64(0.40965988195130787)), (1, np.float64(0.17695551974495166))]
+   man: [(0, np.float64(0.41996934991953033)), (2, np.float64(0.16373344053773684))]
+   woman: [(0, np.float64(0.399645234687147)), (1, np.float64(0.1719844962672687))]
+   car: [(3, np.float64(0.43742453431645234)), (2, np.float64(0.17390224097668214))]
+   bike: [(3, np.float64(0.4359080646580641)), (2, np.float64(0.1599642321975673))]
+   plane: [(3, np.float64(0.4678395709232968)), (1, np.float64(0.15235729599471626))]
+   money: [(4, np.float64(0.7244474773368528))]
+   dollar: [(1, np.float64(0.4555031863813121)), (2, np.float64(0.15627727628552476))]
+   price: [(1, np.float64(0.41816628910182496)), (0, np.float64(0.161083615775597))]
+
+============================================================
+SEMANTIC FRAME DEMONSTRATION
+============================================================
+
+1. Creating Commercial_transaction frame...
+   Created frame: Commercial_transaction
+   Core elements: ['Buyer', 'Seller', 'Goods', 'Money']
+
+2. Creating Gift_giving frame...
+   Created frame: Gift_giving
+
+3. Creating frame instances...
+   Created instance: john_buys_car
+   Created instance: queen_gives_gift
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float64(0.41785948010894386)), (0, np.float64(0.1622881663476952))]
+   cat: [(2, np.float64(0.4142292851226383)), (1, np.float64(0.16010239299851958))]
+   lion: [(2, np.float64(0.43041407803101467)), (1, np.float64(0.1639536222405579))]
+   king: [(0, np.float64(0.42953487799066137)), (1, np.float64(0.1595363499787104))]
+   queen: [(0, np.float64(0.40965988195130787)), (1, np.float64(0.17695551974495166))]
+   man: [(0, np.float64(0.41996934991953033)), (2, np.float64(0.16373344053773684))]
+   woman: [(0, np.float64(0.399645234687147)), (1, np.float64(0.1719844962672687))]
+   car: [(3, np.float64(0.43742453431645234)), (2, np.float64(0.17390224097668214))]
+   bike: [(3, np.float64(0.4359080646580641)), (2, np.float64(0.1599642321975673))]
+   plane: [(3, np.float64(0.4678395709232968)), (1, np.float64(0.15235729599471626))]
+   money: [(4, np.float64(0.7244474773368528))]
+   dollar: [(1, np.float64(0.4555031863813121)), (2, np.float64(0.15627727628552476))]
+   price: [(1, np.float64(0.41816628910182496)), (0, np.float64(0.161083615775597))]
+
+============================================================
+SEMANTIC FRAME DEMONSTRATION
+============================================================
+
+1. Creating Commercial_transaction frame...
+   Created frame: Commercial_transaction
+   Core elements: ['Buyer', 'Seller', 'Goods', 'Money']
+
+2. Creating Gift_giving frame...
+   Created frame: Gift_giving
+
+3. Creating frame instances...
+   Created instance: john_buys_car
+   Created instance: queen_gives_gift
+
+============================================================
+ANALOGICAL REASONING DEMONSTRATION
+============================================================
+
+1. Finding concepts analogous to 'king'...
+   man: similarity=0.999, basis=cluster
+   woman: similarity=0.998, basis=cluster
+   queen: similarity=0.749, basis=frame+cluster
+
+2. Finding cluster-based similar concepts to 'car'...
+   bike: similarity=0.999
+   plane: similarity=0.979
+   cat: similarity=0.741
+
+3. Finding frame instances analogous to 'john_buys_car'...
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float64(0.41785948010894386)), (0, np.float64(0.1622881663476952))]
+   cat: [(2, np.float64(0.4142292851226383)), (1, np.float64(0.16010239299851958))]
+   lion: [(2, np.float64(0.43041407803101467)), (1, np.float64(0.1639536222405579))]
+   king: [(0, np.float64(0.42953487799066137)), (1, np.float64(0.1595363499787104))]
+   queen: [(0, np.float64(0.40965988195130787)), (1, np.float64(0.17695551974495166))]
+   man: [(0, np.float64(0.41996934991953033)), (2, np.float64(0.16373344053773684))]
+   woman: [(0, np.float64(0.399645234687147)), (1, np.float64(0.1719844962672687))]
+   car: [(3, np.float64(0.43742453431645234)), (2, np.float64(0.17390224097668214))]
+   bike: [(3, np.float64(0.4359080646580641)), (2, np.float64(0.1599642321975673))]
+   plane: [(3, np.float64(0.4678395709232968)), (1, np.float64(0.15235729599471626))]
+   money: [(4, np.float64(0.7244474773368528))]
+   dollar: [(1, np.float64(0.4555031863813121)), (2, np.float64(0.15627727628552476))]
+   price: [(1, np.float64(0.41816628910182496)), (0, np.float64(0.161083615775597))]
+
+============================================================
+SEMANTIC FRAME DEMONSTRATION
+============================================================
+
+1. Creating Commercial_transaction frame...
+   Created frame: Commercial_transaction
+   Core elements: ['Buyer', 'Seller', 'Goods', 'Money']
+
+2. Creating Gift_giving frame...
+   Created frame: Gift_giving
+
+3. Creating frame instances...
+   Created instance: john_buys_car
+   Created instance: queen_gives_gift
+
+============================================================
+ANALOGICAL REASONING DEMONSTRATION
+============================================================
+
+1. Finding concepts analogous to 'king'...
+   man: similarity=0.999, basis=cluster
+   woman: similarity=0.998, basis=cluster
+   queen: similarity=0.749, basis=frame+cluster
+
+2. Finding cluster-based similar concepts to 'car'...
+   bike: similarity=0.999
+   plane: similarity=0.979
+   cat: similarity=0.741
+
+3. Finding frame instances analogous to 'john_buys_car'...
+
+============================================================
+SYSTEM STATISTICS
+============================================================
+
+Basic Concepts:
+   Total concepts: 13
+   Frame-aware concepts: 13
+   Contexts: 1
+   With synsets: 0
+
+Semantic Frames:
+   Semantic frames: 2
+   Frame instances: 2
+
+Clustering:
+   Concept clusters: 5
+   Concepts with embeddings: 13
+   Clustering trained: True
+   Average cluster size: 12.0
+   Max cluster size: 12
+   Min cluster size: 12
+
+============================================================
+ADVANCED ANALOGY PATTERNS
+============================================================
+
+1. Creating rich concept set...
+
+2. Creating domain frames...
+
+3. Creating analogical frame instances...
+
+4. Cross-domain analogical reasoning:
+   King:Queen :: Lion:Lioness
+
+   Cross-frame instance analogies:
+
+============================================================
+DEMONSTRATION COMPLETE
+============================================================
+
+The hybrid system successfully demonstrates:
+• Frame-aware concept management
+• Clustering-based similarity
+• Multi-level analogical reasoning
+• Cross-domain concept mapping
+• Integrated semantic understanding
+
+\033[1;33mRunning demo_enhanced_system.py...\033[0m 
+Starting Enhanced Hybrid Semantic Reasoning Demonstration...
+
+================================================================================
+ENHANCED HYBRID SEMANTIC REASONING SYSTEM
+================================================================================
+
+1. Creating Enhanced Hybrid Registry...
+
+2. Creating Rich Concept Set...
+   Created: animal:lion
+   Created: animal:tiger
+   Created: animal:wolf
+   Created: animal:eagle
+   Created: animal:shark
+   Created: royalty:king
+   Created: royalty:queen
+   Created: royalty:prince
+   Created: royalty:princess
+   Created: royalty:emperor
+   Created: military:general
+   Created: military:colonel
+   Created: military:captain
+   Created: military:sergeant
+   Created: military:soldier
+   Created: business:ceo
+   Created: business:manager
+   Created: business:director
+   Created: business:supervisor
+   Created: business:employee
+   Created: sports:quarterback
+   Created: sports:striker
+   Created: sports:captain_sports
+   Created: sports:coach
+   Created: sports:player
+
+3. Training Concept Clusters...
+
+================================================================================
+SEMANTIC FIELD DISCOVERY
+================================================================================
+
+1. Discovering Semantic Fields...
+
+2. Discovered 7 semantic fields:
+Error during demonstration: 'dict' object has no attribute 'name'
+\033[0;31mdemo_enhanced_system.py failed\033[0m 
+
+\033[1;33mRunning demo_comprehensive_system.py...\033[0m 
+COMPREHENSIVE HYBRID FRAMENET-CLUSTERING DEMONSTRATION
+Building Medieval Fantasy Knowledge Base with Advanced Semantic Reasoning
+
+================================================================================
+BUILDING MEDIEVAL FANTASY KNOWLEDGE BASE
+================================================================================
+
+1. Creating Enhanced Semantic Registry...
+
+2. Creating Rich Concept Set...
+
+   Creating royalty domain:
+     • royalty:king
+     • royalty:queen
+     • royalty:prince
+     • royalty:princess
+     • royalty:duke
+     • royalty:duchess
+     • royalty:baron
+     • royalty:knight
+
+   Creating magic domain:
+     • magic:wizard
+     • magic:sorcerer
+     • magic:witch
+     • magic:enchanter
+     • magic:alchemist
+     • magic:druid
+     • magic:cleric
+     • magic:paladin
+
+   Creating creatures domain:
+     • creatures:dragon
+     • creatures:griffin
+     • creatures:unicorn
+     • creatures:phoenix
+     • creatures:basilisk
+     • creatures:hydra
+     • creatures:wyvern
+     • creatures:pegasus
+
+   Creating military domain:
+     • military:general
+     • military:captain
+     • military:sergeant
+     • military:soldier
+     • military:archer
+     • military:cavalry
+     • military:infantry
+     • military:guard
+
+   Creating locations domain:
+     • locations:castle
+     • locations:tower
+     • locations:dungeon
+     • locations:fortress
+     • locations:temple
+     • locations:monastery
+     • locations:village
+     • locations:city
+
+   Creating artifacts domain:
+     • artifacts:sword
+     • artifacts:shield
+     • artifacts:crown
+     • artifacts:scepter
+     • artifacts:orb
+     • artifacts:tome
+     • artifacts:staff
+     • artifacts:amulet
+
+3. Training Semantic Clustering...
+
+================================================================================
+CREATING STORY FRAMES
+================================================================================
+
+1. Creating Quest narrative frame...
+2. Creating Magical_Conflict frame...
+3. Creating Royal_Court political frame...
+4. Creating Dragon_Encounter frame...
+
+================================================================================
+CREATING STORY INSTANCES
+================================================================================
+
+1. Creating 'Knight's Dragon Quest' instance...
+   Created: knights_dragon_quest
+
+2. Creating 'Wizard vs Sorcerer' magical conflict...
+   Created: wizard_sorcerer_duel
+
+3. Creating 'King's Royal Decree' court instance...
+   Created: kings_decree
+
+4. Creating 'Princess and Dragon' encounter...
+   Created: princess_dragon_encounter
+
+================================================================================
+ADVANCED SEMANTIC REASONING
+================================================================================
+
+1. Discovering Semantic Fields...
+
+   Found 0 semantic fields:
+
+2. Discovering Cross-Domain Analogies...
+
+   Found 0 cross-domain analogies:
+
+3. Testing Analogical Completion...
+
+   Testing: {'king': 'queen', 'prince': '?'}
+
+   Testing: {'wizard': 'staff', 'knight': '?'}
+
+   Testing: {'dragon': 'castle', 'unicorn': '?'}
+
+================================================================================
+STORY GENERATION APPLICATIONS
+================================================================================
+
+1. Finding Character Relationships...
+
+   Characters similar to 'knight':
+
+   Characters similar to 'wizard':
+
+   Characters similar to 'dragon':
+
+   Characters similar to 'princess':
+
+2. Generating Story Variants...
+
+   Base story: {'hero': 'knight', 'quest_object': 'dragon', 'helper': 'wizard', 'obstacle': 'basilisk', 'reward': 'crown'}
+
+   Story variants:
+
+================================================================================
+FINAL SYSTEM STATISTICS
+================================================================================
+
+Knowledge Base:
+• Concepts: 62
+• Semantic frames: 4
+• Frame instances: 4
+• Concept clusters: 6
+• Semantic fields: 0
+• Cross-domain analogies: 0
+
+Quality Metrics:
+• Average cluster size: 48.0
+• Average field size: 0.0
+• Average analogy quality: 0.000
+
+================================================================================
+DEMONSTRATION COMPLETE
+================================================================================
+
+This demonstration showcases a complete hybrid semantic reasoning system that:
+✓ Integrates FrameNet-style structural knowledge with clustering-based organization
+✓ Discovers semantic fields and cross-domain analogies automatically
+✓ Supports rich analogical reasoning and completion tasks
+✓ Provides practical applications for story generation and world building
+✓ Scales to complex knowledge domains with sophisticated reasoning
+
+\033[0;32mAll demonstrations completed!\033[0m 
+\033[0;32mComplete test suite finished!\033[0m 

@@ -112,7 +112,7 @@ else:
     BaseRegistry = MockRegistry
 
 
-@invariant(lambda self: len(self.frame_aware_concepts) >= 0, "Registry must maintain non-negative concept count")
+@invariant(lambda self: not hasattr(self, 'frame_aware_concepts') or len(self.frame_aware_concepts) >= 0, "Registry must maintain non-negative concept count")
 @invariant(lambda self: self._operation_count >= 0, "Operation count must be non-negative")
 class ContractEnhancedRegistry(BaseRegistry):
     """
@@ -123,8 +123,8 @@ class ContractEnhancedRegistry(BaseRegistry):
     """
     
     def __init__(self, **kwargs):
+        self._operation_count = 0  # Initialize before super() to satisfy invariants
         super().__init__(**kwargs) if IMPORTS_AVAILABLE else super().__init__()
-        self._operation_count = 0
     
     @require(lambda name: SoftLogicContracts.valid_concept_name(name), 
              "Concept name must be valid (non-empty, reasonable length)")

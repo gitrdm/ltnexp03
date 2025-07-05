@@ -70,6 +70,9 @@ def create_medieval_fantasy_world():
     print("\n2. Creating Rich Concept Set...")
     all_concepts = {}
     
+    # Temporarily disable auto-clustering for performance during bulk creation
+    registry.auto_cluster = False
+    
     for domain, info in domains.items():
         print(f"\n   Creating {domain} domain:")
         for concept_name in info["concepts"]:
@@ -80,6 +83,11 @@ def create_medieval_fantasy_world():
             )
             all_concepts[f"{domain}:{concept_name}"] = concept
             print(f"     • {concept.unique_id}")
+    
+    # Re-enable auto-clustering and update clusters once at the end
+    registry.auto_cluster = True
+    print("\n   Updating clusters with all concepts...")
+    registry.update_clusters()
     
     # Train clustering system
     print("\n3. Training Semantic Clustering...")

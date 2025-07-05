@@ -14,6 +14,9 @@ from abc import ABC, abstractmethod
 import json
 from pathlib import Path
 
+# Design by Contract support
+from icontract import require, ensure, invariant, ViolationError
+
 
 @dataclass
 class EmbeddingMetadata:
@@ -232,6 +235,10 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
         return self.dimensions
 
 
+@invariant(lambda self: hasattr(self, 'providers') and isinstance(self.providers, dict),
+           "providers must be a dictionary")
+@invariant(lambda self: hasattr(self, 'default_provider') and self.default_provider in self.providers,
+           "default_provider must be a valid provider")
 class VectorEmbeddingManager:
     """
     Advanced vector embedding manager for the hybrid semantic system.
@@ -276,6 +283,14 @@ class VectorEmbeddingManager:
         self.providers[name] = provider
         self.logger.info(f"Added embedding provider: {name}")
     
+    @require(lambda concept_id: isinstance(concept_id, str) and len(concept_id.strip()) > 0,
+             "concept_id must be non-empty string")
+    @require(lambda text: isinstance(text, str) and len(text.strip()) > 0,
+             "text must be non-empty string")
+    @require(lambda provider: provider is None or (isinstance(provider, str) and len(provider.strip()) > 0),
+             "provider must be None or non-empty string")
+    @ensure(lambda result: result is None or isinstance(result, np.ndarray),
+            "result must be None or numpy array")
     def get_embedding(self, concept_id: str, text: str, 
                      provider: Optional[str] = None) -> Optional[np.ndarray]:
         """

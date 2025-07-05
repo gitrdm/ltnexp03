@@ -24,7 +24,7 @@ DESIGN PHILOSOPHY:
 
 from typing import List, Dict, Optional, Any, Union
 import numpy as np
-from dpcontracts import require, ensure, invariant, DpcontractsException
+from icontract import require, ensure, invariant, ViolationError
 
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.abstractions import Concept

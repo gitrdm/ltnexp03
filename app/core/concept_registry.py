@@ -39,6 +39,9 @@ import re
 from typing import Dict, List, Optional, Set
 from dataclasses import dataclass
 
+# Design by Contract support
+from icontract import require, ensure, invariant, ViolationError
+
 # WordNet Integration with Graceful Degradation
 # ==============================================
 # We attempt to import NLTK/WordNet but gracefully handle cases where 
@@ -78,6 +81,10 @@ class SynsetInfo:
     pos: str  # Part of speech
 
 
+@invariant(lambda self: hasattr(self, 'concepts') and isinstance(self.concepts, dict),
+           "concepts must be a dictionary")
+@invariant(lambda self: hasattr(self, 'context_mappings') and isinstance(self.context_mappings, dict),
+           "context_mappings must be a dictionary")
 class ConceptRegistry:
     """
     Centralized Concept Management System
@@ -154,6 +161,14 @@ class ConceptRegistry:
         else:
             self.wordnet_enabled = False
     
+    @require(lambda concept: isinstance(concept, Concept),
+             "concept must be a Concept instance")
+    @require(lambda concept: hasattr(concept, 'unique_id') and len(concept.unique_id) > 0,
+             "concept must have non-empty unique_id")
+    @ensure(lambda result: isinstance(result, Concept),
+            "result must be a Concept instance")
+    @ensure(lambda result, concept: result.unique_id == concept.unique_id,
+            "result must have same unique_id as input")
     def register_concept(self, concept: Concept) -> Concept:
         """
         Register a Concept in the Registry
@@ -208,6 +223,12 @@ class ConceptRegistry:
         
         return concept
     
+    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+             "name must be non-empty string")
+    @require(lambda context: isinstance(context, str) and len(context.strip()) > 0,
+             "context must be non-empty string")
+    @ensure(lambda result: result is None or isinstance(result, Concept),
+            "result must be None or Concept instance")
     def get_concept(self, name: str, context: str = "default", 
                    synset_id: Optional[str] = None) -> Optional[Concept]:
         """
@@ -469,6 +490,18 @@ class ConceptRegistry:
         
         return score
     
+    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+             "name must be non-empty string")
+    @require(lambda context: isinstance(context, str) and len(context.strip()) > 0,
+             "context must be non-empty string")
+    @require(lambda synset_id: synset_id is None or (isinstance(synset_id, str) and len(synset_id.strip()) > 0),
+             "synset_id must be None or non-empty string")
+    @ensure(lambda result: isinstance(result, Concept),
+            "result must be a Concept instance")
+    @ensure(lambda result, name: result.name == name.lower().strip(),
+            "result name must match normalized input name")
+    @ensure(lambda result, context: result.context == context,
+            "result context must match input context")
     def create_concept(self, name: str, context: str = "default",
                       synset_id: Optional[str] = None,
                       disambiguation: Optional[str] = None,
