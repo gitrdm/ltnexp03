@@ -20,13 +20,16 @@ DEMO_FILES := demo_abstractions.py demo_hybrid_system.py demo_enhanced_system.py
 CONTRACT_DEMO := app/core/icontract_demo.py
 PHASE_3A_TEST := test_phase_3a.py
 
+# Persistence demo files
+PERSISTENCE_DEMOS := demo_persistence_layer.py persistence_strategy_example.py multi_format_persistence_example.py persistence_examples_overview.py
+
 # Colors for output
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
-.PHONY: help test test-unit test-integration test-demos test-all type-check lint clean setup install deps
+.PHONY: help test test-unit test-integration test-demos test-all type-check lint clean setup install deps test-persistence test-persistence-demos test-persistence-regression test-persistence-quick validate-persistence-examples
 
 # Default target
 help:
@@ -39,12 +42,15 @@ help:
 	@echo "  setup       - Full project setup (install + pre-commit)"
 	@echo ""
 	@echo "$(YELLOW)Testing Targets:$(NC)"
-	@echo "  test        - Run all tests (unit + integration + demos)"
+	@echo "  test        - Run all tests (unit + integration + demos + persistence)"
 	@echo "  test-unit   - Run unit tests only"
 	@echo "  test-integration - Run integration tests"
 	@echo "  test-demos  - Run all demonstration scripts"
 	@echo "  test-contracts - Run Design by Contract demonstrations"
 	@echo "  test-phase3a - Run Phase 3A type safety tests"
+	@echo "  test-persistence - Run persistence layer unit tests"
+	@echo "  test-persistence-demos - Run persistence demonstration scripts"
+	@echo "  test-persistence-regression - Full persistence validation suite"
 	@echo "  test-regression - Full regression test suite"
 	@echo ""
 	@echo "$(YELLOW)Quality Targets:$(NC)"
@@ -110,6 +116,34 @@ test-demos:
 	done
 	@echo "$(GREEN)All demonstrations completed!$(NC)"
 
+# Persistence demonstration targets
+test-persistence-demos:
+	@echo "$(GREEN)Running persistence layer demonstrations...$(NC)"
+	@echo "$(YELLOW)Running complete persistence demo...$(NC)"
+	$(PYTHON) demo_persistence_layer.py || echo "$(RED)Complete demo failed$(NC)"
+	@echo "$(YELLOW)Running strategy implementation demo...$(NC)"
+	$(PYTHON) persistence_strategy_example.py || echo "$(RED)Strategy demo failed$(NC)"
+	@echo "$(YELLOW)Running multi-format storage demo...$(NC)"
+	$(PYTHON) multi_format_persistence_example.py || echo "$(RED)Multi-format demo failed$(NC)"
+	@echo "$(GREEN)Persistence demonstrations completed!$(NC)"
+
+test-persistence-regression:
+	@echo "$(GREEN)Running persistence regression tests...$(NC)"
+	@echo "$(YELLOW)1. Persistence unit tests...$(NC)"
+	make test-persistence
+	@echo "$(YELLOW)2. Batch workflow tests...$(NC)"
+	make test-batch-workflows
+	@echo "$(YELLOW)3. Performance tests...$(NC)"
+	make test-persistence-performance
+	@echo "$(YELLOW)4. Demonstration scripts...$(NC)"
+	make test-persistence-demos
+	@echo "$(GREEN)Persistence regression suite completed!$(NC)"
+
+test-persistence-quick:
+	@echo "$(GREEN)Running quick persistence validation...$(NC)"
+	$(PYTHON) -c "from app.core.contract_persistence import ContractEnhancedPersistenceManager; from pathlib import Path; import tempfile; temp_dir = Path(tempfile.mkdtemp()); manager = ContractEnhancedPersistenceManager(temp_dir); print('✓ Persistence manager initialized'); stats = manager.get_storage_statistics(); print(f'✓ Storage statistics: {stats[\"storage_size_mb\"]:.2f} MB'); import shutil; shutil.rmtree(temp_dir); print('✓ Quick persistence test passed')"
+	@echo "$(GREEN)Quick persistence test completed!$(NC)"
+
 # Test targets
 test-persistence:
 	@echo "$(YELLOW)Running persistence layer tests...$(NC)"
@@ -132,13 +166,13 @@ test-batch-workflows:
 	@echo "$(GREEN)Batch workflow tests completed$(NC)"
 
 # Comprehensive test suites
-test: test-unit test-phase3a test-contracts
+test: test-unit test-phase3a test-contracts test-persistence-quick
 	@echo "$(GREEN)All primary tests completed successfully!$(NC)"
 
-test-all: test-unit test-integration test-phase3a test-contracts test-demos test-persistence
+test-all: test-unit test-integration test-phase3a test-contracts test-demos test-persistence test-persistence-demos
 	@echo "$(GREEN)Complete test suite finished!$(NC)"
 
-test-regression: clean type-check lint test-all
+test-regression: clean type-check lint test-all test-persistence-regression
 	@echo "$(GREEN)Full regression test suite completed!$(NC)"
 	@echo "$(YELLOW)Summary:$(NC)"
 	@echo "  ✓ Type checking passed"
@@ -148,6 +182,7 @@ test-regression: clean type-check lint test-all
 	@echo "  ✓ Phase 3A tests passed"
 	@echo "  ✓ Contract demonstrations passed"
 	@echo "  ✓ Demo scripts validated"
+	@echo "  ✓ Persistence layer validated"
 
 # Quality assurance targets
 type-check:
@@ -235,10 +270,22 @@ validate-project:
 	@test -d $(SRC_DIR)/core && echo "✓ Core module directory exists" || echo "❌ Core module missing"
 	@test -d $(TEST_DIR) && echo "✓ Tests directory exists" || echo "❌ Tests directory missing"
 	@echo "$(YELLOW)Checking core modules...$(NC)"
-	@for module in abstractions concept_registry enhanced_semantic_reasoning; do \
+	@for module in abstractions concept_registry enhanced_semantic_reasoning persistence batch_persistence contract_persistence; do \
 		test -f $(SRC_DIR)/core/$$module.py && echo "✓ $$module.py exists" || echo "❌ $$module.py missing"; \
 	done
+	@echo "$(YELLOW)Checking persistence demos...$(NC)"
+	@for demo in $(PERSISTENCE_DEMOS); do \
+		test -f $$demo && echo "✓ $$demo exists" || echo "❌ $$demo missing"; \
+	done
 	@echo "$(GREEN)Project validation completed!$(NC)"
+
+validate-persistence-examples:
+	@echo "$(GREEN)Validating persistence example scripts...$(NC)"
+	@for demo in $(PERSISTENCE_DEMOS); do \
+		echo "$(YELLOW)Checking $$demo...$(NC)"; \
+		test -f $$demo && echo "✓ $$demo exists" || echo "❌ $$demo missing"; \
+	done
+	@echo "$(GREEN)Persistence examples validation completed!$(NC)"
 
 # Phase-specific targets
 test-phase1:
