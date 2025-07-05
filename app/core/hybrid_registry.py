@@ -16,6 +16,10 @@ from .frame_cluster_abstractions import (
     FrameAwareConcept, SemanticFrame, FrameInstance, ConceptCluster,
     AnalogicalMapping, FrameElementType
 )
+from .protocols import (
+    ConceptRegistryProtocol, FrameRegistryProtocol, ClusterRegistryProtocol,
+    SemanticReasoningProtocol, KnowledgeDiscoveryProtocol
+)
 
 
 class HybridConceptRegistry(ConceptRegistry):

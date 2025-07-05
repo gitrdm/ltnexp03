@@ -20,6 +20,7 @@ from .frame_cluster_abstractions import (
     AnalogicalMapping, FrameElementType, FrameElement
 )
 from .vector_embeddings import VectorEmbeddingManager, SemanticEmbeddingProvider
+from .protocols import SemanticReasoningProtocol, KnowledgeDiscoveryProtocol
 
 
 @dataclass
@@ -102,7 +103,7 @@ class SemanticField:
         return self.core_concepts.union(set(self.related_concepts.keys()))
 
 
-class EnhancedHybridRegistry(HybridConceptRegistry):
+class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, KnowledgeDiscoveryProtocol):
     """
     Enhanced hybrid registry with advanced semantic reasoning capabilities.
     
@@ -140,7 +141,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
         
         self.logger = logging.getLogger(__name__)
     
-    def discover_semantic_fields(self, min_coherence: float = 0.7) -> List[SemanticField]:
+    def _discover_semantic_fields_original(self, min_coherence: float = 0.7) -> List[SemanticField]:
         """
         Discover semantic fields from concept clusters and embeddings.
         
@@ -176,7 +177,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
         
         # Get embeddings for cluster members
         concept_ids = list(cluster.members.keys())
-        embeddings = []
+        embeddings: List[np.ndarray] = []
         
         for concept_id in concept_ids:
             if concept_id in self.cluster_registry.concept_embeddings:
@@ -186,12 +187,12 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
             return 0.0
         
         # Compute average pairwise similarity
-        embeddings = np.array(embeddings)
-        similarities = []
+        embeddings_array = np.array(embeddings)
+        similarities: List[float] = []
         
-        for i in range(len(embeddings)):
-            for j in range(i + 1, len(embeddings)):
-                sim = 1 - cosine(embeddings[i], embeddings[j])
+        for i in range(len(embeddings_array)):
+            for j in range(i + 1, len(embeddings_array)):
+                sim = 1 - cosine(embeddings_array[i], embeddings_array[j])
                 similarities.append(sim)
         
         return float(np.mean(similarities))
@@ -365,7 +366,8 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
             return 0.0
         
         # Compute centroid similarity
-        return 1 - cosine(field1.centroid, field2.centroid)
+        similarity: float = 1 - cosine(field1.centroid, field2.centroid)
+        return float(similarity)
     
     def find_analogical_completions(self, partial_analogy: Dict[str, str],
                                   max_completions: int = 5) -> List[Dict[str, str]]:
@@ -375,7 +377,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
         Given a partial analogy like {"king": "queen", "man": "?"}, 
         find plausible completions.
         """
-        completions = []
+        completions: List[Dict[str, str]] = []
         
         # Extract source and target concepts
         source_concepts = list(partial_analogy.keys())
@@ -495,3 +497,263 @@ class EnhancedHybridRegistry(HybridConceptRegistry):
                 self.add_concept_embedding(concept.unique_id, semantic_embedding)
         
         return concept
+
+    # ============================================================================
+    # PROTOCOL ADAPTER METHODS
+    # ============================================================================
+    
+    def complete_analogy(
+        self, 
+        partial_analogy: Dict[str, str], 
+        max_completions: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Complete partial analogies (SemanticReasoningProtocol interface).
+        
+        Adapts find_analogical_completions to match protocol signature.
+        """
+        raw_results = self.find_analogical_completions(partial_analogy, max_completions)
+        
+        # Convert to protocol-compliant format
+        formatted_results: List[Dict[str, Any]] = []
+        for result in raw_results:
+            if isinstance(result, dict):
+                formatted_results.append(result)
+            else:
+                # Convert simple results to structured format
+                formatted_results.append({  # type: ignore[unreachable]
+                    'completion': str(result),
+                    'confidence': 0.8,
+                    'method': 'hybrid',
+                    'reasoning': 'frame_cluster_based'
+                })
+        
+        return formatted_results
+    
+    def discover_semantic_fields(self, min_coherence: float = 0.7) -> List[Dict[str, Any]]:
+        """
+        Discover semantic fields returning dict format (SemanticReasoningProtocol interface).
+        
+        This method implements the protocol interface and converts SemanticField objects to dict format.
+        """
+        raw_fields = self._discover_semantic_fields_original(min_coherence)
+        
+        # Convert SemanticField objects to dict format
+        formatted_fields = []
+        for field in raw_fields:
+            field_dict = {
+                'name': field.name,
+                'description': field.description,
+                'coherence': getattr(field, 'coherence', 0.7),  # Default if not present
+                'core_concepts': list(field.core_concepts),
+                'related_concepts': field.related_concepts,
+                'associated_frames': list(getattr(field, 'associated_frames', [])),
+                'discovery_metadata': {
+                    'method': 'clustering_based',
+                    'min_coherence': min_coherence
+                }
+            }
+            formatted_fields.append(field_dict)
+        
+        return formatted_fields
+    
+    def find_cross_domain_analogies(
+        self, 
+        source_domain: str,
+        target_domain: str,
+        min_quality: float = 0.5
+    ) -> List[Dict[str, Any]]:
+        """
+        Find cross-domain analogies (SemanticReasoningProtocol interface).
+        
+        Adapts discover_cross_domain_analogies to match protocol signature.
+        """
+        raw_analogies = self.discover_cross_domain_analogies(min_quality)
+        
+        # Filter and format for specified domains
+        formatted_analogies = []
+        for analogy in raw_analogies:
+            # Convert CrossDomainAnalogy to dict format
+            analogy_dict = {
+                'source_domain': source_domain,
+                'target_domain': target_domain,
+                'quality': analogy.compute_overall_quality(),
+                'concept_mappings': analogy.concept_mappings,
+                'frame_mappings': analogy.frame_mappings,
+                'structural_coherence': analogy.structural_coherence,
+                'discovery_metadata': {
+                    'method': 'semantic_field_based',
+                    'min_quality': min_quality
+                }
+            }
+            formatted_analogies.append(analogy_dict)
+        
+        return formatted_analogies
+    
+    # KnowledgeDiscoveryProtocol methods
+    def discover_patterns(
+        self, 
+        domain: str,
+        pattern_types: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """Discover patterns within a specific domain."""
+        patterns = []
+        
+        # Use semantic fields as patterns
+        fields = self.discover_semantic_fields(min_coherence=0.5)
+        for field in fields:
+            pattern = {
+                'type': 'semantic_field',
+                'domain': domain,
+                'name': field['name'],
+                'elements': field['core_concepts'],
+                'confidence': field['coherence'],
+                'metadata': field.get('discovery_metadata', {})
+            }
+            patterns.append(pattern)
+        
+        # Use cross-domain analogies as patterns
+        analogies = self.discover_cross_domain_analogies(min_quality=0.5)
+        for analogy in analogies:
+            pattern = {
+                'type': 'cross_domain_analogy',
+                'domain': domain,
+                'name': f"analogy_{len(patterns)}",
+                'elements': list(analogy.concept_mappings.keys()),
+                'confidence': analogy.compute_overall_quality(),
+                'metadata': {
+                    'target_concepts': list(analogy.concept_mappings.values()),
+                    'frame_mappings': analogy.frame_mappings
+                }
+            }
+            patterns.append(pattern)
+        
+        return patterns
+    
+    def extract_relationships(
+        self, 
+        concepts: List[str],
+        relationship_types: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """Extract relationships between given concepts."""
+        relationships = []
+        
+        # Extract analogical relationships
+        for i, concept1 in enumerate(concepts):
+            for concept2 in concepts[i+1:]:
+                # Check if concepts are analogous
+                analogous = self.find_analogous_concepts(concept1)
+                for analog, score, method in analogous:
+                    concept2_name = analog.name if hasattr(analog, 'name') else str(analog)
+                    if concept2_name == concept2:
+                        relationship = {
+                            'source': concept1,
+                            'target': concept2,
+                            'type': 'analogous',
+                            'strength': score,
+                            'method': method,
+                            'metadata': {
+                                'discovery_method': 'find_analogous_concepts'
+                            }
+                        }
+                        relationships.append(relationship)
+                        break
+        
+        return relationships
+    
+    def suggest_new_concepts(
+        self,
+        existing_concepts: List[str],
+        domain: str = "default"
+    ) -> List[Dict[str, Any]]:
+        """Suggest new concepts that would complement existing ones."""
+        suggestions = []
+        
+        # Suggest concepts from semantic fields
+        fields = self.discover_semantic_fields(min_coherence=0.5)
+        
+        for field in fields:
+            field_concepts = field['core_concepts']
+            
+            # Check if any existing concepts are in this field
+            overlap = set(existing_concepts) & set(field_concepts)
+            if overlap:
+                # Suggest other concepts from this field
+                for concept in field_concepts:
+                    if concept not in existing_concepts:
+                        suggestion = {
+                            'concept': concept,
+                            'domain': domain,
+                            'reason': f'Related to {list(overlap)} in {field["name"]}',
+                            'confidence': field['coherence'],
+                            'semantic_field': field['name'],
+                            'metadata': {
+                                'suggestion_method': 'semantic_field_completion',
+                                'related_concepts': list(overlap)
+                            }
+                        }
+                        suggestions.append(suggestion)
+        
+        return suggestions[:10]  # Limit suggestions
+    
+    def validate_knowledge_consistency(
+        self,
+        knowledge_base: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate consistency of knowledge base and return issues."""
+        validation_results: Dict[str, Any] = {
+            'status': 'valid',
+            'issues': [],
+            'warnings': [],
+            'metrics': {}
+        }
+        
+        # Validate concepts
+        if 'concepts' in knowledge_base:
+            concepts = knowledge_base['concepts']
+            validation_results['metrics']['concept_count'] = len(concepts)
+            
+            # Check for concept consistency
+            concept_names: List[str] = []
+            for concept in concepts:
+                if isinstance(concept, dict) and 'name' in concept:
+                    concept_names.append(concept['name'])
+                elif hasattr(concept, 'name'):
+                    concept_names.append(getattr(concept, 'name', str(concept)))
+            
+            # Check for duplicates
+            duplicates = [name for name in set(concept_names) if concept_names.count(name) > 1]
+            if duplicates:
+                issues_list = validation_results['issues']
+                if isinstance(issues_list, list):
+                    issues_list.append({
+                        'type': 'duplicate_concepts',
+                        'details': f'Duplicate concept names: {duplicates}',
+                        'severity': 'error'
+                    })
+        
+        # Validate semantic fields
+        if hasattr(self, 'semantic_fields'):
+            validation_results['metrics']['semantic_field_count'] = len(self.semantic_fields)
+            
+            # Check field coherence
+            low_coherence_fields = [
+                name for name, field in self.semantic_fields.items()
+                if getattr(field, 'coherence', 1.0) < 0.5
+            ]
+            if low_coherence_fields:
+                warnings_list = validation_results['warnings']
+                if isinstance(warnings_list, list):
+                    warnings_list.append({
+                        'type': 'low_coherence_fields',
+                        'details': f'Fields with low coherence: {low_coherence_fields}',
+                        'severity': 'warning'
+                    })
+        
+        # Set overall status
+        if validation_results['issues']:
+            validation_results['status'] = 'invalid'
+        elif validation_results['warnings']:
+            validation_results['status'] = 'warning'
+        
+        return validation_results

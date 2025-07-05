@@ -583,5 +583,14 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "default:knight": {
+    "concept_id": "default:knight",
+    "embedding_model": "semantic",
+    "created_at": "2025-07-05T17:12:29",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }
