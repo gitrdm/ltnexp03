@@ -1,4 +1,4 @@
-#! bash
+#!/bin/bash
 
 # Kill process listening on a specific port
 # Usage: ./killport.sh <port>

@@ -20,7 +20,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, BackgroundTasks, Query
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, BackgroundTasks, Query, Path as FastAPIPath
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -92,6 +92,27 @@ class AnalogyCompletion(BaseModel):
     context: Optional[str] = Field(None, description="Context or domain")
     max_completions: int = Field(5, ge=1, le=20, description="Maximum completions")
     min_confidence: float = Field(0.5, ge=0.0, le=1.0, description="Minimum confidence")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "source_a": "bird",
+                "source_b": "fly",
+                "target_a": "fish",
+                "context": "animals",
+                "max_completions": 5,
+                "min_confidence": 0.5
+            }
+        }
+    }
+
+    @field_validator('target_a')
+    @classmethod
+    def validate_unique_concepts(cls, v, info):
+        """Ensure target_a is different from source_a to avoid dictionary key conflicts."""
+        if 'source_a' in info.data and v == info.data['source_a']:
+            raise ValueError('target_a must be different from source_a to form a valid analogy')
+        return v
 
 
 class SemanticFieldDiscovery(BaseModel):
@@ -194,6 +215,7 @@ app.add_middleware(
 )
 
 # Phase 4: Register neural-symbolic endpoints
+# Note: Endpoints are registered here, but service initialization happens in lifespan
 register_neural_symbolic_endpoints(app)
 
 
@@ -270,7 +292,7 @@ async def create_concept(
 
 @app.get("/concepts/{concept_id}", response_model=Dict[str, Any], tags=["Concepts"])
 async def get_concept(
-    concept_id: str,
+    concept_id: str = FastAPIPath(..., description="ID of the concept to retrieve", example="example_concept"),
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
 ):
     """Retrieve a concept by ID."""
@@ -409,11 +431,25 @@ async def complete_analogy(
 ) -> AnalogyResponse:
     """Complete analogies using enhanced semantic reasoning."""
     try:
+        # Validate that source_a and target_a are different to avoid key conflicts
+        if analogy.source_a == analogy.target_a:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"source_a ('{analogy.source_a}') and target_a ('{analogy.target_a}') must be different to form a valid analogy"
+            )
+        
         # Use registry's analogy completion capabilities
         partial_analogy = {
             analogy.source_a: analogy.source_b,
             analogy.target_a: "?"
         }
+        
+        # Verify we have exactly 2 keys as expected
+        if len(partial_analogy) != 2:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid analogy structure. Expected 2 distinct concepts, got {len(partial_analogy)}. Please ensure source_a and target_a are different."
+            )
         
         completions = registry.complete_analogy(
             partial_analogy,
@@ -429,21 +465,35 @@ async def complete_analogy(
                 "reasoning": completion.get("reasoning", "")
             })
         
+        # Filter by minimum confidence
+        formatted_completions = [
+            c for c in formatted_completions 
+            if c["confidence"] >= analogy.min_confidence
+        ]
+        
         return AnalogyResponse(
             completions=formatted_completions,
             reasoning_trace=[
                 f"Analogy pattern: {analogy.source_a}:{analogy.source_b} :: {analogy.target_a}:?",
-                f"Found {len(formatted_completions)} completions above confidence {analogy.min_confidence}"
+                f"Found {len(formatted_completions)} completions above confidence {analogy.min_confidence}",
+                f"Partial analogy dictionary had {len(partial_analogy)} mappings"
             ],
             metadata={
                 "context": analogy.context,
-                "method": "enhanced_hybrid_reasoning"
+                "method": "enhanced_hybrid_reasoning",
+                "partial_analogy": partial_analogy
             }
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error completing analogy: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Provide more detailed error information
+        error_detail = f"Analogy completion failed: {str(e)}"
+        if "partial_analogy" in str(e):
+            error_detail += f". Please ensure source_a ('{analogy.source_a}') and target_a ('{analogy.target_a}') are different concepts."
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @app.post("/semantic-fields/discover", response_model=SemanticFieldDiscoveryResponse, tags=["Reasoning"])

@@ -23,7 +23,7 @@ import asyncio
 import json
 import uuid
 
-from fastapi import HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends
+from fastapi import HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends, Path as FastAPIPath
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -53,24 +53,63 @@ logger = logging.getLogger(__name__)
 
 class TrainingConfigurationRequest(BaseModel):
     """Request model for training configuration."""
-    max_epochs: int = Field(100, gt=0, le=1000, description="Maximum training epochs")
-    learning_rate: float = Field(0.01, gt=0.0, lt=1.0, description="Learning rate")
-    batch_size: int = Field(32, gt=0, le=256, description="Batch size")
-    patience: int = Field(10, gt=0, description="Early stopping patience")
+    max_epochs: int = Field(default=100, gt=0, le=1000, description="Maximum training epochs")
+    learning_rate: float = Field(default=0.01, gt=0.0, lt=1.0, description="Learning rate")
+    batch_size: int = Field(default=32, gt=0, le=256, description="Batch size")
+    patience: int = Field(default=10, gt=0, description="Early stopping patience")
     
     # Loss weights
-    axiom_satisfaction_weight: float = Field(1.0, ge=0.0, description="Axiom satisfaction weight")
-    concept_consistency_weight: float = Field(0.5, ge=0.0, description="Concept consistency weight")
-    semantic_coherence_weight: float = Field(0.3, ge=0.0, description="Semantic coherence weight")
+    axiom_satisfaction_weight: float = Field(default=1.0, ge=0.0, description="Axiom satisfaction weight")
+    concept_consistency_weight: float = Field(default=0.5, ge=0.0, description="Concept consistency weight")
+    semantic_coherence_weight: float = Field(default=0.3, ge=0.0, description="Semantic coherence weight")
     
     # Model architecture
-    embedding_dimension: int = Field(300, gt=0, le=1024, description="Embedding dimension")
-    hidden_dimensions: List[int] = Field([256, 128], description="Hidden layer dimensions")
+    embedding_dimension: int = Field(default=300, gt=0, le=1024, description="Embedding dimension")
+    hidden_dimensions: List[int] = Field(default=[256, 128], description="Hidden layer dimensions")
     
     # Training options
-    enable_smt_verification: bool = Field(True, description="Enable SMT verification")
-    enable_early_stopping: bool = Field(True, description="Enable early stopping")
-    save_checkpoints: bool = Field(True, description="Save model checkpoints")
+    enable_smt_verification: bool = Field(default=True, description="Enable SMT verification")
+    enable_early_stopping: bool = Field(default=True, description="Enable early stopping")
+    save_checkpoints: bool = Field(default=True, description="Save model checkpoints")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "summary": "Full Configuration",
+                    "description": "Complete training configuration with all parameters",
+                    "value": {
+                        "max_epochs": 100,
+                        "learning_rate": 0.01,
+                        "batch_size": 32,
+                        "patience": 10,
+                        "axiom_satisfaction_weight": 1.0,
+                        "concept_consistency_weight": 0.5,
+                        "semantic_coherence_weight": 0.3,
+                        "embedding_dimension": 300,
+                        "hidden_dimensions": [256, 128],
+                        "enable_smt_verification": True,
+                        "enable_early_stopping": True,
+                        "save_checkpoints": True
+                    }
+                },
+                {
+                    "summary": "Minimal Configuration",
+                    "description": "Minimal configuration using default values",
+                    "value": {}
+                },
+                {
+                    "summary": "Custom Learning Rate",
+                    "description": "Override only specific parameters",
+                    "value": {
+                        "learning_rate": 0.001,
+                        "max_epochs": 50
+                    }
+                }
+            ],
+            "required": []  # Explicitly indicate no required fields
+        }
+    }
 
 
 class TrainingProgressResponse(BaseModel):
@@ -100,9 +139,25 @@ class TrainingJobResponse(BaseModel):
 
 class ModelEvaluationRequest(BaseModel):
     """Request model for model evaluation."""
-    model_path: str
+    model_path: str = Field(..., description="Path to the trained model file")
     test_analogies: List[Dict[str, str]] = Field(description="Test analogies for evaluation")
-    evaluation_metrics: List[str] = Field(["satisfiability", "accuracy", "coherence"], description="Metrics to compute")
+    evaluation_metrics: List[str] = Field(
+        default=["satisfiability", "accuracy", "coherence"], 
+        description="Metrics to compute during evaluation"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "model_path": "/models/neural_model_v1.pth",
+                "test_analogies": [
+                    {"source": "bird", "target": "fly", "analogy": "fish:swim"},
+                    {"source": "cat", "target": "meow", "analogy": "dog:bark"}
+                ],
+                "evaluation_metrics": ["satisfiability", "accuracy", "coherence"]
+            }
+        }
+    }
 
 
 class ModelEvaluationResponse(BaseModel):
@@ -115,9 +170,19 @@ class ModelEvaluationResponse(BaseModel):
 
 class SMTVerificationRequest(BaseModel):
     """Request model for SMT verification."""
-    context_name: str
-    axiom_ids: Optional[List[str]] = Field(None, description="Specific axioms to verify")
-    timeout_seconds: int = Field(30, gt=0, le=300, description="Verification timeout")
+    context_name: str = Field(..., description="Name of the context containing axioms to verify", min_length=1)
+    axiom_ids: Optional[List[str]] = Field(default=None, description="Specific axioms to verify (if None, verifies all axioms in context)")
+    timeout_seconds: int = Field(default=30, description="Verification timeout in seconds", gt=0, le=300)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "context_name": "test_context",
+                "axiom_ids": ["axiom_1", "axiom_2"],
+                "timeout_seconds": 30
+            }
+        }
+    }
 
 
 class SMTVerificationResponse(BaseModel):
@@ -297,7 +362,7 @@ class NeuralSymbolicService:
         
         return SMTVerificationResponse(
             consistent=consistent,
-            message=message,
+            message=message or "Verification completed",
             verified_axioms=len(axioms),
             unsatisfiable_core=core_ids,
             verification_time_seconds=verification_time
@@ -363,7 +428,6 @@ def initialize_neural_symbolic_service(registry: EnhancedHybridRegistry,
 async def start_neural_training(
     context_name: str,
     config: TrainingConfigurationRequest,
-    background_tasks: BackgroundTasks,
     service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
 ) -> TrainingJobResponse:
     """
@@ -502,44 +566,72 @@ def register_neural_symbolic_endpoints(app):
     """
     
     # Neural training endpoints
-    app.add_api_route(
-        "/neural/contexts/{context_name}/train",
-        start_neural_training,
-        methods=["POST"],
-        response_model=TrainingJobResponse,
-        tags=["Neural-Symbolic Training"]
-    )
+    @app.post("/neural/contexts/{context_name}/train", 
+              response_model=TrainingJobResponse, 
+              tags=["Neural-Symbolic Training"],
+              summary="Start Neural Training",
+              description="Start neural-symbolic training for a context. All parameters are optional with sensible defaults.")
+    async def train_neural_endpoint(
+        context_name: str = FastAPIPath(..., description="Name of the context to train", example="test_context"),
+        config: TrainingConfigurationRequest = TrainingConfigurationRequest(),
+        service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
+    ) -> TrainingJobResponse:
+        """
+        Start neural-symbolic training for a context.
+        
+        This endpoint accepts a training configuration with all parameters optional.
+        If no configuration is provided, sensible defaults will be used.
+        
+        Parameters:
+        - context_name: Name of the context to train
+        - config: Training configuration (optional, uses defaults if not provided)
+        
+        Returns:
+        - Training job information including job_id for tracking progress
+        """
+        return await service.start_training(context_name, config)
     
-    app.add_api_route(
-        "/neural/jobs/{job_id}/status",
-        get_training_job_status,
-        methods=["GET"],
-        response_model=TrainingJobResponse,
-        tags=["Neural-Symbolic Training"]
-    )
+    @app.get("/neural/jobs/{job_id}/status", response_model=TrainingJobResponse, tags=["Neural-Symbolic Training"])
+    async def training_status_endpoint(
+        job_id: str = FastAPIPath(..., description="ID of the training job to check status for", example="12f10b85-9140-447c-a33e-5a373790e071"),
+        service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
+    ) -> TrainingJobResponse:
+        """Get status of a neural training job."""
+        return await service.get_training_status(job_id)
     
-    app.add_api_route(
-        "/neural/models/evaluate",
-        evaluate_trained_model,
-        methods=["POST"],
-        response_model=ModelEvaluationResponse,
-        tags=["Neural-Symbolic Training"]
-    )
+    @app.post("/neural/models/evaluate", 
+              response_model=ModelEvaluationResponse, 
+              tags=["Neural-Symbolic Training"],
+              summary="Evaluate Trained Model",
+              description="Evaluate a trained neural-symbolic model on test analogies and metrics.")
+    async def evaluate_model_endpoint(
+        request: ModelEvaluationRequest,
+        service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
+    ) -> ModelEvaluationResponse:
+        """Evaluate a trained neural-symbolic model."""
+        return await service.evaluate_trained_model(request)
     
     # SMT verification endpoints
-    app.add_api_route(
-        "/smt/verify",
-        verify_axioms_with_smt,
-        methods=["POST"],
-        response_model=SMTVerificationResponse,
-        tags=["SMT Verification"]
-    )
+    @app.post("/smt/verify", 
+              response_model=SMTVerificationResponse, 
+              tags=["SMT Verification"],
+              summary="Verify Axiom Consistency",
+              description="Verify axiom consistency using SMT solver for hard logic constraints.")
+    async def smt_verify_endpoint(
+        request: SMTVerificationRequest,
+        service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
+    ) -> SMTVerificationResponse:
+        """Verify axiom consistency using SMT solver."""
+        return await service.verify_axioms_smt(request)
     
     # WebSocket endpoints
-    app.add_websocket_route(
-        "/ws/neural/training/{job_id}",
-        stream_neural_training_progress
-    )
+    @app.websocket("/ws/neural/training/{job_id}")
+    async def training_progress_websocket(
+        websocket: WebSocket, 
+        job_id: str = FastAPIPath(..., description="ID of the training job to stream progress for", example="12f10b85-9140-447c-a33e-5a373790e071")
+    ):
+        """WebSocket endpoint for streaming neural training progress."""
+        await stream_neural_training_progress(websocket, job_id)
     
     logger.info("Registered neural-symbolic endpoints")
 

@@ -961,5 +961,14 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "testing:example_concept": {
+    "concept_id": "testing:example_concept",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T14:55:27",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

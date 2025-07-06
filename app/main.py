@@ -11,18 +11,47 @@ This module provides the main FastAPI application with integrated:
 For the complete API, use the service layer directly.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 import uvicorn
+import logging
 
-# Import the complete service layer
+# Import the complete service layer and its initialization functions
 from app.service_layer import app as service_app
+from app.service_layer import initialize_services
 
-# Create main application
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Main application lifespan that ensures service initialization."""
+    try:
+        logger.info("🚀 Starting main application...")
+        
+        # Initialize the services (this triggers the service layer initialization)
+        logger.info("Initializing underlying services...")
+        initialize_services()
+        
+        logger.info("✅ Main application startup complete")
+        yield
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to start main application: {e}")
+        raise
+    finally:
+        logger.info("🛑 Main application shutdown complete")
+
+
+# Create main application with lifespan
 app = FastAPI(
     title="LTN Experiment 03 - Main Application",
     description="Soft Logic Microservice with complete service layer integration",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # Mount the complete service layer
