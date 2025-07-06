@@ -853,5 +853,113 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "royalty:king:king.n.01": {
+    "concept_id": "royalty:king:king.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:queen:queen.n.01": {
+    "concept_id": "royalty:queen:queen.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:prince:prince.n.01": {
+    "concept_id": "royalty:prince:prince.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "royalty:princess:princess.n.01": {
+    "concept_id": "royalty:princess:princess.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "person:man:man.n.01": {
+    "concept_id": "person:man:man.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "person:woman:woman.n.01": {
+    "concept_id": "person:woman:woman.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "person:boy:boy.n.01": {
+    "concept_id": "person:boy:boy.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "person:girl:girl.n.01": {
+    "concept_id": "person:girl:girl.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:lion:lion.n.01": {
+    "concept_id": "animal:lion:lion.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:lioness:lioness.n.01": {
+    "concept_id": "animal:lioness:lioness.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:cat:cat.n.01": {
+    "concept_id": "animal:cat:cat.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "animal:dog:dog.n.01": {
+    "concept_id": "animal:dog:dog.n.01",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T00:11:50",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

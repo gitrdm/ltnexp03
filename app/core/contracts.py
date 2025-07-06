@@ -47,7 +47,7 @@ CONTRACTS_AVAILABLE = True
 __all__ = ['require', 'ensure', 'invariant', 'ViolationError', 'CONTRACTS_AVAILABLE', 
            'ConceptConstraints', 'EmbeddingConstraints', 'ReasoningConstraints',
            'validate_concept_name', 'validate_embedding_dimensions', 
-           'validate_coherence_score', 'validate_context']
+           'validate_coherence_score', 'validate_context', 'SoftLogicContracts']
 
 
 # Domain-specific constraint validators
@@ -325,6 +325,69 @@ def validate_frame_consistency(registry) -> bool:
         return False
 
 
+# Domain-specific contract validators
+class SoftLogicContracts:
+    """Contract validators for soft logic domain operations."""
+    
+    @staticmethod
+    def valid_concept_name(name: str) -> bool:
+        """Validate concept name format."""
+        return (isinstance(name, str) and 
+                len(name.strip()) > 0 and 
+                len(name.strip()) <= 100 and
+                not name.startswith('_'))
+    
+    @staticmethod
+    def valid_context(context: str) -> bool:
+        """Validate context identifier."""
+        valid_contexts = {'default', 'wordnet', 'custom', 'neural', 'hybrid', 'royalty', 
+                         'animal', 'magic', 'creatures', 'military', 'locations', 'artifacts',
+                         'business', 'sports'}
+        return isinstance(context, str) and context in valid_contexts
+    
+    @staticmethod
+    def valid_coherence_score(score: float) -> bool:
+        """Validate coherence score range."""
+        return isinstance(score, (int, float)) and 0.0 <= score <= 1.0
+    
+    @staticmethod
+    def valid_confidence_score(confidence: float) -> bool:
+        """Validate confidence score range."""
+        return isinstance(confidence, (int, float)) and 0.0 <= confidence <= 1.0
+    
+    @staticmethod
+    def valid_analogy_mapping(mapping: Dict[str, str]) -> bool:
+        """Validate analogical mapping structure."""
+        return (isinstance(mapping, dict) and 
+                len(mapping) >= 2 and
+                "?" in mapping.values())
+    
+    @staticmethod
+    def valid_max_results(max_results: int) -> bool:
+        """Validate maximum results parameter."""
+        return isinstance(max_results, int) and 1 <= max_results <= 100
+
+    @staticmethod
+    def valid_embedding_dimension(dimension: int) -> bool:
+        """Validate embedding dimension."""
+        return isinstance(dimension, int) and 1 <= dimension <= 10000
+
+    @staticmethod
+    def valid_training_epochs(epochs: int) -> bool:
+        """Validate number of training epochs."""
+        return isinstance(epochs, int) and 1 <= epochs <= 10000
+
+    @staticmethod
+    def valid_learning_rate(lr: float) -> bool:
+        """Validate learning rate."""
+        return isinstance(lr, (int, float)) and 0.0 < lr <= 1.0
+
+    @staticmethod
+    def valid_batch_size(batch_size: int) -> bool:
+        """Validate batch size."""
+        return isinstance(batch_size, int) and 1 <= batch_size <= 10000
+
+
 # Export contract validation functions
 __all__.extend([
     'semantic_field_discovery_contracts',
@@ -333,5 +396,6 @@ __all__.extend([
     'ContractedConceptRegistry',
     'validate_registry_state',
     'validate_embedding_consistency',
-    'validate_frame_consistency'
+    'validate_frame_consistency',
+    'SoftLogicContracts'
 ])

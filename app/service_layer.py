@@ -42,6 +42,13 @@ from app.core.api_models import (
     AnalogiesBatch, BatchWorkflowResponse
 )
 
+# Phase 4: Neural-Symbolic Integration imports
+from app.core.neural_symbolic_service import (
+    NeuralSymbolicService, 
+    register_neural_symbolic_endpoints,
+    initialize_neural_symbolic_service
+)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -120,11 +127,14 @@ semantic_registry: Optional[EnhancedHybridRegistry] = None
 persistence_manager: Optional[ContractEnhancedPersistenceManager] = None
 batch_manager: Optional[BatchPersistenceManager] = None
 
+# Phase 4: Neural-Symbolic Integration globals
+neural_symbolic_service: Optional[NeuralSymbolicService] = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan management with proper startup/shutdown."""
-    global semantic_registry, persistence_manager, batch_manager
+    global semantic_registry, persistence_manager, batch_manager, neural_symbolic_service
     
     try:
         # Startup sequence
@@ -147,6 +157,10 @@ async def lifespan(app: FastAPI):
         logger.info("Initializing persistence layer...")
         persistence_manager = ContractEnhancedPersistenceManager(storage_path)
         batch_manager = BatchPersistenceManager(storage_path)
+        
+        # Phase 4: Initialize neural-symbolic service
+        logger.info("Initializing neural-symbolic service...")
+        initialize_neural_symbolic_service(semantic_registry, persistence_manager)
         
         logger.info("✅ Soft Logic Service Layer started successfully")
         yield
@@ -178,6 +192,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Phase 4: Register neural-symbolic endpoints
+register_neural_symbolic_endpoints(app)
 
 
 # ============================================================================
@@ -1080,7 +1097,7 @@ def initialize_services(force_reinit: bool = False):
     Args:
         force_reinit: If True, reinitialize even if services are already initialized
     """
-    global semantic_registry, persistence_manager, batch_manager
+    global semantic_registry, persistence_manager, batch_manager, neural_symbolic_service
     
     # Check if already initialized
     if not force_reinit and all([semantic_registry, persistence_manager, batch_manager]):
@@ -1107,6 +1124,10 @@ def initialize_services(force_reinit: bool = False):
         logger.info("Initializing persistence layer...")
         persistence_manager = ContractEnhancedPersistenceManager(storage_path)
         batch_manager = BatchPersistenceManager(storage_path)
+        
+        # Phase 4: Initialize neural-symbolic service
+        logger.info("Initializing neural-symbolic service...")
+        initialize_neural_symbolic_service(semantic_registry, persistence_manager)
         
         logger.info("✅ Services initialized successfully")
         
