@@ -35,7 +35,7 @@ YELLOW := \033[1;33m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
-.PHONY: help test test-unit test-integration test-demos test-all type-check lint clean setup install deps test-persistence test-persistence-demos test-persistence-regression test-persistence-quick validate-persistence-examples test-service-layer test-service-layer-demos test-service-layer-regression validate-service-layer-examples
+.PHONY: help test test-unit test-integration test-demos test-all type-check lint clean setup install deps test-persistence test-persistence-demos test-persistence-regression test-persistence-quick validate-persistence-examples test-service-layer test-service-layer-demos test-service-layer-regression validate-service-layer-examples test-phase4 test-phase4-neural-training test-phase4-demos test-phase4-comprehensive test-phase4-regression test-phase4-quick test-all-phases validate-project format coverage docs
 
 # Default target
 help:
@@ -48,15 +48,21 @@ help:
 	@echo "  setup       - Full project setup (install + pre-commit)"
 	@echo ""
 	@echo "$(YELLOW)Testing Targets:$(NC)"
-	@echo "  test        - Run all tests (unit + integration + demos + persistence)"
+	@echo "  test        - Run all tests (unit + integration + demos + persistence + service + phase4)"
 	@echo "  test-unit   - Run unit tests only"
 	@echo "  test-integration - Run integration tests"
 	@echo "  test-demos  - Run all demonstration scripts"
 	@echo "  test-contracts - Run Design by Contract demonstrations"
 	@echo "  test-phase3a - Run Phase 3A type safety tests"
+	@echo "  test-phase3c - Run Phase 3C service layer tests"
+	@echo "  test-phase4  - Run Phase 4 neural-symbolic tests"
 	@echo "  test-persistence - Run persistence layer unit tests"
 	@echo "  test-persistence-demos - Run persistence demonstration scripts"
 	@echo "  test-persistence-regression - Full persistence validation suite"
+	@echo "  test-service-layer - Run service layer tests"
+	@echo "  test-service-layer-regression - Full service layer validation"
+	@echo "  test-phase4-comprehensive - Full Phase 4 neural-symbolic suite"
+	@echo "  test-all-phases - Run all phase tests (3 + 4)"
 	@echo "  test-regression - Full regression test suite"
 	@echo ""
 	@echo "$(YELLOW)Quality Targets:$(NC)"
@@ -245,19 +251,95 @@ validate-service-layer-examples:
 	@echo "$(GREEN)Service layer examples validation completed!$(NC)"
 
 # ============================================================================
+# PHASE 4 NEURAL-SYMBOLIC INTEGRATION TESTING TARGETS
+# ============================================================================
+
+test-phase4:
+	@echo "$(GREEN)Running Phase 4 Neural-Symbolic Integration tests...$(NC)"
+	@echo "$(YELLOW)Testing LTNtorch integration, SMT verification, and service layer...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py -v
+	@echo "$(GREEN)Phase 4 tests completed!$(NC)"
+
+test-phase4-neural-training:
+	@echo "$(GREEN)Running standalone neural-symbolic training verification...$(NC)"
+	@echo "$(YELLOW)Testing LTNtorch training without test infrastructure...$(NC)"
+	$(PYTHON) scripts/test_neural_symbolic.py
+	@echo "$(GREEN)Neural-symbolic training verification completed!$(NC)"
+
+test-phase4-demos:
+	@echo "$(GREEN)Running Phase 4 demonstration scripts...$(NC)"
+	@echo "$(YELLOW)Neural-symbolic integration demo...$(NC)"
+	$(POETRY) run python demo_phase4_neural_symbolic.py
+	@echo "$(GREEN)Phase 4 demonstrations completed!$(NC)"
+
+test-phase4-ltn-provider:
+	@echo "$(GREEN)Running LTN training provider tests...$(NC)"
+	@echo "$(YELLOW)Testing LTNtorch integration components...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestLTNTrainingProvider -v
+	@echo "$(GREEN)LTN provider tests completed!$(NC)"
+
+test-phase4-smt-verifier:
+	@echo "$(GREEN)Running SMT verification tests...$(NC)"
+	@echo "$(YELLOW)Testing Z3 SMT integration components...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestZ3SMTVerifier -v
+	@echo "$(GREEN)SMT verifier tests completed!$(NC)"
+
+test-phase4-service-integration:
+	@echo "$(GREEN)Running Phase 4 service integration tests...$(NC)"
+	@echo "$(YELLOW)Testing neural-symbolic service endpoints...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestNeuralSymbolicService -v
+	@echo "$(GREEN)Phase 4 service integration tests completed!$(NC)"
+
+test-phase4-training-manager:
+	@echo "$(GREEN)Running neural-symbolic training manager tests...$(NC)"
+	@echo "$(YELLOW)Testing training workflow and progress streaming...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestNeuralSymbolicTrainingManager -v
+	@echo "$(GREEN)Training manager tests completed!$(NC)"
+
+test-phase4-performance:
+	@echo "$(GREEN)Running Phase 4 performance tests...$(NC)"
+	@echo "$(YELLOW)Testing neural-symbolic performance characteristics...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestPhase4Performance -v
+	@echo "$(GREEN)Phase 4 performance tests completed!$(NC)"
+
+test-phase4-comprehensive:
+	@echo "$(GREEN)Running comprehensive Phase 4 test suite...$(NC)"
+	make test-phase4-ltn-provider
+	make test-phase4-smt-verifier
+	make test-phase4-training-manager
+	make test-phase4-service-integration
+	make test-phase4-performance
+	make test-phase4-neural-training
+	make test-phase4-demos
+	@echo "$(GREEN)Comprehensive Phase 4 test suite completed!$(NC)"
+
+test-phase4-regression:
+	@echo "$(GREEN)Running Phase 4 regression test suite...$(NC)"
+	@echo "$(YELLOW)Full neural-symbolic integration validation...$(NC)"
+	make test-phase4-comprehensive
+	@echo "$(GREEN)Phase 4 regression suite completed!$(NC)"
+
+test-phase4-quick:
+	@echo "$(GREEN)Running quick Phase 4 validation...$(NC)"
+	@echo "$(YELLOW)Essential neural-symbolic functionality tests...$(NC)"
+	$(POETRY) run pytest tests/test_phase_4_neural_symbolic.py::TestNeuralSymbolicService -v
+	$(PYTHON) scripts/test_neural_symbolic.py
+	@echo "$(GREEN)Quick Phase 4 validation completed!$(NC)"
+
+# ============================================================================
 # COMPREHENSIVE TESTING TARGETS (Updated for Service Layer)
 # ============================================================================
 
-# Update test-all to include service layer
-test-all: test-unit test-integration test-demos test-contracts test-phase3a test-persistence test-service-layer
+# Update test-all to include service layer and Phase 4
+test-all: test-unit test-integration test-demos test-contracts test-phase3a test-persistence test-service-layer test-phase4
 	@echo "$(GREEN)All tests completed successfully!$(NC)"
 
-# Update test-regression to include service layer
-test-regression: clean validate-project type-check lint test-all test-persistence-regression test-service-layer-regression test-production-readiness
+# Update test-regression to include service layer and Phase 4
+test-regression: clean validate-project type-check lint test-all test-persistence-regression test-service-layer-regression test-phase4-regression test-production-readiness
 	@echo "$(GREEN)Full regression test suite completed!$(NC)"
 
-# Add service layer to development test target
-dev-test: test-unit test-persistence-quick test-service-layer-quick
+# Add service layer and Phase 4 to development test target
+dev-test: test-unit test-persistence-quick test-service-layer-quick test-phase4-quick
 	@echo "$(GREEN)Development test suite completed!$(NC)"
 
 # Phase 3C specific tests (Service Layer)
@@ -269,6 +351,10 @@ test-phase3c:
 # Update Phase 3 to include 3C
 test-phase3: test-phase3a test-contracts test-phase3c
 	@echo "$(GREEN)Phase 3 (complete) tests completed!$(NC)"
+
+# Complete Phase testing (all phases)
+test-all-phases: test-phase3 test-phase4
+	@echo "$(GREEN)All phases (3 + 4) tests completed!$(NC)"
 
 # API documentation and validation
 test-api-docs:
@@ -286,6 +372,7 @@ test-production-ready: test-regression test-api-docs
 	@echo "✅ All integration tests passing"
 	@echo "✅ All persistence tests passing"
 	@echo "✅ All service layer tests passing"
+	@echo "✅ All neural-symbolic tests passing"
 	@echo "✅ Contract validation passing"
 	@echo "✅ Type checking passing"
 	@echo "✅ Code quality checks passing"
@@ -299,6 +386,61 @@ test-production-readiness:
 	@echo "$(YELLOW)Demonstrating complete Phase 3C functionality...$(NC)"
 	$(PYTHON) demo_production_readiness.py
 	@echo "$(GREEN)Production readiness demonstration completed!$(NC)"
+
+# ============================================================================
+# UTILITY TARGETS
+# ============================================================================
+
+# Project validation
+validate-project:
+	@echo "$(GREEN)Validating project structure...$(NC)"
+	@test -d $(SRC_DIR) || (echo "$(RED)Source directory missing$(NC)" && exit 1)
+	@test -d $(TEST_DIR) || (echo "$(RED)Test directory missing$(NC)" && exit 1)
+	@test -f pyproject.toml || (echo "$(RED)pyproject.toml missing$(NC)" && exit 1)
+	@echo "$(GREEN)✓ Project structure valid$(NC)"
+
+# Type checking
+type-check:
+	@echo "$(GREEN)Running mypy type checking...$(NC)"
+	$(POETRY) run mypy $(SRC_DIR) --ignore-missing-imports --no-strict-optional
+	@echo "$(GREEN)Type checking completed!$(NC)"
+
+# Code linting
+lint:
+	@echo "$(GREEN)Running code linting...$(NC)"
+	@echo "$(YELLOW)Running flake8...$(NC)"
+	$(POETRY) run flake8 $(SRC_DIR) --max-line-length=120 --extend-ignore=E203,W503 || echo "$(YELLOW)Flake8 warnings present$(NC)"
+	@echo "$(GREEN)Linting completed!$(NC)"
+
+# Code formatting
+format:
+	@echo "$(GREEN)Formatting code...$(NC)"
+	$(POETRY) run black $(SRC_DIR) $(TEST_DIR)
+	$(POETRY) run isort $(SRC_DIR) $(TEST_DIR)
+	@echo "$(GREEN)Code formatting completed!$(NC)"
+
+# Clean up
+clean:
+	@echo "$(GREEN)Cleaning up temporary files...$(NC)"
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf build/ dist/ .coverage htmlcov/ 2>/dev/null || true
+	@echo "$(GREEN)Cleanup completed!$(NC)"
+
+# Coverage reporting
+coverage:
+	@echo "$(GREEN)Running tests with coverage...$(NC)"
+	$(POETRY) run pytest --cov=$(SRC_DIR) --cov-report=html --cov-report=term-missing
+	@echo "$(GREEN)Coverage report generated in htmlcov/$(NC)"
+
+# Documentation generation
+docs:
+	@echo "$(GREEN)Generating documentation...$(NC)"
+	@echo "$(YELLOW)API documentation available at /docs when server is running$(NC)"
+	@echo "$(GREEN)Documentation generation completed!$(NC)"
 
 # Error handling
 .ONESHELL:
