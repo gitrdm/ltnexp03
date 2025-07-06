@@ -139,6 +139,29 @@ class ConceptSimilarity(BaseModel):
     similarity_method: str = Field("hybrid", description="Similarity method: embedding, wordnet, hybrid")
 
 
+class FrameInstanceCreate(BaseModel):
+    """Pydantic model for frame instance creation with validation and examples."""
+    instance_id: str = Field(..., description="Unique identifier for this frame instance", min_length=1)
+    concept_bindings: Dict[str, str] = Field(..., description="Mapping of frame elements to concept names")
+    context: str = Field(..., description="Context or domain for this instance", min_length=1)
+    confidence: float = Field(0.8, ge=0.0, le=1.0, description="Confidence score for this instance")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "instance_id": "comm_instance_1",
+                "concept_bindings": {
+                    "speaker": "teacher",
+                    "message": "lesson",
+                    "addressee": "student"
+                },
+                "context": "education",
+                "confidence": 0.9
+            }
+        }
+    }
+
+
 # ============================================================================
 # APPLICATION LIFECYCLE AND GLOBAL STATE
 # ============================================================================
@@ -672,8 +695,8 @@ async def create_frame(
 
 @app.post("/frames/{frame_id}/instances", response_model=FrameInstanceResponse, tags=["Frames"])
 async def create_frame_instance(
-    frame_id: str,
-    instance: FrameInstanceRequest,
+    instance: FrameInstanceCreate,
+    frame_id: str = FastAPIPath(..., description="ID of the frame to create an instance for", example="communication_frame"),
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
 ) -> FrameInstanceResponse:
     """Create an instance of a semantic frame."""
@@ -682,7 +705,7 @@ async def create_frame_instance(
         
         # Convert concept bindings to FrameAwareConcept objects
         bindings = {}
-        for element_name, concept_name in instance["concept_bindings"].items():
+        for element_name, concept_name in instance.concept_bindings.items():
             # Create a simple FrameAwareConcept for the binding
             concept = FrameAwareConcept(
                 name=concept_name,
@@ -693,15 +716,15 @@ async def create_frame_instance(
         # Create frame instance using correct parameters
         frame_instance = registry.frame_registry.create_frame_instance(
             frame_name=frame_id,  # Use frame_name parameter
-            instance_id=instance["instance_id"],
+            instance_id=instance.instance_id,
             bindings=bindings,  # Use bindings parameter
-            context=instance["context"]
+            context=instance.context
         )
         
         return FrameInstanceResponse(
             instance_id=frame_instance.instance_id,
             frame_id=frame_instance.frame_name,
-            bindings=instance["concept_bindings"],
+            bindings=instance.concept_bindings,
             validation_results={"valid": True},  # Placeholder
             created_at=datetime.now().isoformat()
         )
