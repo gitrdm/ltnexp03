@@ -846,7 +846,7 @@ async def list_workflows(
 
 @app.get("/batch/workflows/{workflow_id}", response_model=BatchWorkflowResponse, tags=["Batch Operations"])
 async def get_workflow(
-    workflow_id: str,
+    workflow_id: str = FastAPIPath(..., description="ID of the workflow to retrieve", example="workflow_123"),
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
 ) -> BatchWorkflowResponse:
     """Get detailed workflow information."""

@@ -1,1 +1,4 @@
 {"type": "analogy", "workflow_id": "test_ws_workflow", "id": "e865dfeb-9c7a-4449-9299-7ebd0a4d1f39", "created_at": "2025-07-05T23:11:43.729300+00:00", "source_pair": ["a", "b"], "target_pair": ["c", "d"], "context": "test"}
+{"type": "analogy", "workflow_id": "string", "id": "cc2b5d4f-690b-4a59-8d76-5de089685111", "created_at": "2025-07-06T15:19:38.710399+00:00"}
+{"type": "analogy", "workflow_id": "workflow_123", "id": "bc95b5aa-fbcc-4430-b4bb-ef153ec5698f", "created_at": "2025-07-06T15:27:06.334972+00:00", "source_concept": "bird", "target_concept": "fish", "relation": "flies"}
+{"type": "analogy", "workflow_id": "workflow_123", "id": "2abe7994-3bdf-4abb-821d-2d5ce139d2a5", "created_at": "2025-07-06T15:27:31.472550+00:00", "source_a": "bird", "source_b": "fly", "target_a": "fish"}
