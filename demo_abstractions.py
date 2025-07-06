@@ -229,6 +229,144 @@ def save_and_load_demo(context):
         print()
 
 
+def demonstrate_generalized_vector_arithmetic():
+    """Demonstrate that vector arithmetic is fully generalized for complex formulas."""
+    print("\n🧮 Demonstrating Generalized Vector Arithmetic")
+    print("="*60)
+    
+    # Create a registry for this demo
+    registry = ConceptRegistry(download_wordnet=False)
+    
+    # Create concepts for complex arithmetic
+    print("\n📝 Creating concepts for complex arithmetic...")
+    
+    # Royal hierarchy
+    emperor = registry.create_concept("emperor", "royalty", disambiguation="highest monarch")
+    king = registry.create_concept("king", "royalty", disambiguation="male monarch")
+    queen = registry.create_concept("queen", "royalty", disambiguation="female monarch")
+    prince = registry.create_concept("prince", "royalty", disambiguation="male heir")
+    princess = registry.create_concept("princess", "royalty", disambiguation="female heir")
+    
+    # Gender concepts
+    male = registry.create_concept("male", "gender", disambiguation="masculine")
+    female = registry.create_concept("female", "gender", disambiguation="feminine")
+    
+    # Power/status concepts
+    power = registry.create_concept("power", "abstract", disambiguation="authority")
+    youth = registry.create_concept("youth", "abstract", disambiguation="young age")
+    
+    print(f"✅ Created {len(registry.list_concepts())} concepts")
+    
+    # Demonstrate complex nested formulas
+    print("\n🔧 Building complex nested vector arithmetic formulas...")
+    
+    # Example 1: Multiple additions and subtractions
+    # Formula: ((emperor - king) + queen) - male + female ≈ empress
+    step1 = FormulaNode(OperationType.SUBTRACT, [emperor, king])
+    step2 = FormulaNode(OperationType.ADD, [step1, queen])
+    step3 = FormulaNode(OperationType.SUBTRACT, [step2, male])
+    step4 = FormulaNode(OperationType.ADD, [step3, female])
+    
+    complex_formula_1 = FormulaNode(
+        operation=OperationType.SIMILARITY,
+        args=[
+            step4,
+            registry.create_concept("empress", "royalty", disambiguation="female emperor")
+        ]
+    )
+    
+    # Example 2: Deeply nested hierarchy
+    # Formula: ((king + power) - (prince + youth)) + female ≈ mature_queen
+    complex_formula_2 = FormulaNode(
+        operation=OperationType.SIMILARITY,
+        args=[
+            FormulaNode(
+                operation=OperationType.ADD,
+                args=[
+                    FormulaNode(
+                        operation=OperationType.SUBTRACT,
+                        args=[
+                            FormulaNode(OperationType.ADD, [king, power]),
+                            FormulaNode(OperationType.ADD, [prince, youth])
+                        ]
+                    ),
+                    female
+                ]
+            ),
+            registry.create_concept("mature_queen", "royalty", disambiguation="experienced female ruler")
+        ]
+    )
+    
+    # Example 3: Chain of operations with 5+ terms
+    # Formula: king - male + female - youth + power ≈ wise_queen
+    chain_step1 = FormulaNode(OperationType.SUBTRACT, [king, male])
+    chain_step2 = FormulaNode(OperationType.ADD, [chain_step1, female])
+    chain_step3 = FormulaNode(OperationType.SUBTRACT, [chain_step2, youth])
+    chain_step4 = FormulaNode(OperationType.ADD, [chain_step3, power])
+    
+    chain_formula = FormulaNode(
+        operation=OperationType.SIMILARITY,
+        args=[
+            chain_step4,
+            registry.create_concept("wise_queen", "royalty", disambiguation="intelligent female ruler")
+        ]
+    )
+    
+    # Display the formulas
+    formulas = [
+        ("Multi-term transformation", complex_formula_1),
+        ("Hierarchical composition", complex_formula_2),
+        ("Linear chain (5+ terms)", chain_formula)
+    ]
+    
+    print("\n📐 Generated formulas:")
+    for name, formula in formulas:
+        print(f"\n   {name}:")
+        print(f"   Formula: {formula}")
+        concepts = formula.get_concepts()
+        print(f"   Involves {len(concepts)} concepts: {[c.name for c in concepts]}")
+    
+    # Create axioms from these formulas
+    axioms = []
+    for i, (name, formula) in enumerate(formulas):
+        axiom = Axiom(
+            axiom_id=f"complex_arithmetic_{i+1}",
+            axiom_type=AxiomType.ANALOGY,
+            classification=AxiomClassification.CORE,
+            description=f"Complex vector arithmetic: {name}",
+            formula=formula,
+            concepts=formula.get_concepts()
+        )
+        axioms.append(axiom)
+    
+    print(f"\n✅ Created {len(axioms)} complex arithmetic axioms")
+    
+    # Demonstrate formula parsing capabilities
+    print("\n🔍 Demonstrating arbitrary nesting depth...")
+    
+    # Create an extremely nested formula (depth 6)
+    # Formula: ((((king - male) + female) - youth) + power) - complexity + wisdom ≈ ultimate_ruler
+    deep_step1 = FormulaNode(OperationType.SUBTRACT, [king, male])
+    deep_step2 = FormulaNode(OperationType.ADD, [deep_step1, female])
+    deep_step3 = FormulaNode(OperationType.SUBTRACT, [deep_step2, youth])
+    deep_step4 = FormulaNode(OperationType.ADD, [deep_step3, power])
+    deep_step5 = FormulaNode(OperationType.SUBTRACT, [deep_step4, registry.create_concept("complexity", "abstract", disambiguation="intricacy")])
+    deep_step6 = FormulaNode(OperationType.ADD, [deep_step5, registry.create_concept("wisdom", "abstract", disambiguation="deep knowledge")])
+    
+    deep_formula = FormulaNode(
+        OperationType.SIMILARITY,
+        [
+            deep_step6,
+            registry.create_concept("ultimate_ruler", "royalty", disambiguation="supreme leader")
+        ]
+    )
+    
+    print(f"   Deep nested formula (6 levels): {deep_formula}")
+    print(f"   Total concepts involved: {len(deep_formula.get_concepts())}")
+    
+    return registry, axioms
+
+
 def main():
     """Main demo function."""
     print("🚀 SOFT LOGIC CORE ABSTRACTIONS DEMO")
@@ -245,6 +383,9 @@ def main():
     
     # Save/load demo
     save_and_load_demo(context)
+    
+    # Generalized vector arithmetic demo
+    demonstrate_generalized_vector_arithmetic()
     
     print("\n🎉 Demo complete!")
     print("\nNext steps:")
