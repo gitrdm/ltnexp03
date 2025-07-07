@@ -6,13 +6,15 @@ extending the basic concept registry with structured semantic representations.
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Tuple, Set, Any
+from numpy.typing import NDArray
+from typing import Dict, List, Optional, Tuple, Set, Any, cast
 from dataclasses import dataclass
 import logging
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 
 from .concept_registry import ConceptRegistry, SynsetInfo
+from .abstractions import Concept
 from .frame_cluster_abstractions import (
     SemanticFrame, FrameElement, FrameInstance, ConceptCluster,
     FrameAwareConcept, FrameRelation, AnalogicalMapping,
@@ -29,7 +31,7 @@ class FrameRegistry:
     organization.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize frame registry with storage structures."""
         self.frames: Dict[str, SemanticFrame] = {}
         self.frame_instances: Dict[str, FrameInstance] = {}
@@ -92,8 +94,9 @@ class FrameRegistry:
         if frame_name not in self.frames:
             raise ValueError(f"Unknown frame: {frame_name}")
         
-        # Convert FrameAwareConcept to regular Concept for storage
-        concept_bindings = {element: concept for element, concept in bindings.items()}
+        # FrameAwareConcept inherits from Concept, so this is safe
+        from typing import cast
+        concept_bindings = cast(Dict[str, Concept], bindings)
         
         instance = FrameInstance(
             frame_name=frame_name,
@@ -123,7 +126,7 @@ class FrameRegistry:
         analogies = []
         
         # Search through all instances or instances of target frame
-        candidates = self.frame_instances.values()
+        candidates = list(self.frame_instances.values())
         if target_frame:
             candidates = [inst for inst in candidates if inst.frame_name == target_frame]
         
@@ -215,7 +218,7 @@ class FrameRegistry:
             else:
                 similarities.append(0.1)
         
-        return np.mean(similarities) if similarities else 0.0
+        return float(np.mean(similarities)) if similarities else 0.0
     
     def _are_frames_related(self, frame1_name: str, frame2_name: str) -> bool:
         """Check if two frames are related through inheritance."""
@@ -248,8 +251,8 @@ class ClusterRegistry:
         self.n_clusters = n_clusters
         
         self.clusters: Dict[int, ConceptCluster] = {}
-        self.concept_embeddings: Dict[str, np.ndarray] = {}
-        self.cluster_centroids: Optional[np.ndarray] = None
+        self.concept_embeddings: Dict[str, NDArray[np.float32]] = {}
+        self.cluster_centroids: Optional[NDArray[np.float32]] = None
         
         # Clustering model
         self.clustering_model = KMeans(n_clusters=n_clusters, random_state=42)
@@ -257,7 +260,7 @@ class ClusterRegistry:
         
         self.logger = logging.getLogger(__name__)
     
-    def add_concept_embedding(self, concept_id: str, embedding: np.ndarray) -> None:
+    def add_concept_embedding(self, concept_id: str, embedding: NDArray[np.float32]) -> None:
         """Add or update a concept's embedding."""
         if embedding.shape[0] != self.embedding_dim:
             raise ValueError(f"Embedding dimension mismatch: expected {self.embedding_dim}, got {embedding.shape[0]}")
@@ -285,7 +288,7 @@ class ClusterRegistry:
         self.is_trained = True
         self.logger.info(f"Trained clustering with {len(concept_ids)} concepts into {self.n_clusters} clusters")
     
-    def _create_clusters_from_model(self, concept_ids: List[str], embeddings: np.ndarray) -> None:
+    def _create_clusters_from_model(self, concept_ids: List[str], embeddings: NDArray[np.float32]) -> None:
         """Create cluster objects from trained model."""
         # Get hard cluster assignments
         hard_assignments = self.clustering_model.labels_
@@ -298,7 +301,8 @@ class ClusterRegistry:
         self.clusters.clear()
         for cluster_id in range(self.n_clusters):
             cluster = ConceptCluster(cluster_id=cluster_id)
-            cluster.centroid = self.cluster_centroids[cluster_id].copy()
+            if self.cluster_centroids is not None:
+                cluster.centroid = self.cluster_centroids[cluster_id].copy()
             
             # Add concept memberships
             for i, concept_id in enumerate(concept_ids):
@@ -311,7 +315,7 @@ class ClusterRegistry:
             
             self.clusters[cluster_id] = cluster
     
-    def _distances_to_soft_memberships(self, distances: np.ndarray, temperature: float = 1.0) -> np.ndarray:
+    def _distances_to_soft_memberships(self, distances: NDArray[np.float32], temperature: float = 1.0) -> NDArray[np.float32]:
         """Convert distances to soft membership probabilities."""
         # Convert distances to similarities
         similarities = np.exp(-distances / temperature)
@@ -319,10 +323,10 @@ class ClusterRegistry:
         # Normalize to get soft assignments
         soft_assignments = similarities / np.sum(similarities, axis=1, keepdims=True)
         
-        return soft_assignments
+        return np.array(soft_assignments, dtype=np.float32)
     
-    def _compute_cluster_coherence(self, cluster_id: int, embeddings: np.ndarray, 
-                                 assignments: np.ndarray) -> float:
+    def _compute_cluster_coherence(self, cluster_id: int, embeddings: NDArray[np.float32], 
+                                 assignments: NDArray[np.int32]) -> float:
         """Compute coherence score for a cluster."""
         cluster_members = embeddings[assignments == cluster_id]
         if len(cluster_members) < 2:
@@ -392,4 +396,4 @@ class ClusterRegistry:
         if norm1 == 0 or norm2 == 0:
             return 0.0
         
-        return np.dot(vec1, vec2) / (norm1 * norm2)
+        return float(np.dot(vec1, vec2) / (norm1 * norm2))

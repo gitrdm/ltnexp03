@@ -10,14 +10,14 @@ import json
 import pickle
 import gzip
 import shutil
-import joblib
+import joblib  # type: ignore[import-untyped]
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union, Tuple
 from datetime import datetime, timezone
 from dataclasses import asdict
 import logging
 
-from icontract import require, ensure, invariant, ViolationError
+from icontract import require, ensure, invariant, ViolationError  # type: ignore[import-untyped]
 import numpy as np
 import torch
 
@@ -127,7 +127,7 @@ class PersistenceManager:
         context_dir = self.storage_path / "contexts" / context_name
         context_dir.mkdir(parents=True, exist_ok=True)
         
-        save_metadata = {
+        save_metadata: Dict[str, Any] = {
             "context_name": context_name,
             "saved_at": datetime.now(timezone.utc).isoformat(),
             "format": format_type,
@@ -367,7 +367,7 @@ class PersistenceManager:
     
     def _serialize_frames(self, registry: 'EnhancedHybridRegistry') -> Dict[str, Any]:
         """Serialize semantic frames to dictionary format."""
-        frames_data = {
+        frames_data: Dict[str, Any] = {
             "frames": {},
             "frame_instances": {}
         }
@@ -467,7 +467,7 @@ class PersistenceManager:
     
     def _serialize_embeddings(self, registry: 'EnhancedHybridRegistry') -> Dict[str, Any]:
         """Serialize embeddings to dictionary format."""
-        embeddings_data = {
+        embeddings_data: Dict[str, Any] = {
             "embeddings": {},
             "metadata": {}
         }

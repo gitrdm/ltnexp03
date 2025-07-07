@@ -21,7 +21,7 @@ Integration with Existing System:
 """
 
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Tuple, AsyncGenerator, Protocol, runtime_checkable
+from typing import List, Optional, Dict, Any, Tuple, AsyncGenerator, Protocol, runtime_checkable, Sequence
 from datetime import datetime
 import logging
 import asyncio
@@ -33,13 +33,13 @@ import numpy as np
 from unittest.mock import Mock
 
 # LTNtorch imports
-import ltn
+import ltn  # type: ignore[import-untyped]
 
 # Import existing core components
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.contract_persistence import ContractEnhancedPersistenceManager
 from app.core.batch_persistence import BatchPersistenceManager, BatchWorkflow, WorkflowStatus
-from app.core.abstractions import Concept, Axiom, Context, FormulaNode, AxiomType, AxiomClassification
+from app.core.abstractions import Concept, Axiom, Context, FormulaNode, AxiomType, AxiomClassification, OperationType
 from app.core.contracts import SoftLogicContracts
 from app.core.api_models import (
     ConceptCreateRequest, ConceptCreateResponse,
@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 class NeuralTrainingProvider(Protocol):
     """Protocol for neural training providers."""
     
-    def train_epoch(self, axioms: List[Axiom], concepts: List[Concept]) -> Dict[str, float]:
+    def train_epoch(self, axioms: List[Axiom], concepts: Sequence[Concept]) -> Dict[str, float]:
         """Train for one epoch and return metrics."""
         ...
     
@@ -201,7 +201,7 @@ class LTNTrainingProvider:
     
     @require(lambda self, concepts: len(concepts) > 0)
     @ensure(lambda self, result: len(result) == len(self.constants))
-    def initialize_concepts(self, concepts: List[Concept]) -> Dict[str, ltn.Constant]:
+    def initialize_concepts(self, concepts: Sequence[Concept]) -> Dict[str, ltn.Constant]:
         """Initialize LTN constants for concepts with contract validation."""
         for concept in concepts:
             # Create concept embedding
@@ -232,18 +232,22 @@ class LTNTrainingProvider:
             # Encode synset information
             synset_features = self._encode_synset_features(concept.synset_id)
             
-            # Ensure synset_features is a list and not a Mock
-            if hasattr(synset_features, '__iter__') and not isinstance(synset_features, str):
-                try:
-                    synset_features = list(synset_features)
-                    if synset_features and len(synset_features) > 0:
-                        feature_length = min(len(synset_features), self.config.embedding_dimension)
-                        # Add features directly to numpy array (no tensor operations)
-                        for i in range(feature_length):
-                            base_embedding_data[i] += float(synset_features[i])
-                except (TypeError, ValueError):
-                    # If conversion fails, skip synset features
-                    pass
+            # Ensure synset_features is iterable and not a string
+            if hasattr(synset_features, '__iter__'):
+                # Skip string and bytes types
+                if isinstance(synset_features, (str, bytes)):
+                    pass  # Skip string-like iterables
+                else:
+                    try:
+                        synset_features_list = list(synset_features)
+                        if synset_features_list and len(synset_features_list) > 0:
+                            feature_length = min(len(synset_features_list), self.config.embedding_dimension)
+                            # Add features directly to numpy array (no tensor operations)
+                            for i in range(feature_length):
+                                base_embedding_data[i] += float(synset_features_list[i])
+                    except (TypeError, ValueError):
+                        # If conversion fails, skip synset features
+                        pass
         
         # Create final tensor WITHOUT requires_grad - let LTN handle it
         return torch.tensor(base_embedding_data, dtype=torch.float32, device=self.device)
@@ -310,14 +314,14 @@ class LTNTrainingProvider:
     @require(lambda self, axioms, concepts: len(axioms) > 0 and len(concepts) > 0)
     @ensure(lambda result: 0.0 <= result["loss"])
     @ensure(lambda result: 0.0 <= result["satisfiability"] <= 1.0)
-    def train_epoch(self, axioms: List[Axiom], concepts: List[Concept]) -> Dict[str, float]:
+    def train_epoch(self, axioms: List[Axiom], concepts: Sequence[Concept]) -> Dict[str, float]:
         """Train for one epoch with contract validation."""
         if self.optimizer is None:
             # Initialize optimizer with robust Mock filtering
             all_params = []
             
             # Helper function to safely extract tensor parameters
-            def extract_tensor_params(obj):
+            def extract_tensor_params(obj: Any) -> List[torch.Tensor]:
                 """Extract tensor parameters from object, filtering out mocks."""
                 try:
                     # Skip Mock objects entirely
@@ -388,7 +392,7 @@ class LTNTrainingProvider:
         self.optimizer.zero_grad()
         
         # Compute LTN loss
-        total_loss = 0.0
+        total_loss: torch.Tensor = torch.tensor(0.0, requires_grad=True)
         satisfiability_scores = []
         
         for axiom in axioms:
@@ -397,25 +401,25 @@ class LTNTrainingProvider:
             satisfiability_scores.append(axiom_sat)
         
         # Add concept consistency loss
-        consistency_loss = self._compute_concept_consistency_loss(concepts)
+        consistency_loss: torch.Tensor = self._compute_concept_consistency_loss(concepts)
         total_loss += consistency_loss * self.config.concept_consistency_weight
         
         # Add semantic coherence loss
-        coherence_loss = self._compute_semantic_coherence_loss(concepts)
+        coherence_loss: torch.Tensor = self._compute_semantic_coherence_loss(concepts)
         total_loss += coherence_loss * self.config.semantic_coherence_weight
         
         # Backward pass
-        total_loss.backward()
+        total_loss.backward()  # type: ignore[no-untyped-call]
         self.optimizer.step()
         
         # Calculate metrics
-        avg_satisfiability = np.mean(satisfiability_scores) if satisfiability_scores else 0.0
+        avg_satisfiability = float(np.mean(satisfiability_scores)) if satisfiability_scores else 0.0
         
         metrics = {
-            "loss": total_loss.item(),
+            "loss": float(total_loss.item()),
             "satisfiability": avg_satisfiability,
-            "consistency": consistency_loss.item(),
-            "coherence": coherence_loss.item()
+            "consistency": float(consistency_loss.item()),
+            "coherence": float(coherence_loss.item())
         }
         
         self.loss_history.append(metrics)
@@ -486,7 +490,7 @@ class LTNTrainingProvider:
         
         return torch.tensor(1.0, device=self.device), 0.0
     
-    def _compute_concept_consistency_loss(self, concepts: List[Concept]) -> torch.Tensor:
+    def _compute_concept_consistency_loss(self, concepts: Sequence[Concept]) -> torch.Tensor:
         """Compute concept consistency loss."""
         # Encourage similar concepts to have similar embeddings
         consistency_loss = torch.tensor(0.0, device=self.device)
@@ -499,13 +503,13 @@ class LTNTrainingProvider:
         
         return consistency_loss
     
-    def _compute_semantic_coherence_loss(self, concepts: List[Concept]) -> torch.Tensor:
+    def _compute_semantic_coherence_loss(self, concepts: Sequence[Concept]) -> torch.Tensor:
         """Compute semantic coherence loss."""
         # Encourage embeddings to form coherent semantic spaces
         coherence_loss = torch.tensor(0.0, device=self.device)
         
         # Group concepts by context
-        context_groups = {}
+        context_groups: Dict[str, List[str]] = {}
         for concept in concepts:
             context = concept.context or "default"
             if context not in context_groups:
@@ -515,15 +519,15 @@ class LTNTrainingProvider:
         # Encourage concepts in same context to be closer
         for context, concept_ids in context_groups.items():
             if len(concept_ids) > 1:
-                embeddings = []
+                embedding_list: List[torch.Tensor] = []
                 for cid in concept_ids:
                     if cid in self.constants:
-                        embeddings.append(self.constants[cid].value)
+                        embedding_list.append(self.constants[cid].value)
                 
-                if len(embeddings) > 1:
-                    embeddings = torch.stack(embeddings)
+                if len(embedding_list) > 1:
+                    embeddings_tensor = torch.stack(embedding_list)
                     # Compute pairwise distances
-                    distances = torch.cdist(embeddings, embeddings)
+                    distances = torch.cdist(embeddings_tensor, embeddings_tensor)
                     # Minimize average distance within context
                     coherence_loss += distances.mean()
         
@@ -540,7 +544,7 @@ class LTNTrainingProvider:
             _, sat = self._compute_axiom_loss(axiom)
             satisfiabilities.append(sat)
         
-        return np.mean(satisfiabilities)
+        return float(np.mean(satisfiabilities))
     
     def get_concept_embeddings(self) -> Dict[str, torch.Tensor]:
         """Get learned concept embeddings."""
@@ -564,7 +568,7 @@ class Z3SMTVerifier:
         
         # Import Z3 solver
         try:
-            import z3
+            import z3  # type: ignore[import-untyped]
             self.z3 = z3
             self.solver = z3.Solver()
             self.solver.set("timeout", timeout_seconds * 1000)  # Z3 uses milliseconds
@@ -608,7 +612,7 @@ class Z3SMTVerifier:
             logger.error(f"SMT verification error: {e}")
             return True, f"Verification error: {str(e)}"
     
-    def _axiom_to_z3(self, axiom: Axiom):
+    def _axiom_to_z3(self, axiom: Axiom) -> Optional[Any]:
         """Convert axiom to Z3 constraint."""
         # Simplified Z3 constraint generation
         # In practice, this would need more sophisticated formula parsing
@@ -694,7 +698,7 @@ class NeuralSymbolicTrainingManager:
         
         # Training state
         self.current_progress = None
-        self.training_history = []
+        self.training_history: List[TrainingProgress] = []
         self.is_training = False
         
         logger.info("Initialized neural-symbolic training manager")
@@ -856,7 +860,7 @@ class NeuralSymbolicTrainingManager:
                         axiom_type=AxiomType.SIMILARITY,
                         classification=AxiomClassification.SOFT,
                         description=f"Similarity between {concepts[i].name} and {concepts[i+1].name}",
-                        formula=FormulaNode("similarity", [concepts[i].name, concepts[i+1].name])
+                        formula=FormulaNode(OperationType.SIMILARITY, [concepts[i].name, concepts[i+1].name])
                     )
                     axioms.append(axiom)
             
@@ -867,7 +871,7 @@ class NeuralSymbolicTrainingManager:
                     axiom_type=AxiomType.ANALOGY,
                     classification=AxiomClassification.SOFT,
                     description=f"Analogy: {concepts[0].name} is to {concepts[1].name} as {concepts[2].name} is to {concepts[3].name}",
-                    formula=FormulaNode("analogy", [concepts[0].name, concepts[1].name, concepts[2].name, concepts[3].name])
+                    formula=FormulaNode(OperationType.ADD, [concepts[0].name, concepts[1].name, concepts[2].name, concepts[3].name])
                 )
                 axioms.append(axiom)
         
@@ -903,7 +907,11 @@ class NeuralSymbolicTrainingManager:
         model_path = Path(f"models/neural_symbolic_{context_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         
         # Use the persistence manager's storage mechanism
-        await self.persistence_manager.save_model_data(model_data, str(model_path))
+        # Save as JSON file directly since save_model_data might not exist
+        full_path = self.persistence_manager.storage_path / model_path
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(full_path, 'w') as f:
+            json.dump(model_data, f, indent=2)
         
         return model_path
 

@@ -7,6 +7,7 @@ and advanced similarity metrics.
 """
 
 import numpy as np
+from numpy.typing import NDArray
 from typing import Dict, List, Optional, Tuple, Union, Any
 import logging
 from dataclasses import dataclass
@@ -34,12 +35,12 @@ class EmbeddingProvider(ABC):
     """Abstract base class for embedding providers."""
     
     @abstractmethod
-    def get_embedding(self, text: str) -> Optional[np.ndarray]:
+    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
         """Get embedding for text."""
         pass
     
     @abstractmethod
-    def get_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def get_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute similarity between embeddings."""
         pass
     
@@ -59,9 +60,9 @@ class RandomEmbeddingProvider(EmbeddingProvider):
     def __init__(self, dimensions: int = 300, seed: int = 42):
         self.dimensions = dimensions
         self.seed = seed
-        self.cache = {}
+        self.cache: Dict[str, NDArray[np.float32]] = {}
     
-    def get_embedding(self, text: str) -> Optional[np.ndarray]:
+    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
         """Get random embedding for text."""
         if text in self.cache:
             return self.cache[text]
@@ -70,15 +71,15 @@ class RandomEmbeddingProvider(EmbeddingProvider):
         text_hash = hash(text) % (2**32)
         np.random.seed(text_hash)
         
-        embedding = np.random.normal(0, 1, self.dimensions)
+        embedding = np.random.normal(0, 1, self.dimensions).astype(np.float32)
         embedding = embedding / np.linalg.norm(embedding)  # Normalize
         
         self.cache[text] = embedding
         return embedding
     
-    def get_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def get_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute cosine similarity."""
-        return np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+        return float(np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2)))
     
     def get_dimensions(self) -> int:
         return self.dimensions
@@ -94,7 +95,7 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
     
     def __init__(self, dimensions: int = 300):
         self.dimensions = dimensions
-        self.cache = {}
+        self.cache: Dict[str, NDArray[np.float32]] = {}
         
         # Semantic category mappings
         self.semantic_categories = {
@@ -190,7 +191,7 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
             "create": ["action", "creation"],
         }
     
-    def get_embedding(self, text: str) -> Optional[np.ndarray]:
+    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
         """Get semantic embedding for text."""
         if text in self.cache:
             return self.cache[text]
@@ -201,10 +202,10 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
         if not categories:
             # Fallback to basic random embedding
             np.random.seed(hash(text) % (2**32))
-            embedding = np.random.normal(0, 0.1, self.dimensions)
+            embedding = np.random.normal(0, 0.1, self.dimensions).astype(np.float32)
         else:
             # Build embedding from semantic categories
-            embedding = np.zeros(self.dimensions)
+            embedding = np.zeros(self.dimensions, dtype=np.float32)
             
             # Set base semantic features
             for category in categories:
@@ -216,7 +217,7 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
             
             # Add some random variation
             np.random.seed(hash(text) % (2**32))
-            noise = np.random.normal(0, 0.05, self.dimensions)
+            noise = np.random.normal(0, 0.05, self.dimensions).astype(np.float32)
             embedding += noise
         
         # Normalize
@@ -227,9 +228,9 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
         self.cache[text] = embedding
         return embedding
     
-    def get_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def get_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute cosine similarity."""
-        return np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+        return float(np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2)))
     
     def get_dimensions(self) -> int:
         return self.dimensions
@@ -265,7 +266,7 @@ class VectorEmbeddingManager:
         self.cache_dir = Path(cache_dir) if cache_dir else None
         
         # Embedding storage
-        self.embeddings: Dict[str, np.ndarray] = {}
+        self.embeddings: Dict[str, NDArray[np.float32]] = {}
         self.metadata: Dict[str, EmbeddingMetadata] = {}
         
         # Configuration
@@ -292,7 +293,7 @@ class VectorEmbeddingManager:
     @ensure(lambda result: result is None or isinstance(result, np.ndarray),
             "result must be None or numpy array")
     def get_embedding(self, concept_id: str, text: str, 
-                     provider: Optional[str] = None) -> Optional[np.ndarray]:
+                     provider: Optional[str] = None) -> Optional[NDArray[np.float32]]:
         """
         Get embedding for a concept.
         
@@ -368,18 +369,18 @@ class VectorEmbeddingManager:
             self.logger.warning(f"Unknown similarity metric: {metric}")
             return self._cosine_similarity(emb1, emb2)
     
-    def _cosine_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def _cosine_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute cosine similarity."""
-        return np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
+        return float(np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2)))
     
-    def _euclidean_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def _euclidean_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute Euclidean similarity (inverse of distance)."""
-        distance = np.linalg.norm(emb1 - emb2)
+        distance = float(np.linalg.norm(emb1 - emb2))
         return 1.0 / (1.0 + distance)
     
-    def _manhattan_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
+    def _manhattan_similarity(self, emb1: NDArray[np.float32], emb2: NDArray[np.float32]) -> float:
         """Compute Manhattan similarity (inverse of L1 distance)."""
-        distance = np.sum(np.abs(emb1 - emb2))
+        distance = float(np.sum(np.abs(emb1 - emb2)))
         return 1.0 / (1.0 + distance)
     
     def find_similar_concepts(self, concept_id: str, threshold: float = None,

@@ -979,5 +979,41 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "weapons:sword": {
+    "concept_id": "weapons:sword",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T18:17:02",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "architecture:castle": {
+    "concept_id": "architecture:castle",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T18:17:02",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "fantasy:wizard": {
+    "concept_id": "fantasy:wizard",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T18:17:02",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
+  },
+  "implements:staff": {
+    "concept_id": "implements:staff",
+    "embedding_model": "random",
+    "created_at": "2025-07-06T18:17:03",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }

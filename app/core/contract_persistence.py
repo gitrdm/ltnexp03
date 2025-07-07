@@ -6,11 +6,11 @@ implements the persistence protocols with comprehensive validation.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Iterator
 from datetime import datetime, timezone
 import logging
 
-from icontract import require, ensure, invariant, ViolationError
+from icontract import require, ensure, invariant, ViolationError  # type: ignore[import-untyped]
 
 from .persistence import PersistenceManager
 from .batch_persistence import BatchPersistenceManager, DeleteCriteria, BatchWorkflow
@@ -144,13 +144,14 @@ class ContractEnhancedPersistenceManager:
             self.logger.error(f"Failed to load registry state: {e}")
             return None
     
-    @require(lambda format: format in ["json", "compressed", "sqlite"])
-    def export_knowledge_base(self, format: str = "json", 
+    @require(lambda format_type: format_type in ["json", "compressed", "sqlite"])
+    @ensure(lambda result: isinstance(result, Path))
+    def export_knowledge_base(self, format_type: str = "json", 
                             compressed: bool = False) -> Path:
         """Export complete knowledge base with validation."""
         try:
             # Implementation would go here
-            export_path = self.storage_path / "exports" / f"knowledge_base.{format}"
+            export_path = self.storage_path / "exports" / f"knowledge_base.{format_type}"
             
             # For now, create a placeholder file
             export_path.parent.mkdir(parents=True, exist_ok=True)
@@ -166,6 +167,7 @@ class ContractEnhancedPersistenceManager:
     
     @require(lambda source_path: Path(source_path).exists())
     @require(lambda merge_strategy: merge_strategy in ["overwrite", "merge", "skip_conflicts"])
+    @ensure(lambda result: isinstance(result, bool))
     def import_knowledge_base(self, source_path: Path, 
                             merge_strategy: str = "overwrite") -> bool:
         """Import knowledge base with conflict resolution."""
@@ -259,7 +261,7 @@ class ContractEnhancedPersistenceManager:
             return None
     
     def stream_analogies(self, domain: Optional[str] = None, 
-                        min_quality: Optional[float] = None):
+                        min_quality: Optional[float] = None) -> Iterator[Dict[str, Any]]:
         """Stream analogies from storage with optional filtering."""
         # Validate quality threshold
         if min_quality is not None and not (0.0 <= min_quality <= 1.0):
@@ -318,6 +320,8 @@ class ContractEnhancedPersistenceManager:
             self.logger.error(f"Failed to find high-quality analogies: {e}")
             raise ViolationError(f"Quality search failed: {e}")
     
+    @ensure(lambda result: isinstance(result, dict))
+    @ensure(lambda result: "status" in result)
     def get_storage_statistics(self) -> Dict[str, Any]:
         """Get comprehensive storage statistics."""
         try:
@@ -336,7 +340,7 @@ class ContractEnhancedPersistenceManager:
             
             # Calculate storage size
             try:
-                def get_size(path):
+                def get_size(path: Path) -> int:
                     if path.is_file():
                         return path.stat().st_size
                     elif path.is_dir():
@@ -356,6 +360,8 @@ class ContractEnhancedPersistenceManager:
                 "last_updated": datetime.now(timezone.utc).isoformat()
             }
     
+    @ensure(lambda result: isinstance(result, dict))
+    @ensure(lambda result: "valid" in result)
     def validate_storage_integrity(self) -> Dict[str, Any]:
         """Validate storage integrity and consistency."""
         try:

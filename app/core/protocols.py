@@ -26,6 +26,7 @@ PROTOCOL HIERARCHY:
 
 from typing import Protocol, TypeVar, Generic, runtime_checkable, List, Dict, Optional, Tuple, Any
 import numpy as np
+from numpy.typing import NDArray
 from abc import abstractmethod
 
 # Type variables for generic protocols
@@ -94,14 +95,14 @@ class EmbeddingProviderProtocol(Protocol):
         self, 
         concept: str, 
         context: str = "default"
-    ) -> np.ndarray:
+    ) -> NDArray[np.float32]:
         """Generate embedding vector for concept in given context."""
         ...
     
     def compute_similarity(
         self, 
-        emb1: np.ndarray, 
-        emb2: np.ndarray
+        emb1: NDArray[np.float32], 
+        emb2: NDArray[np.float32]
     ) -> float:
         """Compute similarity score between two embeddings (0.0-1.0)."""
         ...
@@ -110,7 +111,7 @@ class EmbeddingProviderProtocol(Protocol):
         self,
         concepts: List[str],
         context: str = "default"
-    ) -> Dict[str, np.ndarray]:
+    ) -> Dict[str, NDArray[np.float32]]:
         """Generate embeddings for multiple concepts efficiently."""
         ...
     

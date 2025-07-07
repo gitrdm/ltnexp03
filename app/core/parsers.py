@@ -315,7 +315,7 @@ class AxiomParser:
     - **API Layer**: Parser used by REST endpoints for axiom upload
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize Parser with Local Concept Registry
         
@@ -360,7 +360,7 @@ class AxiomParser:
         
         return self._parse_axiom_data(data)
     
-    def _parse_axiom_data(self, data: Union[Dict, List]) -> List[Axiom]:
+    def _parse_axiom_data(self, data: Union[Dict[str, Any], List[Dict[str, Any]]]) -> List[Axiom]:
         """Parse axiom data structure."""
         if isinstance(data, dict):
             # Single axiom

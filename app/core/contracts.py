@@ -140,21 +140,21 @@ class ReasoningConstraints:
 
 
 # Convenience validators that accept full argument objects
-def validate_concept_name(args) -> bool:
+def validate_concept_name(args: Any) -> bool:
     """Validate concept name from args object."""
     return hasattr(args, 'name') and ConceptConstraints.valid_concept_name(args.name)
 
-def validate_context(args) -> bool:
+def validate_context(args: Any) -> bool:
     """Validate context from args object."""
     return hasattr(args, 'context') and ConceptConstraints.valid_context(args.context)
 
-def validate_embedding_dimensions(args) -> bool:
+def validate_embedding_dimensions(args: Any) -> bool:
     """Validate embedding dimensions from args object."""
     return (hasattr(args, 'embedding') and 
             hasattr(args.embedding, 'shape') and 
             EmbeddingConstraints.valid_embedding_dimension(args.embedding.shape[0]))
 
-def validate_coherence_score(args) -> bool:
+def validate_coherence_score(args: Any) -> bool:
     """Validate coherence score from args object."""
     return (hasattr(args, 'coherence') and 
             ReasoningConstraints.valid_coherence_score(args.coherence))
@@ -165,36 +165,36 @@ class ContractTemplates:
     """Pre-defined contract templates for common operation patterns."""
     
     @staticmethod
-    def concept_creation_contracts():
+    def concept_creation_contracts() -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Standard contracts for concept creation operations."""
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @require(lambda args: validate_concept_name(args), description="name must be valid")
             @require(lambda args: validate_context(args), description="context must be valid")
             @ensure(lambda result: result is not None, description="result is not None")
             @ensure(lambda result: hasattr(result, 'concept_id'), description="result has concept_id")
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 return func(*args, **kwargs)
             return wrapper
         return decorator
     
     @staticmethod
-    def similarity_operation_contracts():
+    def similarity_operation_contracts() -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Standard contracts for similarity operations."""
-        def decorator(func):
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @require(lambda concepts: ReasoningConstraints.valid_concept_list(concepts), description="concepts list is valid")
             @require(lambda concepts: len(concepts) >= 2, description="at least 2 concepts")
             @ensure(lambda result: isinstance(result, (int, float)), description="result is numeric")
             @ensure(lambda result: EmbeddingConstraints.valid_similarity_score(result), description="similarity score is valid")
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
                 return func(*args, **kwargs)
             return wrapper
         return decorator
 
 
 # Domain-specific contract decorators
-def semantic_field_discovery_contracts(func):
+def semantic_field_discovery_contracts(func: Callable[..., Any]) -> Callable[..., Any]:
     """Contracts for semantic field discovery operations."""
     @require(lambda min_coherence: ReasoningConstraints.valid_coherence_score(min_coherence), 
              description="min_coherence must be valid score")
@@ -202,12 +202,12 @@ def semantic_field_discovery_contracts(func):
     @ensure(lambda result: all(hasattr(field, 'coherence') for field in result), 
             description="all fields must have coherence")
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         return func(*args, **kwargs)
     return wrapper
 
 
-def analogical_completion_contracts(func):
+def analogical_completion_contracts(func: Callable[..., Any]) -> Callable[..., Any]:
     """Contracts for analogical completion operations."""
     @require(lambda partial_analogy, max_completions=5: ReasoningConstraints.valid_partial_analogy(partial_analogy),
              description="partial_analogy must be valid")
@@ -217,13 +217,13 @@ def analogical_completion_contracts(func):
     @ensure(lambda result, partial_analogy, max_completions=5: len(result) <= max_completions,
             description="result count within limit")
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         return func(*args, **kwargs)
     return wrapper
 
 
 # Class invariant helpers
-def registry_consistency_invariant(description: str, condition: Callable[[Any], bool]):
+def registry_consistency_invariant(description: str, condition: Callable[[Any], bool]) -> Any:
     """Create class invariant for registry consistency."""
     return invariant(lambda self: condition(self), description=description)
 
@@ -232,14 +232,14 @@ def registry_consistency_invariant(description: str, condition: Callable[[Any], 
 class ContractedConceptRegistry:
     """Example of contract-enhanced concept registry."""
     
-    def __init__(self):
-        self.concepts = {}
+    def __init__(self) -> None:
+        self.concepts: Dict[str, Any] = {}
         self.contexts = {"default"}
     
     @require(lambda name: ConceptConstraints.valid_concept_name(name), description="name must be valid")
     @require(lambda name, context: ConceptConstraints.valid_context(context), description="context must be valid")
     @ensure(lambda result: result is not None, description="result not None")
-    def create_concept_with_contracts(self, name: str, context: str):
+    def create_concept_with_contracts(self, name: str, context: str) -> Any:
         """Create concept with comprehensive contract validation."""
         # Implementation
         concept_id = f"{context}:{name}"
@@ -256,7 +256,7 @@ class ContractedConceptRegistry:
 
 
 # Registry state validation functions
-def validate_registry_state(registry) -> bool:
+def validate_registry_state(registry: Any) -> bool:
     """Validate overall registry state consistency."""
     try:
         # Check basic structure
@@ -275,7 +275,7 @@ def validate_registry_state(registry) -> bool:
         return False
 
 
-def validate_embedding_consistency(registry) -> bool:
+def validate_embedding_consistency(registry: Any) -> bool:
     """Validate embedding system consistency."""
     try:
         if not hasattr(registry, 'cluster_registry'):
@@ -303,7 +303,7 @@ def validate_embedding_consistency(registry) -> bool:
         return False
 
 
-def validate_frame_consistency(registry) -> bool:
+def validate_frame_consistency(registry: Any) -> bool:
     """Validate semantic frame consistency."""
     try:
         if not hasattr(registry, 'frame_registry'):

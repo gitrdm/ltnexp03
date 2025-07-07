@@ -7,6 +7,7 @@ and clustering-based concept representations for advanced analogical reasoning.
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple, Any
+from numpy.typing import NDArray
 from enum import Enum
 import numpy as np
 from .abstractions import Concept, Context
@@ -106,7 +107,7 @@ class ConceptCluster:
     description: Optional[str] = None
     
     # Cluster centroid in embedding space
-    centroid: Optional[np.ndarray] = None
+    centroid: Optional[NDArray[np.float32]] = None
     
     # Concept membership (concept_id -> membership_strength)
     members: Dict[str, float] = field(default_factory=dict)
@@ -147,7 +148,7 @@ class FrameAwareConcept(Concept):
     primary_cluster: Optional[int] = None  # Most likely cluster
     
     # Embedding representation
-    embedding: Optional[np.ndarray] = None
+    embedding: Optional[NDArray[np.float32]] = None
     
     def add_frame_role(self, frame_name: str, role_name: str) -> None:
         """Record that this concept can fill a specific role in a frame."""

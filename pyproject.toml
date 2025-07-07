@@ -48,9 +48,11 @@ multi_line_output = 3
 markers = [
     "performance: marks tests as performance tests (deselect with '-m \"not performance\"')",
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "asyncio: marks tests as async (deselect with '-m \"not asyncio\"')",
 ]
 testpaths = ["tests"]
 addopts = [
     "--strict-markers",
     "--disable-warnings",
 ]
+asyncio_default_fixture_loop_scope = "function"

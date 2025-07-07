@@ -13,6 +13,7 @@ invariants throughout complex reasoning operations.
 """
 
 import numpy as np
+from numpy.typing import NDArray
 from typing import Dict, List, Optional, Tuple, Set, Any, Union
 import logging
 from dataclasses import dataclass, field
@@ -95,7 +96,7 @@ class SemanticField:
     typical_patterns: List[str] = field(default_factory=list)
     
     # Embedding centroid
-    centroid: Optional[np.ndarray] = None
+    centroid: Optional[NDArray[np.float32]] = None
     
     def add_core_concept(self, concept_id: str) -> None:
         """Add a core concept to the semantic field."""
@@ -138,7 +139,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
         # This ensures invariants are satisfied during parent initialization
         self.semantic_fields: Dict[str, SemanticField] = {}
         self.cross_domain_analogies: List[CrossDomainAnalogy] = []
-        self.domain_embeddings: Dict[str, np.ndarray] = {}
+        self.domain_embeddings: Dict[str, NDArray[np.float32]] = {}
         
         # Additional storage
         self.similarity_cache: Dict[Tuple[str, str], float] = {}
@@ -158,17 +159,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
         )
         
         self.logger = logging.getLogger(__name__)
-    
-    def __post_init__(self):
-        """Post-initialization checks and setups."""
-        # Ensure semantic_fields is a dictionary
-        if not isinstance(self.semantic_fields, dict):
-            self.semantic_fields = {}
-        
-        # Ensure cross_domain_analogies is a list
-        if not isinstance(self.cross_domain_analogies, list):
-            self.cross_domain_analogies = []
-    
+
     def _discover_semantic_fields_original(self, min_coherence: float = 0.7) -> List[SemanticField]:
         """
         Discover semantic fields from concept clusters and embeddings.
@@ -205,7 +196,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
         
         # Get embeddings for cluster members
         concept_ids = list(cluster.members.keys())
-        embeddings: List[np.ndarray] = []
+        embeddings: List[NDArray[np.float32]] = []
         
         for concept_id in concept_ids:
             if concept_id in self.cluster_registry.concept_embeddings:
@@ -524,7 +515,7 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
     def create_frame_aware_concept_with_advanced_embedding(self, name: str, context: str = "default",
                                  synset_id: Optional[str] = None,
                                  disambiguation: Optional[str] = None,
-                                 embedding: Optional[np.ndarray] = None,
+                                 embedding: Optional[NDArray[np.float32]] = None,
                                  auto_disambiguate: bool = True,
                                  use_semantic_embedding: bool = True) -> FrameAwareConcept:
         """

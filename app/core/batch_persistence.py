@@ -21,7 +21,7 @@ import gzip
 from icontract import require, ensure, invariant, ViolationError
 import numpy as np
 try:
-    import faiss
+    import faiss  # type: ignore[import-untyped]
     HAS_FAISS = True
 except ImportError:
     HAS_FAISS = False
@@ -59,7 +59,7 @@ class BatchWorkflow:
     metadata: Optional[Dict[str, Any]] = None
     error_log: Optional[List[str]] = None
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.metadata is None:
             self.metadata = {}
         if self.error_log is None:
@@ -438,7 +438,7 @@ class BatchPersistenceManager:
         db_path = self.storage_path / "contexts" / "default" / "concepts.sqlite"
         
         conditions = ["deleted_at IS NULL"]
-        params = []
+        params: List[Union[str, float]] = []
         
         if criteria.domains:
             domain_conditions = []

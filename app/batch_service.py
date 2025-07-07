@@ -6,7 +6,7 @@ and workflow management in the soft logic microservice.
 """
 
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, AsyncGenerator
 from datetime import datetime
 import logging
 import asyncio
@@ -34,7 +34,7 @@ registry: Optional[EnhancedHybridRegistry] = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan management."""
     global persistence_manager, registry
     
@@ -68,7 +68,7 @@ app = FastAPI(
 # ============================================================================
 
 @app.post("/analogies/batch", response_model=BatchWorkflowResponse)
-async def create_analogy_batch(batch: AnalogiesBatch, background_tasks: BackgroundTasks):
+async def create_analogy_batch(batch: AnalogiesBatch, background_tasks: BackgroundTasks) -> BatchWorkflowResponse:
     """Create batch of analogies with workflow tracking."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -93,7 +93,7 @@ async def create_analogy_batch(batch: AnalogiesBatch, background_tasks: Backgrou
 
 
 @app.post("/analogies/batch/process/{workflow_id}", response_model=BatchWorkflowResponse)
-async def process_analogy_batch_sync(workflow_id: str):
+async def process_analogy_batch_sync(workflow_id: str) -> BatchWorkflowResponse:
     """Process analogy batch synchronously."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -108,19 +108,30 @@ async def process_analogy_batch_sync(workflow_id: str):
 
 
 @app.delete("/analogies/batch", response_model=BatchWorkflowResponse)
-async def delete_analogies_batch(criteria: DeleteCriteriaRequest):
+async def delete_analogies_batch(criteria: DeleteCriteriaRequest) -> BatchWorkflowResponse:
     """Delete analogies matching criteria."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
     
     try:
         # Convert request model to internal model
+        # Handle date parsing with proper type checking
+        created_before = None
+        created_before_str = criteria.get("created_before")
+        if created_before_str:
+            created_before = datetime.fromisoformat(created_before_str)
+            
+        created_after = None
+        created_after_str = criteria.get("created_after")
+        if created_after_str:
+            created_after = datetime.fromisoformat(created_after_str)
+        
         delete_criteria = DeleteCriteria(
             domains=criteria.get("domains"),
             frame_types=criteria.get("frame_types"),
             quality_threshold=criteria.get("quality_threshold"),
-            created_before=datetime.fromisoformat(criteria["created_before"]) if criteria.get("created_before") else None,
-            created_after=datetime.fromisoformat(criteria["created_after"]) if criteria.get("created_after") else None,
+            created_before=created_before,
+            created_after=created_after,
             tags=criteria.get("tags")
         )
         
@@ -137,7 +148,7 @@ async def delete_analogies_batch(criteria: DeleteCriteriaRequest):
 # ============================================================================
 
 @app.post("/analogies/compact", response_model=CompactionResult)
-async def compact_analogies():
+async def compact_analogies() -> CompactionResult:
     """Compact analogies storage by removing deleted records."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -161,7 +172,7 @@ async def compact_analogies():
 # ============================================================================
 
 @app.get("/workflows/{workflow_id}", response_model=BatchWorkflowResponse)
-async def get_workflow_status(workflow_id: str):
+async def get_workflow_status(workflow_id: str) -> BatchWorkflowResponse:
     """Get workflow status."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -174,7 +185,7 @@ async def get_workflow_status(workflow_id: str):
 
 
 @app.get("/workflows", response_model=WorkflowListResponse)
-async def list_workflows(status: Optional[str] = None, limit: int = 50):
+async def list_workflows(status: Optional[str] = None, limit: int = 50) -> WorkflowListResponse:
     """List workflows, optionally filtered by status."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -198,7 +209,7 @@ async def list_workflows(status: Optional[str] = None, limit: int = 50):
 
 
 @app.post("/workflows/{workflow_id}/cancel")
-async def cancel_workflow(workflow_id: str):
+async def cancel_workflow(workflow_id: str) -> Dict[str, Any]:
     """Cancel a pending workflow."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -215,7 +226,7 @@ async def cancel_workflow(workflow_id: str):
 # ============================================================================
 
 @app.get("/analogies/stream")
-async def stream_analogies(domain: Optional[str] = None, min_quality: Optional[float] = None, limit: int = 100):
+async def stream_analogies(domain: Optional[str] = None, min_quality: Optional[float] = None, limit: int = 100) -> Dict[str, Any]:
     """Stream analogies with optional filtering."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -245,7 +256,7 @@ async def stream_analogies(domain: Optional[str] = None, min_quality: Optional[f
 
 
 @app.get("/analogies/high-quality")
-async def get_high_quality_analogies(min_quality: float = 0.8):
+async def get_high_quality_analogies(min_quality: float = 0.8) -> Dict[str, Any]:
     """Get high-quality analogies using indexed search."""
     if not persistence_manager:
         raise HTTPException(status_code=500, detail="Persistence manager not initialized")
@@ -268,7 +279,7 @@ async def get_high_quality_analogies(min_quality: float = 0.8):
 # ============================================================================
 
 @app.post("/contexts/{context_name}/export")
-async def export_context(context_name: str, format: str = "json", compressed: bool = False):
+async def export_context(context_name: str, format: str = "json", compressed: bool = False) -> ExportResponse:
     """Export complete context state."""
     if not persistence_manager or not registry:
         raise HTTPException(status_code=500, detail="Services not initialized")
@@ -297,12 +308,16 @@ async def export_context(context_name: str, format: str = "json", compressed: bo
 
 
 @app.post("/contexts/{context_name}/import")
-async def import_context(context_name: str, file: UploadFile = File(...), merge_strategy: str = "overwrite"):
+async def import_context(context_name: str, file: UploadFile = File(...), merge_strategy: str = "overwrite") -> ImportResponse:
     """Import context from uploaded file."""
     if not persistence_manager or not registry:
         raise HTTPException(status_code=500, detail="Services not initialized")
     
     try:
+        # Validate filename
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="Filename is required")
+            
         # Save uploaded file
         import_path = persistence_manager.storage_path / "imports" / file.filename
         import_path.parent.mkdir(parents=True, exist_ok=True)
@@ -332,7 +347,7 @@ async def import_context(context_name: str, file: UploadFile = File(...), merge_
 # ============================================================================
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> Dict[str, Any]:
     """Health check endpoint."""
     return {
         "status": "healthy",
@@ -344,7 +359,7 @@ async def health_check():
 
 
 @app.get("/status")
-async def get_status():
+async def get_status() -> Dict[str, Any]:
     """Get detailed service status."""
     if not persistence_manager or not registry:
         return {"status": "initializing"}
@@ -402,7 +417,7 @@ def _workflow_to_response(workflow: BatchWorkflow) -> BatchWorkflowResponse:
     )
 
 
-async def process_batch_workflow_async(workflow_id: str):
+async def process_batch_workflow_async(workflow_id: str) -> None:
     """Process batch workflow asynchronously."""
     if not persistence_manager:
         logging.error("Persistence manager not initialized for async processing")

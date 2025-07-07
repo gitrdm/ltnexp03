@@ -293,7 +293,7 @@ class KnowledgeDiscoveryMixin(KnowledgeDiscoveryProtocol):
         knowledge_base: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Validate consistency of knowledge base and return issues."""
-        validation_results = {
+        validation_results: Dict[str, Any] = {
             'status': 'valid',
             'issues': [],
             'warnings': [],
@@ -334,7 +334,7 @@ class EmbeddingProviderMixin(EmbeddingProviderProtocol):
     def embedding_dimension(self) -> int:
         """Return the dimension of generated embeddings."""
         if hasattr(self, 'embedding_dim'):
-            return self.embedding_dim
+            return int(getattr(self, 'embedding_dim', 300))
         return 300  # Default dimension
     
     @property  

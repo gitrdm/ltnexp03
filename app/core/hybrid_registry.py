@@ -7,6 +7,7 @@ advanced analogical reasoning.
 """
 
 import numpy as np
+from numpy.typing import NDArray
 from typing import Dict, List, Optional, Tuple, Set, Any, Union
 import logging
 
@@ -79,7 +80,7 @@ class HybridConceptRegistry(ConceptRegistry):
     def create_frame_aware_concept(self, name: str, context: str = "default",
                                  synset_id: Optional[str] = None,
                                  disambiguation: Optional[str] = None,
-                                 embedding: Optional[np.ndarray] = None,
+                                 embedding: Optional[NDArray[np.float32]] = None,
                                  auto_disambiguate: bool = True) -> FrameAwareConcept:
         """
         Create a frame-aware concept with extended capabilities.
@@ -154,7 +155,7 @@ class HybridConceptRegistry(ConceptRegistry):
             frame_name, instance_id, resolved_bindings, context
         )
     
-    def add_concept_embedding(self, concept_id: str, embedding: np.ndarray) -> None:
+    def add_concept_embedding(self, concept_id: str, embedding: NDArray[np.float32]) -> None:
         """Add or update a concept's embedding."""
         self.cluster_registry.add_concept_embedding(concept_id, embedding)
         
@@ -236,7 +237,7 @@ class HybridConceptRegistry(ConceptRegistry):
             
             if scores:
                 # Combined score (weighted average)
-                overall_score = np.mean(scores)
+                overall_score = float(np.mean(scores))
                 basis_str = "+".join(analogy_basis)
                 analogies.append((target_concept, overall_score, basis_str))
         
@@ -352,7 +353,7 @@ class HybridConceptRegistry(ConceptRegistry):
         if self.cluster_registry.is_trained:
             cluster_sizes = [len(cluster.members) for cluster in self.cluster_registry.clusters.values()]
             hybrid_stats.update({
-                "avg_cluster_size": np.mean(cluster_sizes) if cluster_sizes else 0,
+                "avg_cluster_size": int(np.mean(cluster_sizes)) if cluster_sizes else 0,
                 "max_cluster_size": max(cluster_sizes) if cluster_sizes else 0,
                 "min_cluster_size": min(cluster_sizes) if cluster_sizes else 0,
             })

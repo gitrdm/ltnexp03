@@ -307,7 +307,7 @@ class Concept:
     context: str = "default"
     metadata: Dict[str, Any] = field(default_factory=dict)
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate concept after initialization."""
         if not self.name.strip():
             raise ValueError("Concept name cannot be empty")
@@ -327,7 +327,7 @@ class Concept:
             return f"{self.name}({self.synset_id})"
         return self.name
     
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Concept):
             return False
         return self.unique_id == other.unique_id
@@ -444,7 +444,7 @@ class FormulaNode:
     operation: OperationType
     args: List[Any] = field(default_factory=list)  # Can be concepts, other nodes, or values
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate formula node after initialization."""
         if self.operation == OperationType.CONSTANT and len(self.args) != 1:
             raise ValueError("Constant operation must have exactly one argument")
@@ -478,7 +478,11 @@ class FormulaNode:
         elif self.operation == OperationType.DISSIMILARITY:
             return f"dissimilar({self.args[0]}, {self.args[1]})"
         else:
-            return f"{self.operation.value}({', '.join(map(str, self.args))})"
+            # Defensive programming: handle potential future OperationType values
+            # MyPy flags this as "unreachable" since all current enum values are handled above,
+            # but this provides safety against enum expansion without code updates.
+            # Future developers: this mypy warning can be safely ignored.
+            return f"{self.operation.value}({', '.join(map(str, self.args))})"  # type: ignore[unreachable]
 
 
 @dataclass
@@ -615,7 +619,7 @@ class Axiom:
     created_by: str = "system"
     confidence: float = 1.0
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate and process axiom after initialization."""
         if not self.axiom_id.strip():
             self.axiom_id = str(uuid.uuid4())
@@ -780,7 +784,7 @@ class Context:
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate context after initialization."""
         if not self.name.strip():
             raise ValueError("Context name cannot be empty")
