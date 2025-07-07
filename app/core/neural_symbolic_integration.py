@@ -866,12 +866,16 @@ class NeuralSymbolicTrainingManager:
             
             # Create analogy axioms
             if len(concepts) >= 4:
+                # Create analogy as similarity between two relationships
+                # Analogy: A:B :: C:D represented as similarity(A-B, C-D)
+                left_relation = FormulaNode(OperationType.SUBTRACT, [concepts[0].name, concepts[1].name])
+                right_relation = FormulaNode(OperationType.SUBTRACT, [concepts[2].name, concepts[3].name])
                 axiom = Axiom(
                     axiom_id="analogy_0",
                     axiom_type=AxiomType.ANALOGY,
                     classification=AxiomClassification.SOFT,
                     description=f"Analogy: {concepts[0].name} is to {concepts[1].name} as {concepts[2].name} is to {concepts[3].name}",
-                    formula=FormulaNode(OperationType.ADD, [concepts[0].name, concepts[1].name, concepts[2].name, concepts[3].name])
+                    formula=FormulaNode(OperationType.SIMILARITY, [left_relation, right_relation])
                 )
                 axioms.append(axiom)
         
