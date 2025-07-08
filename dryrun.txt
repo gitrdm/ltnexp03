@@ -1,0 +1,1167 @@
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Aider v0.85.1
+Model: ollama/gemma3 with whole edit format
+Git repo: .git with 116 files
+Repo-map: using 4096 tokens, files refresh
+Here are summaries of some files present in my git repository.
+Do not propose changes to these files, treat them as *read-only*.
+If you need to edit any of these files, ask me to *add them to the chat* first.
+
+app/__init__.py:
+⋮
+│__version__ = "0.1.0"
+
+app/batch_service.py:
+⋮
+│@app.delete("/analogies/batch", response_model=BatchWorkflowResponse)
+│async def delete_analogies_batch(criteria: DeleteCriteriaRequest) -> BatchWorkflowResponse:
+⋮
+│@app.get("/workflows", response_model=WorkflowListResponse)
+│async def list_workflows(status: Optional[str] = None, limit: int = 50) -> WorkflowListResponse:
+⋮
+│@app.get("/analogies/stream")
+│async def stream_analogies(domain: Optional[str] = None, min_quality: Optional[float] = None, limit
+⋮
+
+app/core/abstractions.py:
+⋮
+│@dataclass
+│class FormulaNode:
+│    """
+│    Compositional Formula Tree Node for Logical Expressions
+│    
+│    The FormulaNode class implements a tree-based representation of logical
+│    formulas, enabling compositional construction of complex logical
+│    relationships from simple mathematical operations.
+│    
+│    ARCHITECTURAL DESIGN:
+│    =====================
+│    
+⋮
+│    def get_concepts(self) -> List[Concept]:
+⋮
+│@dataclass
+│class Axiom:
+│    """
+│    Logical Axiom with Formula, Metadata, and Processing Classification
+│    
+│    The Axiom class represents logical statements that form the knowledge
+│    base of our reasoning system. Each axiom encapsulates a logical
+│    relationship between concepts along with metadata for processing,
+│    validation, and learning.
+│    
+│    DESIGN PHILOSOPHY:
+│    ==================
+│    
+⋮
+│    def is_core_axiom(self) -> bool:
+⋮
+│@dataclass
+│class Context:
+│    """
+│    Hierarchical Knowledge Domain with Axiom and Concept Organization
+│    
+│    The Context class represents a scoped reasoning domain that organizes
+│    related axioms and concepts into coherent knowledge units. Contexts
+│    enable domain-specific reasoning while supporting inheritance and
+│    knowledge sharing across related domains.
+│    
+│    DESIGN MOTIVATION:
+│    ==================
+│    
+⋮
+│    def get_concept(self, name: str) -> Optional[Concept]:
+⋮
+
+app/core/api_models.py:
+⋮
+│class ConceptCreateRequest(TypedDict):
+⋮
+│class ConceptSearchResponse(TypedDict):
+⋮
+│class ConceptSimilarityResponse(TypedDict):
+⋮
+│class AnalogyRequest(TypedDict):
+⋮
+│class AnalogyResponse(TypedDict):
+⋮
+│class SemanticFieldDiscoveryResponse(TypedDict):
+⋮
+│class CrossDomainAnalogiesResponse(TypedDict):
+⋮
+│class FrameCreateResponse(TypedDict):
+⋮
+│class FrameInstanceResponse(TypedDict):
+⋮
+│class FrameQueryResponse(TypedDict):
+⋮
+│class BatchWorkflowResponse(TypedDict):
+⋮
+
+app/core/batch_persistence.py:
+⋮
+│class WorkflowStatus(Enum):
+⋮
+│class WorkflowType(Enum):
+⋮
+│@dataclass
+│class BatchWorkflow:
+│    """Represents a batch operation workflow."""
+⋮
+│    def to_dict(self) -> Dict[str, Any]:
+⋮
+│    @classmethod
+│    def from_dict(cls, data: Dict[str, Any]) -> 'BatchWorkflow':
+⋮
+│@invariant(lambda self: self.storage_path.exists())
+│@invariant(lambda self: self.storage_path.is_dir())
+│class BatchPersistenceManager:
+│    """
+│    Production-ready persistence manager with batch workflow support.
+│    
+│    Provides:
+│    - JSONL streaming for incremental operations
+│    - SQLite transactions for ACID compliance
+│    - Vector indexes for similarity search
+│    - Workflow management for batch operations
+│    - Soft deletes with compaction
+⋮
+│    def _init_storage_structure(self) -> None:
+⋮
+│    def _init_sqlite_database(self) -> None:
+⋮
+│    def _init_vector_indexes(self) -> None:
+⋮
+│    def _load_workflows(self) -> None:
+⋮
+│    def process_analogy_batch(self, workflow_id: str) -> BatchWorkflow:
+⋮
+│    def _save_analogy_to_sqlite(self, analogy: Dict[str, Any]) -> None:
+⋮
+│    @require(lambda criteria: criteria is not None)
+│    def delete_analogies_batch(self, criteria: DeleteCriteria, 
+⋮
+│    def _find_analogies_by_criteria(self, criteria: DeleteCriteria) -> List[str]:
+⋮
+│    def _add_tombstone_to_jsonl(self, analogy_id: str) -> None:
+⋮
+│    def compact_analogies_jsonl(self) -> Dict[str, Any]:
+⋮
+│    def list_workflows(self, status: Optional[WorkflowStatus] = None) -> List[BatchWorkflow]:
+⋮
+│    def _save_workflow(self, workflow: BatchWorkflow) -> None:
+⋮
+│    def stream_analogies(self, domain: Optional[str] = None, 
+⋮
+
+app/core/concept_registry.py:
+⋮
+│@dataclass
+│class SynsetInfo:
+⋮
+│@invariant(lambda self: hasattr(self, 'concepts') and isinstance(self.concepts, dict),
+⋮
+│class ConceptRegistry:
+│    """
+│    Centralized Concept Management System
+│    
+│    The ConceptRegistry is the heart of our concept management system. It provides:
+│    
+│    1. UNIQUE CONCEPT IDENTIFICATION: Each concept gets a globally unique ID
+│       combining context, name, and optional synset ID
+│       
+│    2. FAST LOOKUPS: Multiple indexing strategies for different access patterns:
+│       - Global index for uniqueness guarantees
+⋮
+│    @require(lambda concept: isinstance(concept, Concept),
+⋮
+│    def register_concept(self, concept: Concept) -> Concept:
+⋮
+│    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+⋮
+│    def get_concept(self, name: str, context: str = "default", 
+⋮
+│    def get_synset_info(self, synset_id: str) -> Optional[SynsetInfo]:
+⋮
+│    def find_synsets(self, word: str, pos: Optional[str] = None) -> List[SynsetInfo]:
+⋮
+│    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+⋮
+│    def create_concept(self, name: str, context: str = "default",
+│                      synset_id: Optional[str] = None,
+│                      disambiguation: Optional[str] = None,
+⋮
+
+app/core/contract_enhanced_registry.py:
+⋮
+│class ContractValidatedRegistry(EnhancedHybridRegistry):
+│    """
+│    Enhanced hybrid registry with comprehensive Design by Contract validation.
+│    
+│    This class extends EnhancedHybridRegistry with dpcontracts decorators to:
+│    - Validate all inputs before processing
+│    - Ensure all outputs meet quality constraints
+│    - Maintain class invariants throughout operations
+│    - Provide clear error messages for contract violations
+⋮
+│    @require("concepts list must be valid", 
+⋮
+│    def discover_semantic_fields_with_contracts(
+│        self, 
+│        concepts: Optional[List[FrameAwareConcept]] = None,
+│        min_coherence: float = 0.7,
+│        max_fields: int = 10
+⋮
+│    @require("partial_analogy must have at least 2 mappings", 
+⋮
+│    def complete_analogy_with_contracts(
+│        self, 
+│        partial_analogy: Dict[str, str],
+│        max_completions: int = 5,
+│        reasoning_types: List[str] = None
+⋮
+│def demonstrate_contract_validation():
+⋮
+
+app/core/contract_persistence.py:
+⋮
+│def validate_workflow_id(workflow_id: str) -> bool:
+⋮
+│@invariant(lambda self: validate_storage_path(self.storage_path))
+⋮
+│class ContractEnhancedPersistenceManager:
+│    """
+│    Contract-enhanced persistence manager with comprehensive validation.
+│    
+│    Implements both PersistenceProtocol and BatchPersistenceProtocol with
+│    Design by Contract validation for all operations.
+⋮
+│    @require(lambda context_name: ConceptConstraints.valid_context(context_name))
+│    def load_registry_state(self, context_name: str = "default") -> Optional[Dict[str, Any]]:
+⋮
+│    @require(lambda format_type: format_type in ["json", "compressed", "sqlite"])
+│    @ensure(lambda result: isinstance(result, Path))
+│    def export_knowledge_base(self, format_type: str = "json", 
+⋮
+│    @require(lambda workflow_id: validate_workflow_id(workflow_id))
+│    @ensure(lambda result: isinstance(result, BatchWorkflow))
+│    def process_analogy_batch(self, workflow_id: str) -> BatchWorkflow:
+⋮
+│    @require(lambda criteria: isinstance(criteria, DeleteCriteria))
+⋮
+│    def delete_analogies_batch(self, criteria: DeleteCriteria, 
+⋮
+│    def stream_analogies(self, domain: Optional[str] = None, 
+⋮
+│    @ensure(lambda result: isinstance(result, dict))
+│    @ensure(lambda result: "status" in result)
+│    def compact_analogies_jsonl(self) -> Dict[str, Any]:
+⋮
+
+app/core/contracts.py:
+⋮
+│class ConceptConstraints:
+│    """Constraint validators for concept operations."""
+│    
+│    @staticmethod
+│    def valid_concept_name(name: str) -> bool:
+⋮
+│    @staticmethod
+│    def valid_context(context: str) -> bool:
+⋮
+│class EmbeddingConstraints:
+│    """Constraint validators for embedding operations."""
+│    
+│    @staticmethod
+│    def valid_embedding_dimension(dimension: int) -> bool:
+⋮
+│    @staticmethod
+│    def valid_similarity_score(score: float) -> bool:
+⋮
+│class ReasoningConstraints:
+│    """Constraint validators for reasoning operations."""
+│    
+│    @staticmethod
+│    def valid_coherence_score(score: float) -> bool:
+⋮
+│    @staticmethod
+│    def valid_concept_list(concepts: List[str]) -> bool:
+⋮
+│    @staticmethod
+│    def valid_partial_analogy(analogy: Dict[str, str]) -> bool:
+⋮
+│    @staticmethod
+│    def valid_max_completions(max_comp: int) -> bool:
+⋮
+│def validate_concept_name(args: Any) -> bool:
+⋮
+│def validate_context(args: Any) -> bool:
+⋮
+│class ContractedConceptRegistry:
+│    """Example of contract-enhanced concept registry."""
+│    
+⋮
+│    @require(lambda name: ConceptConstraints.valid_concept_name(name), description="name must be va
+⋮
+│    def create_concept_with_contracts(self, name: str, context: str) -> Any:
+⋮
+│class SoftLogicContracts:
+│    """Contract validators for soft logic domain operations."""
+│    
+│    @staticmethod
+│    def valid_concept_name(name: str) -> bool:
+⋮
+│    @staticmethod
+│    def valid_context(context: str) -> bool:
+⋮
+│    @staticmethod
+│    def valid_coherence_score(score: float) -> bool:
+⋮
+│    @staticmethod
+│    def valid_max_results(max_results: int) -> bool:
+⋮
+│    @staticmethod
+│    def valid_embedding_dimension(dimension: int) -> bool:
+⋮
+
+app/core/enhanced_semantic_reasoning.py:
+⋮
+│@dataclass
+│class CrossDomainAnalogy:
+│    """
+│    Represents a cross-domain analogical mapping.
+│    
+│    Example: Military strategy concepts map to business strategy concepts
+│    through shared abstract structural patterns.
+⋮
+│    def compute_overall_quality(self) -> float:
+⋮
+│@dataclass
+│class SemanticField:
+│    """
+│    Represents a coherent semantic field discovered through clustering.
+│    
+│    Semantic fields are coherent regions of meaning space that contain
+│    related concepts and frames.
+⋮
+│    def get_all_concepts(self) -> Set[str]:
+⋮
+│@invariant(lambda self: not hasattr(self, 'frame_aware_concepts') or 
+⋮
+│class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, KnowledgeDiscoveryPr
+│    """
+│    Enhanced hybrid registry with advanced semantic reasoning capabilities.
+│    
+│    Extends the base hybrid registry with:
+│    - Cross-domain analogy discovery
+│    - Dynamic semantic field identification
+│    - Advanced embedding-based reasoning
+│    - Sophisticated concept relationship discovery
+⋮
+│    def discover_cross_domain_analogies(self, min_quality: float = 0.6) -> List[CrossDomainAnalogy]
+⋮
+│    @require(lambda partial_analogy: isinstance(partial_analogy, dict) and len(partial_analogy) >= 
+⋮
+│    def find_analogical_completions(self, partial_analogy: Dict[str, str],
+⋮
+│    @require(lambda name: isinstance(name, str) and len(name.strip()) > 0,
+⋮
+│    def create_frame_aware_concept_with_advanced_embedding(self, name: str, context: str = "default
+│                                 synset_id: Optional[str] = None,
+│                                 disambiguation: Optional[str] = None,
+│                                 embedding: Optional[NDArray[np.float32]] = None,
+│                                 auto_disambiguate: bool = True,
+⋮
+│    def discover_semantic_fields(self, min_coherence: float = 0.7) -> List[Dict[str, Any]]:
+⋮
+
+app/core/frame_cluster_abstractions.py:
+⋮
+│@dataclass
+│class FrameElement:
+⋮
+│@dataclass
+│class SemanticFrame:
+│    """
+│    FrameNet semantic frame with roles and inheritance.
+│    
+│    Represents a conceptual structure that describes a particular type
+│    of event, relation, or state, along with the participants and props
+│    involved in it.
+⋮
+│    def get_all_elements(self) -> List[FrameElement]:
+⋮
+│@dataclass
+│class FrameInstance:
+⋮
+│@dataclass
+│class ConceptCluster:
+⋮
+│@dataclass
+│class FrameAwareConcept(Concept):
+│    """
+│    Extended concept with frame and cluster information.
+│    
+│    Combines the basic concept representation with additional
+│    semantic structure from frames and learned cluster memberships.
+⋮
+│    def get_frames(self) -> List[str]:
+⋮
+│@dataclass
+│class AnalogicalMapping:
+⋮
+
+app/core/frame_cluster_registry.py:
+⋮
+│class FrameRegistry:
+│    """
+│    Registry for managing semantic frames and their relationships.
+│    
+│    Provides storage, retrieval, and reasoning capabilities for FrameNet-style
+│    semantic frames, enabling frame-aware analogical reasoning and concept
+│    organization.
+⋮
+│    def create_frame_instance(self, frame_name: str, instance_id: str,
+│                            bindings: Dict[str, FrameAwareConcept],
+⋮
+│class ClusterRegistry:
+│    """
+│    Registry for managing concept clusters and embeddings.
+│    
+│    Provides clustering capabilities for concepts based on embeddings,
+│    enabling cluster-based similarity and analogical reasoning.
+⋮
+│    def add_concept_embedding(self, concept_id: str, embedding: NDArray[np.float32]) -> None:
+⋮
+│    def get_concept_cluster_memberships(self, concept_id: str) -> Dict[int, float]:
+⋮
+
+app/core/hybrid_registry.py:
+⋮
+│class HybridConceptRegistry(ConceptRegistry):
+│    """
+│    Advanced concept registry with frame and cluster integration.
+│    
+│    Combines the basic concept management capabilities with semantic frame
+│    understanding and clustering-based representations to enable sophisticated
+│    analogical reasoning and concept organization.
+│    
+│    ARCHITECTURE:
+│    =============
+│    
+⋮
+│    def create_frame_aware_concept(self, name: str, context: str = "default",
+│                                 synset_id: Optional[str] = None,
+│                                 disambiguation: Optional[str] = None,
+│                                 embedding: Optional[NDArray[np.float32]] = None,
+⋮
+│    def create_frame_instance(self, frame_name: str, instance_id: str,
+│                            concept_bindings: Dict[str, Union[str, FrameAwareConcept]],
+⋮
+│    def add_concept_embedding(self, concept_id: str, embedding: NDArray[np.float32]) -> None:
+⋮
+│    def update_clusters(self) -> None:
+⋮
+│    def find_analogous_concepts(self, source_concept: Union[str, FrameAwareConcept],
+│                              frame_context: Optional[str] = None,
+│                              cluster_threshold: float = 0.7,
+⋮
+
+app/core/icontract_demo.py:
+⋮
+│class SoftLogicContracts:
+│    """Contract validators for soft logic domain operations."""
+│    
+│    @staticmethod
+│    def valid_concept_name(name: str) -> bool:
+⋮
+│    @staticmethod
+│    def valid_context(context: str) -> bool:
+⋮
+│    @staticmethod
+│    def valid_coherence_score(score: float) -> bool:
+⋮
+│    @staticmethod
+│    def valid_max_results(max_results: int) -> bool:
+⋮
+│class MockRegistry:
+│    def __init__(self):
+│        self.frame_aware_concepts = {}
+⋮
+│    def create_frame_aware_concept_with_advanced_embedding(self, **kwargs):
+⋮
+│    def discover_semantic_fields(self, **kwargs):
+⋮
+│    def find_analogical_completions(self, **kwargs):
+⋮
+│@invariant(lambda self: not hasattr(self, 'frame_aware_concepts') or len(self.frame_aware_concepts)
+│@invariant(lambda self: self._operation_count >= 0, "Operation count must be non-negative")
+│class ContractEnhancedRegistry(BaseRegistry):
+│    """
+│    Enhanced registry with comprehensive icontract validation.
+│    
+│    Demonstrates how to add Design by Contract validation to existing
+│    functionality without breaking backward compatibility.
+⋮
+│    @require(lambda name: SoftLogicContracts.valid_concept_name(name), 
+⋮
+│    def create_concept_with_contracts(
+│        self, 
+│        name: str, 
+│        context: str = "default",
+│        synset_id: Optional[str] = None,
+│        disambiguation: Optional[str] = None
+⋮
+│    @require(lambda min_coherence: SoftLogicContracts.valid_coherence_score(min_coherence),
+⋮
+│    def discover_semantic_fields_with_contracts(
+│        self, 
+│        min_coherence: float = 0.7,
+│        max_fields: int = 10
+⋮
+│    @require(lambda partial_analogy: SoftLogicContracts.valid_analogy_mapping(partial_analogy),
+⋮
+│    def complete_analogy_with_contracts(
+│        self, 
+│        partial_analogy: Dict[str, str],
+│        max_completions: int = 5
+⋮
+│def demonstrate_contract_validation():
+⋮
+
+app/core/neural_symbolic_integration.py:
+⋮
+│@runtime_checkable
+│class NeuralTrainingProvider(Protocol):
+│    """Protocol for neural training providers."""
+│    
+│    def train_epoch(self, axioms: List[Axiom], concepts: Sequence[Concept]) -> Dict[str, float]:
+⋮
+│    def evaluate_satisfiability(self, axioms: List[Axiom]) -> float:
+⋮
+│    def get_concept_embeddings(self) -> Dict[str, torch.Tensor]:
+⋮
+│@runtime_checkable  
+│class SMTVerificationProvider(Protocol):
+│    """Protocol for SMT verification providers."""
+│    
+│    def verify_axiom_consistency(self, axioms: List[Axiom]) -> Tuple[bool, Optional[str]]:
+⋮
+│@dataclass
+│class TrainingConfiguration:
+⋮
+│@dataclass
+│class TrainingProgress:
+⋮
+│class LTNTrainingProvider:
+│    """LTNtorch-based neural training provider with contract validation."""
+│    
+⋮
+│    @require(lambda self, concepts: len(concepts) > 0)
+│    @ensure(lambda self, result: len(result) == len(self.constants))
+│    def initialize_concepts(self, concepts: Sequence[Concept]) -> Dict[str, ltn.Constant]:
+⋮
+│    @require(lambda self, axioms: len(axioms) > 0)
+│    @ensure(lambda self, result: len(result) == len(self.predicates))
+│    def initialize_axioms(self, axioms: List[Axiom]) -> Dict[str, Any]:
+⋮
+│    @require(lambda self, axioms, concepts: len(axioms) > 0 and len(concepts) > 0)
+⋮
+│    def train_epoch(self, axioms: List[Axiom], concepts: Sequence[Concept]) -> Dict[str, float]:
+│        """Train for one epoch with contract validation."""
+│        if self.optimizer is None:
+│            # Initialize optimizer with robust Mock filtering
+│            all_params = []
+│            
+⋮
+│            def extract_tensor_params(obj: Any) -> List[torch.Tensor]:
+⋮
+│    @ensure(lambda result: 0.0 <= result <= 1.0)
+│    def evaluate_satisfiability(self, axioms: List[Axiom]) -> float:
+⋮
+│    def get_concept_embeddings(self) -> Dict[str, torch.Tensor]:
+⋮
+│class Z3SMTVerifier:
+│    """Z3-based SMT verification provider with contract validation."""
+│    
+⋮
+│    @require(lambda self, axioms: len(axioms) >= 0)
+│    @ensure(lambda result: isinstance(result[0], bool))
+│    def verify_axiom_consistency(self, axioms: List[Axiom]) -> Tuple[bool, Optional[str]]:
+⋮
+
+app/core/parsers.py:
+⋮
+│class AxiomParseError(Exception):
+⋮
+
+app/core/persistence.py:
+⋮
+│class StorageFormat:
+│    """Storage format specifications and validation."""
+│    
+⋮
+│    @staticmethod
+│    def validate_format(format_type: str) -> bool:
+⋮
+│    @staticmethod
+│    def get_file_extension(format_type: str) -> str:
+⋮
+│@invariant(lambda self: self.storage_path.exists())
+│@invariant(lambda self: self.storage_path.is_dir())
+│class PersistenceManager:
+│    """
+│    Comprehensive persistence management for soft logic system.
+│    
+│    Provides contract-validated save/load functionality for all semantic
+│    structures including concepts, frames, clusters, and analogical mappings.
+⋮
+│    def _init_storage_structure(self) -> None:
+⋮
+│    @require(lambda context_name: len(context_name.strip()) > 0)
+│    def load_registry_state(self, context_name: str = "default",
+⋮
+│    @require(lambda format_type: StorageFormat.validate_format(format_type))
+│    @ensure(lambda result: result.exists())
+│    def export_knowledge_base(self, context_name: str = "default",
+│                             format_type: str = "json", 
+⋮
+
+app/core/protocol_mixins.py:
+⋮
+│class SemanticReasoningMixin(SemanticReasoningProtocol):
+│    """
+│    Mixin that provides SemanticReasoningProtocol implementation.
+│    
+│    This mixin adapts existing enhanced semantic reasoning methods
+│    to match the protocol interface exactly.
+│    
+│    EXPECTED METHODS:
+│    - find_analogical_completions(partial_analogy, max_completions)
+│    - find_analogous_concepts(source_concept, frame_context, cluster_threshold, frame_threshold)  
+│    - discover_semantic_fields(min_coherence)
+⋮
+│    def find_analogous_concepts(
+│        self,
+│        source_concept: Any,
+│        frame_context: Optional[str] = None,
+│        cluster_threshold: float = 0.6,
+│        frame_threshold: float = 0.6
+⋮
+│    def discover_semantic_fields(
+│        self, 
+│        min_coherence: float = 0.7
+⋮
+
+app/core/protocols.py:
+⋮
+│T_Concept = TypeVar('T_Concept')
+│T_ConceptId = TypeVar('T_ConceptId', bound=str, covariant=True)
+│T_Context = TypeVar('T_Context', bound=str)
+│
+⋮
+│@runtime_checkable
+│class ConceptRegistryProtocol(Protocol, Generic[T_Concept, T_ConceptId]):
+│    """
+│    Protocol for concept registry implementations.
+│    
+│    Defines the interface for registering, retrieving, and managing concepts
+│    with type safety guarantees.
+⋮
+│    def create_concept(
+│        self, 
+│        name: str, 
+│        context: str = "default",
+│        synset_id: Optional[str] = None,
+│        disambiguation: Optional[str] = None,
+│        auto_disambiguate: bool = True
+⋮
+│    def get_concept(
+│        self, 
+│        name: str, 
+│        context: str = "default",
+│        synset_id: Optional[str] = None
+⋮
+│    @property
+│    def concept_count(self) -> int:
+⋮
+│@runtime_checkable
+│class EmbeddingProviderProtocol(Protocol):
+│    """
+│    Protocol for embedding providers.
+│    
+│    Defines interface for generating vector embeddings and computing
+│    semantic similarity between concepts.
+⋮
+│    def compute_similarity(
+│        self, 
+│        emb1: NDArray[np.float32], 
+│        emb2: NDArray[np.float32]
+⋮
+│    def batch_generate_embeddings(
+│        self,
+│        concepts: List[str],
+│        context: str = "default"
+⋮
+│    @property
+│    def embedding_dimension(self) -> int:
+⋮
+│    @property
+│    def provider_name(self) -> str:
+⋮
+│@runtime_checkable
+│class SemanticReasoningProtocol(Protocol):
+│    """
+│    Protocol for semantic reasoning engines.
+│    
+│    Defines interface for advanced semantic operations like analogical
+│    reasoning, semantic field discovery, and cross-domain analysis.
+⋮
+│    def find_analogous_concepts(
+│        self,
+│        source_concept: Any,
+│        frame_context: Optional[str] = None,
+│        cluster_threshold: float = 0.6,
+│        frame_threshold: float = 0.6
+⋮
+│    def discover_semantic_fields(
+│        self, 
+│        min_coherence: float = 0.7
+⋮
+│    def find_cross_domain_analogies(
+│        self, 
+│        source_domain: str,
+│        target_domain: str,
+│        min_quality: float = 0.5
+⋮
+│@runtime_checkable
+│class KnowledgeDiscoveryProtocol(Protocol):
+│    """
+│    Protocol for knowledge discovery operations.
+│    
+│    Defines interface for pattern extraction, relationship discovery,
+│    and knowledge base expansion.
+⋮
+│    def discover_patterns(
+│        self, 
+│        domain: str,
+│        pattern_types: Optional[List[str]] = None
+⋮
+│    def extract_relationships(
+│        self, 
+│        concepts: List[str],
+│        relationship_types: Optional[List[str]] = None
+⋮
+│    def suggest_new_concepts(
+│        self,
+│        existing_concepts: List[str],
+│        domain: str = "default"
+⋮
+│    def validate_knowledge_consistency(
+│        self,
+│        knowledge_base: Dict[str, Any]
+⋮
+│@runtime_checkable
+│class FrameRegistryProtocol(Protocol):
+│    """
+│    Protocol for semantic frame management.
+│    
+│    Defines interface for creating, managing, and querying semantic frames
+│    in the FrameNet tradition.
+⋮
+│    def create_frame(
+│        self,
+│        name: str,
+│        definition: str,
+│        core_elements: List[str],
+│        peripheral_elements: Optional[List[str]] = None
+⋮
+│    def find_frames_for_concept(
+│        self, 
+│        concept: str
+⋮
+│    def create_frame_instance(
+│        self,
+│        frame_id: str,
+│        concept_bindings: Dict[str, str]
+⋮
+│@runtime_checkable
+│class ClusterRegistryProtocol(Protocol):
+│    """
+│    Protocol for concept clustering operations.
+│    
+│    Defines interface for clustering concepts based on embeddings
+│    and managing cluster-based similarity computations.
+⋮
+│    def update_clusters(
+│        self,
+│        concepts: Optional[List[str]] = None,
+│        n_clusters: Optional[int] = None
+⋮
+│    def get_cluster_membership(
+│        self, 
+│        concept: str
+⋮
+│    def find_cluster_neighbors(
+│        self,
+│        concept: str,
+│        max_neighbors: int = 10
+⋮
+│    @property
+│    def is_trained(self) -> bool:
+⋮
+│    @property
+│    def cluster_count(self) -> int:
+⋮
+│@runtime_checkable
+│class PersistenceProtocol(Protocol):
+│    """
+│    Protocol for persistence layer implementations.
+│    
+│    Defines the interface for saving, loading, and managing persistent state
+│    of the soft logic system components.
+⋮
+│    @abstractmethod
+│    def load_registry_state(self, context_name: str = "default") -> Optional[Dict[str, Any]]:
+⋮
+│    @abstractmethod
+│    def export_knowledge_base(self, format: str = "json", 
+⋮
+│    @abstractmethod
+│    def import_knowledge_base(self, source_path: Any, 
+⋮
+│@runtime_checkable
+│class BatchPersistenceProtocol(Protocol):
+│    """
+│    Protocol for batch-aware persistence implementations.
+│    
+│    Extends basic persistence with batch operation support and workflow management.
+⋮
+│    @abstractmethod
+│    def process_analogy_batch(self, workflow_id: str) -> Any:
+⋮
+│    @abstractmethod
+│    def delete_analogies_batch(self, criteria: Any, 
+⋮
+│    @abstractmethod
+│    def stream_analogies(self, domain: Optional[str] = None, 
+⋮
+│    @abstractmethod
+│    def compact_analogies_jsonl(self) -> Dict[str, Any]:
+⋮
+│SemanticSystemProtocol = SemanticReasoningProtocol
+│HybridRegistryProtocol = ConceptRegistryProtocol[Any, str]
+
+app/core/service_constraints.py:
+⋮
+│class ServiceConstraints:
+│    """Contract constraints for service layer operations."""
+│    
+⋮
+│    @staticmethod
+│    def valid_max_results(max_results: int) -> bool:
+⋮
+│    @staticmethod
+│    def valid_workflow_id(workflow_id: str) -> bool:
+⋮
+│class WorkflowConstraints:
+│    """Contract constraints for workflow operations."""
+│    
+│    @staticmethod
+│    def valid_workflow_status(status: str) -> bool:
+⋮
+
+app/core/vector_embeddings.py:
+⋮
+│@dataclass
+│class EmbeddingMetadata:
+⋮
+│class EmbeddingProvider(ABC):
+│    """Abstract base class for embedding providers."""
+│    
+│    @abstractmethod
+│    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
+⋮
+│class RandomEmbeddingProvider(EmbeddingProvider):
+│    """
+│    Random embedding provider for testing and development.
+│    
+│    Generates consistent random embeddings based on text hashing.
+⋮
+│    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
+⋮
+│class SemanticEmbeddingProvider(EmbeddingProvider):
+│    """
+│    Semantic embedding provider that creates embeddings based on concept semantics.
+│    
+│    This provider creates embeddings that reflect semantic relationships by
+│    encoding domain knowledge and conceptual hierarchies.
+⋮
+│    def get_embedding(self, text: str) -> Optional[NDArray[np.float32]]:
+⋮
+│@invariant(lambda self: hasattr(self, 'providers') and isinstance(self.providers, dict),
+⋮
+│class VectorEmbeddingManager:
+│    """
+│    Advanced vector embedding manager for the hybrid semantic system.
+│    
+│    Provides sophisticated embedding capabilities including multiple providers,
+│    embedding persistence, and advanced similarity metrics.
+⋮
+│    @require(lambda concept_id: isinstance(concept_id, str) and len(concept_id.strip()) > 0,
+⋮
+│    def get_embedding(self, concept_id: str, text: str, 
+⋮
+│    def save_embeddings(self) -> None:
+⋮
+│    def load_embeddings(self) -> None:
+⋮
+
+app/main.py:
+⋮
+│def start_server() -> None:
+⋮
+
+app/service_layer.py:
+⋮
+│@app.post("/concepts", response_model=Dict[str, Any], tags=["Concepts"])
+⋮
+│async def create_concept(
+│    concept: ConceptCreate,
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.get("/concepts/{concept_id}", response_model=Dict[str, Any], tags=["Concepts"])
+⋮
+│async def get_concept(
+│    concept_id: str = FastAPIPath(..., description="ID of the concept to retrieve", examples=["exam
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.post("/semantic-fields/discover", response_model=SemanticFieldDiscoveryResponse, tags=["Reason
+⋮
+│async def discover_semantic_fields(
+│    discovery: SemanticFieldDiscovery,
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.post("/analogies/cross-domain", response_model=CrossDomainAnalogiesResponse, tags=["Reasoning"
+⋮
+│async def discover_cross_domain_analogies(
+│    request: CrossDomainAnalogiesRequest,
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.post("/frames/{frame_id}/instances", response_model=FrameInstanceResponse, tags=["Frames"])
+⋮
+│async def create_frame_instance(
+│    instance: FrameInstanceCreate,
+│    frame_id: str = FastAPIPath(..., description="ID of the frame to create an instance for", examp
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.get("/batch/workflows", response_model=List[BatchWorkflowResponse], tags=["Batch Operations"])
+⋮
+│async def list_workflows(
+│    status: Optional[str] = Query(None, description="Filter by workflow status"),
+│    batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
+⋮
+│class ConnectionManager:
+│    """Manage WebSocket connections for streaming."""
+│    
+⋮
+│    async def connect(self, websocket: WebSocket) -> None:
+⋮
+│def initialize_services(force_reinit: bool = False) -> None:
+⋮
+
+app/working_service_layer.py:
+⋮
+│@app.post("/concepts", response_model=ConceptResponse, tags=["Concepts"])
+│async def create_concept(
+│    concept: ConceptCreate,
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.get("/concepts/{concept_id}", tags=["Concepts"])
+│async def get_concept(
+│    concept_id: str,
+│    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+⋮
+│@app.get("/batch/workflows", tags=["Batch Operations"])
+│async def list_workflows(
+│    batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
+⋮
+
+demo_persistence_layer.py:
+⋮
+│def print_section(title: str, emoji: str = "🔸"):
+⋮
+
+demo_phase4_neural_symbolic.py:
+⋮
+│def print_header(title: str, emoji: str = "🔬"):
+⋮
+│def print_result(result: str, emoji: str = "✅"):
+⋮
+
+demo_production_readiness.py:
+⋮
+│def demonstrate_production_readiness():
+⋮
+
+demo_service_layer.py:
+⋮
+│class ServiceLayerDemo:
+│    """Comprehensive demonstration of the service layer."""
+│    
+⋮
+│    async def start_server(self):
+⋮
+│    async def stop_server(self):
+⋮
+│    async def setup_session(self):
+⋮
+│    async def cleanup_session(self):
+⋮
+│    async def check_health(self):
+⋮
+│    async def demo_concept_management(self):
+⋮
+│    async def demo_semantic_reasoning(self):
+⋮
+│    async def demo_frame_operations(self):
+⋮
+│    async def demo_batch_operations(self):
+⋮
+│    async def demo_websocket_streaming(self):
+⋮
+│    async def demo_error_handling(self):
+⋮
+│    async def performance_analysis(self):
+⋮
+│    async def run_complete_demo(self):
+⋮
+
+multi_format_persistence_example.py:
+⋮
+│class MultiFormatDemo:
+│    """Demonstrates the multi-format storage strategy with concrete examples."""
+│    
+⋮
+│    def print_section(self, title: str, emoji: str = "📁"):
+⋮
+│    def demonstrate_npz_format(self):
+│        """
+│        Demonstrate NPZ format for vector embeddings.
+│        
+│        Shows compressed numpy array storage for efficient
+│        vector operations and similarity search.
+⋮
+│        def cosine_similarity(a, b):
+⋮
+│    def show_directory_structure(self):
+│        """Show the complete directory structure created."""
+⋮
+│        def print_tree(path, prefix="", max_depth=3, current_depth=0):
+⋮
+│    def run_complete_demo(self):
+⋮
+
+original_code/ltn01.py:
+⋮
+│class Addition(nn.Module):
+⋮
+│class Subtraction(nn.Module):
+⋮
+│class Similarity(nn.Module):
+⋮
+│class Dissimilarity(nn.Module):
+⋮
+│add = ltn.Function(Addition())
+│subtract = ltn.Function(Subtraction())
+│isSimilar = ltn.Predicate(Similarity())
+│isOpposite = ltn.Predicate(Dissimilarity())
+│
+⋮
+
+original_code/notears.py:
+⋮
+│def h_func(W):
+⋮
+│def train_linear_notears():
+⋮
+
+original_code/notears02.py:
+⋮
+│def h_func(W):
+⋮
+│def train_linear_notears():
+⋮
+
+original_code/notears03.py:
+⋮
+│def h_func(W):
+⋮
+│def train_linear_notears():
+⋮
+
+original_code/smt01.py:
+⋮
+│def check_axiom_consistency():
+⋮
+
+persistence_examples_overview.py:
+⋮
+│def print_header(title: str, emoji: str = "🚀"):
+⋮
+│def print_feature(feature: str, description: str = ""):
+⋮
+
+persistence_strategy_example.py:
+⋮
+│class PersistenceStrategyDemo:
+│    """
+│    Comprehensive demo of the persistence layer strategy implementation.
+│    
+│    This class demonstrates all the key components mentioned in the strategy:
+│    - Hybrid storage approach
+│    - Batch workflow management
+│    - Performance optimization
+│    - Data safety features
+⋮
+│    def print_header(self, title: str, emoji: str = "🚀"):
+⋮
+│    def print_feature(self, feature: str, status: str = "✅"):
+⋮
+│    async def run_complete_demo(self):
+⋮
+
+tests/test_comprehensive_service_layer.py:
+⋮
+│def test_service_layer_import(service_module):
+⋮
+│def start_service_layer_server(service_module, port):
+⋮
+│def stop_server(proc, name):
+⋮
+│def test_basic_endpoints(port, service_name):
+⋮
+│def test_concept_operations(port, service_name):
+⋮
+│def test_analogy_operations(port, service_name):
+⋮
+│def comprehensive_service_test(service_module, port):
+⋮
+
+tests/test_main.py:
+⋮
+│@pytest.fixture
+│def client():
+⋮
+│def test_health_check(client):
+⋮
+│def test_root_endpoint(client):
+⋮
+
+tests/test_service_layer_integration.py:
+⋮
+│def start_server():
+⋮
+│def stop_server(proc):
+⋮
+
