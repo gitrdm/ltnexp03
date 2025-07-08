@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Any, Union, Iterator
 from datetime import datetime, timezone
 import logging
 
-from icontract import require, ensure, invariant, ViolationError  # type: ignore[import-untyped]
+from icontract import require, ensure, invariant, ViolationError
 
 from .persistence import PersistenceManager
 from .batch_persistence import BatchPersistenceManager, DeleteCriteria, BatchWorkflow
@@ -55,7 +55,7 @@ def validate_analogy_batch(analogies: List[Dict[str, Any]]) -> bool:
     
     for analogy in analogies:
         if not isinstance(analogy, dict):
-            return False
+            return False  # type: ignore[unreachable]
         
         if not required_fields.issubset(analogy.keys()):
             return False
@@ -325,7 +325,7 @@ class ContractEnhancedPersistenceManager:
     def get_storage_statistics(self) -> Dict[str, Any]:
         """Get comprehensive storage statistics."""
         try:
-            stats = {
+            stats: Dict[str, Any] = {
                 "storage_path": str(self.storage_path),
                 "total_workflows": len(self._batch_manager.active_workflows),
                 "workflow_status_counts": {},

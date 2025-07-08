@@ -12,6 +12,7 @@ For the complete API, use the service layer directly.
 """
 
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Any
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 import uvicorn
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Main application lifespan that ensures service initialization."""
     try:
         logger.info("🚀 Starting main application...")
@@ -59,19 +60,19 @@ app.mount("/api", service_app)
 
 
 @app.get("/")
-async def root():
+async def root() -> RedirectResponse:
     """Root endpoint - redirect to service layer API docs."""
     return RedirectResponse(url="/api/docs")
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """Legacy health check endpoint."""
     return {"status": "healthy", "service": "ltnexp03", "version": "0.1.0"}
 
 
 @app.get("/service-info")
-async def service_info():
+async def service_info() -> dict[str, Any]:
     """Get information about available services."""
     return {
         "message": "Welcome to LTN Experiment 03",
@@ -96,7 +97,7 @@ async def service_info():
     }
 
 
-def start_server():
+def start_server() -> None:
     """Convenience function to start the server"""
     uvicorn.run(
         "app.main:app",

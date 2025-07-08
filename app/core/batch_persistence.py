@@ -21,7 +21,7 @@ import gzip
 from icontract import require, ensure, invariant, ViolationError
 import numpy as np
 try:
-    import faiss  # type: ignore[import-untyped]
+    import faiss  # type: ignore[import-not-found]
     HAS_FAISS = True
 except ImportError:
     HAS_FAISS = False

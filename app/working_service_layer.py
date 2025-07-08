@@ -10,7 +10,7 @@ Following Design by Contract principles with basic type safety.
 """
 
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, AsyncGenerator
 from datetime import datetime
 import logging
 from contextlib import asynccontextmanager
@@ -79,7 +79,7 @@ batch_manager: Optional[BatchPersistenceManager] = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan management."""
     global semantic_registry, persistence_manager, batch_manager
     
@@ -159,7 +159,7 @@ def get_batch_manager() -> BatchPersistenceManager:
 # ============================================================================
 
 @app.get("/health", response_model=StatusResponse, tags=["System"])
-async def health_check():
+async def health_check() -> StatusResponse:
     """Health check endpoint."""
     return StatusResponse(
         status="healthy",
@@ -175,7 +175,7 @@ async def health_check():
 
 
 @app.get("/status", tags=["System"])
-async def get_service_status():
+async def get_service_status() -> Dict[str, Any]:
     """Get detailed service status."""
     try:
         if not all([semantic_registry, persistence_manager, batch_manager]):
@@ -183,14 +183,14 @@ async def get_service_status():
         
         # Get basic stats safely
         registry_stats = {
-            "concepts_count": len(getattr(semantic_registry, 'frame_aware_concepts', {})),
-            "frames_count": len(getattr(semantic_registry.frame_registry, 'frames', {})),
+            "concepts_count": len(getattr(semantic_registry, 'frame_aware_concepts', {})) if semantic_registry else 0,
+            "frames_count": len(getattr(semantic_registry.frame_registry, 'frames', {})) if semantic_registry and semantic_registry.frame_registry else 0,
             "embedding_provider": "random"
         }
         
         storage_stats = {
-            "storage_path": str(persistence_manager.storage_path),
-            "initialized": True
+            "storage_path": str(persistence_manager.storage_path) if persistence_manager else "not_initialized",
+            "initialized": persistence_manager is not None
         }
         
         return {
@@ -242,7 +242,7 @@ async def create_concept(
 async def get_concept(
     concept_id: str,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
-):
+) -> Dict[str, Any]:
     """Retrieve a concept by ID."""
     try:
         frame_aware_concepts = getattr(registry, 'frame_aware_concepts', {})
@@ -271,7 +271,7 @@ async def search_concepts(
     query: str,
     max_results: int = 10,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
-):
+) -> Dict[str, Any]:
     """Search for concepts."""
     try:
         frame_aware_concepts = getattr(registry, 'frame_aware_concepts', {})
@@ -307,7 +307,7 @@ async def complete_analogy(
     target_a: str,
     max_completions: int = 3,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
-):
+) -> Dict[str, Any]:
     """Complete analogies using semantic reasoning."""
     try:
         # Use existing method for analogical completion if available
@@ -347,7 +347,7 @@ async def create_analogy_batch(
     batch: BatchRequest,
     background_tasks: BackgroundTasks,
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
-):
+) -> Dict[str, Any]:
     """Create and process a batch of analogies."""
     try:
         workflow = batch_mgr.create_analogy_batch(
@@ -375,7 +375,7 @@ async def create_analogy_batch(
 @app.get("/batch/workflows", tags=["Batch Operations"])
 async def list_workflows(
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
-):
+) -> List[Dict[str, Any]]:
     """List all workflows."""
     try:
         workflows = batch_mgr.list_workflows()
@@ -401,7 +401,7 @@ async def list_workflows(
 async def get_workflow(
     workflow_id: str,
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
-):
+) -> Dict[str, Any]:
     """Get workflow details."""
     try:
         workflows = batch_mgr.list_workflows()
@@ -428,7 +428,7 @@ async def get_workflow(
 
 
 @app.get("/docs-overview", tags=["System"])
-async def get_docs_overview():
+async def get_docs_overview() -> Dict[str, Any]:
     """Get API documentation overview."""
     return {
         "api_overview": {
@@ -454,7 +454,7 @@ async def get_docs_overview():
 # HELPER FUNCTIONS
 # ============================================================================
 
-async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceManager):
+async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceManager) -> None:
     """Process batch workflow asynchronously."""
     try:
         import asyncio
@@ -471,7 +471,7 @@ async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceMana
 # APPLICATION ENTRY POINT
 # ============================================================================
 
-def start_service():
+def start_service() -> None:
     """Start the service layer."""
     uvicorn.run(
         "app.working_service_layer:app",

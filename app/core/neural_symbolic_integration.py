@@ -230,24 +230,18 @@ class LTNTrainingProvider:
         # Add WordNet-specific features
         if concept.synset_id:
             # Encode synset information
-            synset_features = self._encode_synset_features(concept.synset_id)
+            synset_features: List[float] = self._encode_synset_features(concept.synset_id)
             
-            # Ensure synset_features is iterable and not a string
-            if hasattr(synset_features, '__iter__'):
-                # Skip string and bytes types
-                if isinstance(synset_features, (str, bytes)):
-                    pass  # Skip string-like iterables
-                else:
-                    try:
-                        synset_features_list = list(synset_features)
-                        if synset_features_list and len(synset_features_list) > 0:
-                            feature_length = min(len(synset_features_list), self.config.embedding_dimension)
-                            # Add features directly to numpy array (no tensor operations)
-                            for i in range(feature_length):
-                                base_embedding_data[i] += float(synset_features_list[i])
-                    except (TypeError, ValueError):
-                        # If conversion fails, skip synset features
-                        pass
+            # Process synset features 
+            try:
+                if synset_features and len(synset_features) > 0:
+                    feature_length = min(len(synset_features), self.config.embedding_dimension)
+                    # Add features directly to numpy array (no tensor operations)
+                    for i in range(feature_length):
+                        base_embedding_data[i] += float(synset_features[i])
+            except (TypeError, ValueError):
+                # If conversion fails, skip synset features
+                pass
         
         # Create final tensor WITHOUT requires_grad - let LTN handle it
         return torch.tensor(base_embedding_data, dtype=torch.float32, device=self.device)

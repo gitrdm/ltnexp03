@@ -23,7 +23,7 @@ import asyncio
 import json
 import uuid
 
-from fastapi import HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends, Path as FastAPIPath
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks, Depends, Path as FastAPIPath
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -37,11 +37,14 @@ from app.core.neural_symbolic_integration import (
     NeuralTrainingRequest,
     NeuralTrainingResponse
 )
+from app.core.abstractions import Axiom
 
 # Import existing service layer components
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.contract_persistence import ContractEnhancedPersistenceManager
 from app.core.api_models import ConceptCreateRequest, ConceptCreateResponse
+from app.core.service_constraints import ServiceConstraints, ResourceConstraints
+from icontract import require, ensure, ViolationError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -207,8 +210,8 @@ class NeuralSymbolicService:
         """Initialize neural-symbolic service."""
         self.registry = registry
         self.persistence_manager = persistence_manager
-        self.active_training_jobs = {}  # job_id -> training_manager
-        self.completed_jobs = {}  # job_id -> training_result
+        self.active_training_jobs: Dict[str, Any] = {}  # job_id -> training_manager
+        self.completed_jobs: Dict[str, Any] = {}  # job_id -> training_result
         
         logger.info("Initialized neural-symbolic service")
     
@@ -259,7 +262,7 @@ class NeuralSymbolicService:
     async def _run_training_job(self, 
                               job_id: str, 
                               context_name: str, 
-                              training_manager: NeuralSymbolicTrainingManager):
+                              training_manager: NeuralSymbolicTrainingManager) -> None:
         """Run training job in background."""
         try:
             progress_history = []
@@ -348,7 +351,7 @@ class NeuralSymbolicService:
         
         # Get axioms from registry (simplified)
         # In practice, would extract actual axioms from the context
-        axioms = []  # Would populate from registry
+        axioms: List[Axiom] = []  # Would populate from registry
         
         consistent, message = verifier.verify_axiom_consistency(axioms)
         
@@ -412,7 +415,7 @@ def get_neural_symbolic_service() -> NeuralSymbolicService:
 
 
 def initialize_neural_symbolic_service(registry: EnhancedHybridRegistry, 
-                                     persistence_manager: ContractEnhancedPersistenceManager):
+                                     persistence_manager: ContractEnhancedPersistenceManager) -> None:
     """Initialize neural-symbolic service."""
     global neural_symbolic_service
     neural_symbolic_service = NeuralSymbolicService(registry, persistence_manager)
@@ -464,7 +467,7 @@ async def get_training_job_status(
 async def stream_neural_training_progress(
     websocket: WebSocket,
     job_id: str
-):
+) -> None:
     """
     WebSocket endpoint for streaming neural training progress.
     
@@ -558,7 +561,7 @@ async def evaluate_trained_model(
 # INTEGRATION UTILITIES
 # ============================================================================
 
-def register_neural_symbolic_endpoints(app):
+def register_neural_symbolic_endpoints(app: FastAPI) -> None:
     """
     Register neural-symbolic endpoints with the existing FastAPI app.
     
@@ -571,8 +574,20 @@ def register_neural_symbolic_endpoints(app):
               tags=["Neural-Symbolic Training"],
               summary="Start Neural Training",
               description="Start neural-symbolic training for a context. All parameters are optional with sensible defaults.")
+    @require(lambda context_name: ServiceConstraints.valid_context_name(context_name),
+             "Context name must be valid (alphanumeric, reasonable length)")
+    @require(lambda config: 1 <= config.max_epochs <= 1000,
+             "Training epochs must be between 1 and 1000")
+    @require(lambda config: 0.0001 <= config.learning_rate <= 1.0,
+             "Learning rate must be between 0.0001 and 1.0")
+    @require(lambda service: service is not None,
+             "Neural symbolic service must be initialized")
+    @ensure(lambda result: ServiceConstraints.valid_job_id(result.job_id),
+            "Must return valid UUID job ID")
+    @ensure(lambda result: result.status in ["started", "pending"],
+            "Initial training status must be started or pending")
     async def train_neural_endpoint(
-        context_name: str = FastAPIPath(..., description="Name of the context to train", example="test_context"),
+        context_name: str = FastAPIPath(..., description="Name of the context to train", examples=["test_context"]),
         config: TrainingConfigurationRequest = TrainingConfigurationRequest(),
         service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
     ) -> TrainingJobResponse:
@@ -592,8 +607,16 @@ def register_neural_symbolic_endpoints(app):
         return await service.start_training(context_name, config)
     
     @app.get("/neural/jobs/{job_id}/status", response_model=TrainingJobResponse, tags=["Neural-Symbolic Training"])
+    @require(lambda job_id: ServiceConstraints.valid_job_id(job_id),
+             "Job ID must be valid UUID format")
+    @require(lambda service: service is not None,
+             "Neural-symbolic service must be available")
+    @ensure(lambda result: result.job_id is not None,
+            "Must return job with valid ID")
+    @ensure(lambda result: ServiceConstraints.valid_job_id(result.job_id),
+            "Returned job ID must be valid UUID format")
     async def training_status_endpoint(
-        job_id: str = FastAPIPath(..., description="ID of the training job to check status for", example="12f10b85-9140-447c-a33e-5a373790e071"),
+        job_id: str = FastAPIPath(..., description="ID of the training job to check status for", examples=["12f10b85-9140-447c-a33e-5a373790e071"]),
         service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
     ) -> TrainingJobResponse:
         """Get status of a neural training job."""
@@ -604,6 +627,14 @@ def register_neural_symbolic_endpoints(app):
               tags=["Neural-Symbolic Training"],
               summary="Evaluate Trained Model",
               description="Evaluate a trained neural-symbolic model on test analogies and metrics.")
+    @require(lambda request: hasattr(request, 'model_path') and ServiceConstraints.valid_model_path(getattr(request, 'model_path', '')),
+             "Model path must be valid and secure")
+    @require(lambda request: hasattr(request, 'test_data') and isinstance(getattr(request, 'test_data', []), list),
+             "Test data must be a valid list")
+    @require(lambda service: service is not None,
+             "Neural-symbolic service must be available")
+    @ensure(lambda result: isinstance(result, dict) or hasattr(result, 'accuracy'),
+            "Must return evaluation results with metrics")
     async def evaluate_model_endpoint(
         request: ModelEvaluationRequest,
         service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
@@ -617,6 +648,14 @@ def register_neural_symbolic_endpoints(app):
               tags=["SMT Verification"],
               summary="Verify Axiom Consistency",
               description="Verify axiom consistency using SMT solver for hard logic constraints.")
+    @require(lambda request: ServiceConstraints.valid_axiom_list(request.axioms),
+             "Axioms list must be valid (1-50 axioms with required fields)")
+    @require(lambda request: hasattr(request, 'timeout_seconds') and 1 <= getattr(request, 'timeout_seconds', 30) <= 300,
+             "Timeout must be between 1 and 300 seconds")
+    @ensure(lambda result: result.is_consistent is not None,
+            "Must return valid consistency result")
+    @ensure(lambda result: result.verification_time is not None,
+            "Must return verification time")
     async def smt_verify_endpoint(
         request: SMTVerificationRequest,
         service: NeuralSymbolicService = Depends(get_neural_symbolic_service)
@@ -628,8 +667,8 @@ def register_neural_symbolic_endpoints(app):
     @app.websocket("/ws/neural/training/{job_id}")
     async def training_progress_websocket(
         websocket: WebSocket, 
-        job_id: str = FastAPIPath(..., description="ID of the training job to stream progress for", example="12f10b85-9140-447c-a33e-5a373790e071")
-    ):
+        job_id: str = FastAPIPath(..., description="ID of the training job to stream progress for", examples=["12f10b85-9140-447c-a33e-5a373790e071"])
+    ) -> None:
         """WebSocket endpoint for streaming neural training progress."""
         await stream_neural_training_progress(websocket, job_id)
     

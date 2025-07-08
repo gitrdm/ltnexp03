@@ -20,7 +20,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import json
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, BackgroundTasks, Query, Path as FastAPIPath
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends, BackgroundTasks, Query, Path as FastAPIPath, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -30,6 +30,8 @@ import uvicorn
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.contract_persistence import ContractEnhancedPersistenceManager
 from app.core.batch_persistence import BatchPersistenceManager, BatchWorkflow, WorkflowStatus
+from app.core.service_constraints import ServiceConstraints, ResourceConstraints, ConceptConstraints
+from icontract import require, ensure, ViolationError
 from app.core.api_models import (
     ConceptCreateRequest, ConceptCreateResponse, ConceptSearchRequest, ConceptSearchResponse,
     ConceptSimilarityRequest, ConceptSimilarityResponse,
@@ -69,7 +71,7 @@ class ConceptCreate(BaseModel):
 
     @field_validator('name')
     @classmethod
-    def name_must_be_valid(cls, v):
+    def name_must_be_valid(cls, v: str) -> str:
         if not v.strip():
             raise ValueError('Name cannot be empty or whitespace')
         return v.strip()
@@ -108,7 +110,7 @@ class AnalogyCompletion(BaseModel):
 
     @field_validator('target_a')
     @classmethod
-    def validate_unique_concepts(cls, v, info):
+    def validate_unique_concepts(cls, v: str, info: Any) -> str:
         """Ensure target_a is different from source_a to avoid dictionary key conflicts."""
         if 'source_a' in info.data and v == info.data['source_a']:
             raise ValueError('target_a must be different from source_a to form a valid analogy')
@@ -176,7 +178,7 @@ neural_symbolic_service: Optional[NeuralSymbolicService] = None
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan management with proper startup/shutdown."""
     global semantic_registry, persistence_manager, batch_manager, neural_symbolic_service
     
@@ -243,6 +245,26 @@ register_neural_symbolic_endpoints(app)
 
 
 # ============================================================================
+# CONTRACT VIOLATION ERROR HANDLING
+# ============================================================================
+
+@app.exception_handler(ViolationError)
+async def contract_violation_handler(request: Request, exc: ViolationError) -> JSONResponse:
+    """Convert contract violations to structured HTTP errors."""
+    logger.warning(f"Contract violation in {request.url}: {exc}")
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "Contract Violation",
+            "message": str(exc),
+            "type": "business_rule_violation",
+            "timestamp": datetime.now().isoformat(),
+            "endpoint": str(request.url)
+        }
+    )
+
+
+# ============================================================================
 # DEPENDENCY INJECTION
 # ============================================================================
 
@@ -276,11 +298,31 @@ def get_batch_manager() -> BatchPersistenceManager:
     return batch_manager
 
 
+async def get_or_create_batch_manager() -> BatchPersistenceManager:
+    """Async version of batch manager dependency injection."""
+    if batch_manager is None:
+        logger.info("Auto-initializing services for async batch manager access")
+        initialize_services()
+    if batch_manager is None:
+        raise HTTPException(status_code=503, detail="Batch manager not initialized")
+    return batch_manager
+
+
 # ============================================================================
 # CONCEPT MANAGEMENT ENDPOINTS
 # ============================================================================
 
 @app.post("/concepts", response_model=Dict[str, Any], tags=["Concepts"])
+@require(lambda concept: ConceptConstraints.valid_concept_name(concept.name),
+         "Concept name must be valid (non-empty, reasonable length)")
+@require(lambda concept: ConceptConstraints.valid_context(concept.context),
+         "Context must be one of the valid context types")
+@require(lambda registry: registry is not None,
+         "Registry must be initialized")
+@ensure(lambda result: result.get("concept_id") is not None,
+        "Must return valid concept ID")
+@ensure(lambda result: ConceptConstraints.valid_concept_name(result.get("name", "")),
+        "Result must maintain name validity")
 async def create_concept(
     concept: ConceptCreate,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -314,10 +356,18 @@ async def create_concept(
 
 
 @app.get("/concepts/{concept_id}", response_model=Dict[str, Any], tags=["Concepts"])
+@require(lambda concept_id: ConceptConstraints.valid_concept_name(concept_id),
+         "Concept ID must be valid (non-empty, reasonable length)")
+@require(lambda registry: registry is not None,
+         "Registry must be initialized")
+@ensure(lambda result: result.get("concept_id") is not None,
+        "Must return valid concept data with concept_id")
+@ensure(lambda result: ConceptConstraints.valid_concept_name(result.get("name", "")),
+        "Result must contain valid concept name")
 async def get_concept(
-    concept_id: str = FastAPIPath(..., description="ID of the concept to retrieve", example="example_concept"),
+    concept_id: str = FastAPIPath(..., description="ID of the concept to retrieve", examples=["example_concept"]),
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
-):
+) -> Dict[str, Any]:
     """Retrieve a concept by ID."""
     try:
         if concept_id not in registry.concepts:
@@ -343,6 +393,18 @@ async def get_concept(
 
 
 @app.post("/concepts/search", response_model=ConceptSearchResponse, tags=["Concepts"])
+@require(lambda search: len(search.query.strip()) > 0,
+         "Search query must be non-empty")
+@require(lambda search: ServiceConstraints.valid_confidence_threshold(search.similarity_threshold),
+         "Similarity threshold must be between 0.0 and 1.0")
+@require(lambda search: ServiceConstraints.valid_max_results(search.max_results),
+         "Max results must be between 1 and 100")
+@require(lambda registry: registry is not None,
+         "Registry must be initialized")
+@ensure(lambda result: result.get('concepts') is not None,
+        "Must return concepts list")
+@ensure(lambda result: len(result.get('concepts', [])) <= 100,
+        "Result count must not exceed maximum limit")
 async def search_concepts(
     search: ConceptSearch,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -390,6 +452,16 @@ async def search_concepts(
 
 
 @app.post("/concepts/similarity", response_model=ConceptSimilarityResponse, tags=["Concepts"])
+@require(lambda similarity_request: ConceptConstraints.valid_concept_name(similarity_request.concept1),
+         "First concept name must be valid")
+@require(lambda similarity_request: ConceptConstraints.valid_concept_name(similarity_request.concept2),
+         "Second concept name must be valid")  
+@require(lambda similarity_request: similarity_request.concept1 != similarity_request.concept2,
+         "Concepts must be different for meaningful similarity comparison")
+@require(lambda similarity_request: similarity_request.similarity_method in ["embedding", "wordnet", "hybrid"],
+         "Similarity method must be one of: embedding, wordnet, hybrid")
+@ensure(lambda result: -1.0 <= result.get('similarity_score', 0) <= 1.0,
+        "Similarity score must be between -1.0 and 1.0")
 async def compute_concept_similarity(
     similarity_request: ConceptSimilarity,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -400,7 +472,7 @@ async def compute_concept_similarity(
         concept1_obj = None
         concept2_obj = None
         
-        for cid, concept in registry.concepts.items():
+        for cid, concept in registry.frame_aware_concepts.items():
             if concept.name == similarity_request.concept1:
                 concept1_obj = concept
             if concept.name == similarity_request.concept2:
@@ -448,6 +520,20 @@ async def compute_concept_similarity(
 # ============================================================================
 
 @app.post("/analogies/complete", response_model=AnalogyResponse, tags=["Reasoning"])
+@require(lambda analogy: ConceptConstraints.valid_concept_name(analogy.source_a),
+         "Source A concept name must be valid")
+@require(lambda analogy: ConceptConstraints.valid_concept_name(analogy.target_a),
+         "Target A concept name must be valid")
+@require(lambda analogy: ConceptConstraints.valid_concept_name(analogy.source_b),
+         "Source B concept name must be valid")
+@require(lambda analogy: analogy.source_a != analogy.target_a,
+         "Source A and Target A must be different concepts")
+@require(lambda analogy: ServiceConstraints.valid_max_results(analogy.max_completions),
+         "Max completions must be between 1 and 100")
+@ensure(lambda result: result.get('completions') is not None,
+        "Must return valid completions list")
+@ensure(lambda result: len(result.get('completions', [])) <= 10,
+        "Result count must not exceed reasonable maximum")
 async def complete_analogy(
     analogy: AnalogyCompletion,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -520,6 +606,18 @@ async def complete_analogy(
 
 
 @app.post("/semantic-fields/discover", response_model=SemanticFieldDiscoveryResponse, tags=["Reasoning"])
+@require(lambda discovery: ServiceConstraints.valid_confidence_threshold(discovery.min_coherence),
+         "Minimum coherence must be between 0.0 and 1.0")
+@require(lambda discovery: ServiceConstraints.valid_max_results(discovery.max_fields),
+         "Maximum fields must be between 1 and 100")
+@require(lambda registry: registry is not None,
+         "Registry must be initialized")
+@ensure(lambda result: result.get('semantic_fields') is not None,
+        "Must return valid fields list")
+@ensure(lambda result, discovery: len(result.get('semantic_fields', [])) <= discovery.max_fields,
+        "Result count must not exceed maximum requested fields")
+@ensure(lambda result, discovery: all(field.get('coherence', 0) >= discovery.min_coherence for field in result.get('semantic_fields', [])),
+        "All returned fields must meet minimum coherence threshold")
 async def discover_semantic_fields(
     discovery: SemanticFieldDiscovery,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -572,6 +670,20 @@ async def discover_semantic_fields(
 
 
 @app.post("/analogies/cross-domain", response_model=CrossDomainAnalogiesResponse, tags=["Reasoning"])
+@require(lambda request: ServiceConstraints.valid_domain_threshold(request.get('min_quality', 0.0)),
+         "Minimum quality threshold must be between 0.0 and 1.0")
+@require(lambda request: ServiceConstraints.valid_max_results(request.get('max_analogies', 5)),
+         "Maximum analogies must be between 1 and 100")
+@require(lambda request: (request.get('source_domain', '') and request.get('source_domain', '').strip()) or (request.get('target_domain', '') and request.get('target_domain', '').strip()),
+         "At least one of source_domain or target_domain must be specified")
+@require(lambda registry: registry is not None,
+         "Semantic registry must be available")
+@ensure(lambda result: isinstance(result.get('analogies', []), list),
+        "Must return a list of analogies")
+@ensure(lambda result: isinstance(result.get('quality_scores', {}), dict),
+        "Must return quality scores dictionary")
+@ensure(lambda result: len(result.get('analogies', [])) <= 100,
+        "Must not exceed maximum analogy limit")
 async def discover_cross_domain_analogies(
     request: CrossDomainAnalogiesRequest,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -638,6 +750,18 @@ async def discover_cross_domain_analogies(
 # ============================================================================
 
 @app.post("/frames", response_model=FrameCreateResponse, tags=["Frames"])
+@require(lambda frame: ConceptConstraints.valid_concept_name(frame.get('name', '')),
+         "Frame name must be valid (non-empty, reasonable length)")
+@require(lambda frame: len(frame.get('core_elements', [])) > 0,
+         "Frame must have at least one core element")
+@require(lambda frame: len(frame.get('core_elements', [])) <= 20,
+         "Frame cannot have more than 20 core elements")
+@require(lambda frame: all(ConceptConstraints.valid_concept_name(elem) for elem in frame.get('core_elements', [])),
+         "All core element names must be valid")
+@ensure(lambda result: result.get('frame_id') is not None,
+        "Must return valid frame ID")
+@ensure(lambda result: ConceptConstraints.valid_concept_name(result.get('name', '')),
+        "Result must maintain frame name validity")
 async def create_frame(
     frame: FrameCreateRequest,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -694,9 +818,29 @@ async def create_frame(
 
 
 @app.post("/frames/{frame_id}/instances", response_model=FrameInstanceResponse, tags=["Frames"])
+@require(lambda instance: ConceptConstraints.valid_concept_name(instance.instance_id),
+         "Instance ID must be a valid name (non-empty, reasonable length)")
+@require(lambda instance: ServiceConstraints.valid_frame_instance_bindings(instance.concept_bindings),
+         "Frame instance bindings must be valid (1-20 non-empty string pairs)")
+@require(lambda instance: ServiceConstraints.valid_confidence_threshold(instance.confidence),
+         "Confidence must be between 0.0 and 1.0")
+@require(lambda instance: ConceptConstraints.valid_context(instance.context),
+         "Context must be valid domain")
+@require(lambda frame_id: ConceptConstraints.valid_concept_name(frame_id),
+         "Frame ID must be a valid name")
+@require(lambda registry: registry is not None,
+         "Semantic registry must be available")
+@ensure(lambda result: result.get('instance_id') is not None,
+        "Must return valid instance ID")
+@ensure(lambda result: result.get('frame_id') is not None,
+        "Must return valid frame ID")
+@ensure(lambda result: isinstance(result.get('bindings', {}), dict),
+        "Must return bindings dictionary")
+@ensure(lambda result: len(result.get('bindings', {})) > 0,
+        "Must return at least one binding")
 async def create_frame_instance(
     instance: FrameInstanceCreate,
-    frame_id: str = FastAPIPath(..., description="ID of the frame to create an instance for", example="communication_frame"),
+    frame_id: str = FastAPIPath(..., description="ID of the frame to create an instance for", examples=["communication_frame"]),
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
 ) -> FrameInstanceResponse:
     """Create an instance of a semantic frame."""
@@ -735,6 +879,22 @@ async def create_frame_instance(
 
 
 @app.post("/frames/query", response_model=FrameQueryResponse, tags=["Frames"])
+@require(lambda query: not hasattr(query, 'concept') or query.concept is None or ConceptConstraints.valid_concept_name(query.concept),
+         "Concept name must be valid if specified")
+@require(lambda query: ServiceConstraints.valid_max_results(getattr(query, 'max_results', 10)),
+         "Maximum results must be between 1 and 100")
+@require(lambda registry: registry is not None,
+         "Semantic registry must be available")
+@ensure(lambda result: isinstance(result.get('frames', []), list),
+        "Must return a list of frames")
+@ensure(lambda result: isinstance(result.get('instances', []), list),
+        "Must return a list of instances")
+@ensure(lambda result: isinstance(result.get('query_metadata', {}), dict),
+        "Must return query metadata dictionary")
+@ensure(lambda result: result.get('query_metadata', {}).get('total_frames', 0) >= len(result.get('frames', [])),
+        "Total frames count must be at least the number of returned frames")
+@ensure(lambda result: len(result.get('frames', [])) <= 100,
+        "Must not exceed maximum result limit")
 async def query_frames(
     query: FrameQueryRequest,
     registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
@@ -743,7 +903,7 @@ async def query_frames(
     try:
         # Query frames based on concept or pattern
         frames = []
-        instances = []
+        instances: List[Dict[str, Any]] = []
         
         if query.get("concept"):
             concept = query["concept"]
@@ -778,6 +938,16 @@ async def query_frames(
 # ============================================================================
 
 @app.post("/batch/analogies", response_model=BatchWorkflowResponse, tags=["Batch Operations"])
+@require(lambda batch: ServiceConstraints.valid_batch_size(len(batch.get('analogies', []))),
+         "Batch size must be between 1 and 1000 analogies")
+@require(lambda batch: all(isinstance(a, dict) for a in batch.get('analogies', [])),
+         "All analogies must have valid structure")
+@require(lambda batch_mgr: batch_mgr is not None,
+         "Batch manager must be initialized")
+@ensure(lambda result: result.get('workflow_id') is not None,
+        "Must return valid workflow ID")
+@ensure(lambda result: result.get('status') in ["pending", "running"],
+        "Initial workflow status must be pending or running")
 async def create_analogy_batch(
     batch: AnalogiesBatch,
     background_tasks: BackgroundTasks,
@@ -812,6 +982,14 @@ async def create_analogy_batch(
 
 
 @app.get("/batch/workflows", response_model=List[BatchWorkflowResponse], tags=["Batch Operations"])
+@require(lambda status: ServiceConstraints.valid_status_filter(status),
+         "Status filter must be valid workflow status or None")
+@require(lambda batch_mgr: batch_mgr is not None,
+         "Batch manager must be available")
+@ensure(lambda result: isinstance(result, list),
+        "Must return a list of workflows")
+@ensure(lambda result: len(result) <= 1000,
+        "Must not exceed maximum workflow limit")
 async def list_workflows(
     status: Optional[str] = Query(None, description="Filter by workflow status"),
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
@@ -845,8 +1023,16 @@ async def list_workflows(
 
 
 @app.get("/batch/workflows/{workflow_id}", response_model=BatchWorkflowResponse, tags=["Batch Operations"])
+@require(lambda workflow_id: ServiceConstraints.valid_workflow_id(workflow_id),
+         "Workflow ID must be valid format (UUID or alphanumeric)")
+@require(lambda batch_mgr: batch_mgr is not None,
+         "Batch manager must be available")
+@ensure(lambda result: result["workflow_id"] is not None,
+        "Must return workflow with valid ID")
+@ensure(lambda result: ServiceConstraints.valid_workflow_id(result["workflow_id"]),
+        "Returned workflow ID must be valid format")
 async def get_workflow(
-    workflow_id: str = FastAPIPath(..., description="ID of the workflow to retrieve", example="workflow_123"),
+    workflow_id: str = FastAPIPath(..., description="ID of the workflow to retrieve", examples=["workflow_123"]),
     batch_mgr: BatchPersistenceManager = Depends(get_batch_manager)
 ) -> BatchWorkflowResponse:
     """Get detailed workflow information."""
@@ -884,21 +1070,21 @@ async def get_workflow(
 class ConnectionManager:
     """Manage WebSocket connections for streaming."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_connections: List[WebSocket] = []
     
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
     
-    def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket: WebSocket) -> None:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
     
-    async def send_personal_message(self, message: str, websocket: WebSocket):
+    async def send_personal_message(self, message: str, websocket: WebSocket) -> None:
         await websocket.send_text(message)
     
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str) -> None:
         for connection in self.active_connections:
             try:
                 await connection.send_text(message)
@@ -915,7 +1101,7 @@ async def stream_analogies_websocket(
     websocket: WebSocket,
     domain: Optional[str] = Query(None),
     min_quality: Optional[float] = Query(0.5)
-):
+) -> None:
     """Stream analogies via WebSocket with real-time updates."""
     await connection_manager.connect(websocket)
     
@@ -972,7 +1158,7 @@ async def stream_analogies_websocket(
 
 
 @app.websocket("/ws/workflows/{workflow_id}/status")
-async def stream_workflow_status(websocket: WebSocket, workflow_id: str):
+async def stream_workflow_status(websocket: WebSocket, workflow_id: str) -> None:
     """Stream real-time workflow status updates."""
     await connection_manager.connect(websocket)
     
@@ -1043,7 +1229,15 @@ async def stream_workflow_status(websocket: WebSocket, workflow_id: str):
 # ============================================================================
 
 @app.get("/health", tags=["System"])
-async def health_check():
+@ensure(lambda result: isinstance(result, dict),
+        "Must return health status dictionary")
+@ensure(lambda result: "status" in result,
+        "Must include status field")
+@ensure(lambda result: "timestamp" in result,
+        "Must include timestamp field")
+@ensure(lambda result: isinstance(result.get("components", {}), dict),
+        "Must include components status dictionary")
+async def health_check() -> Dict[str, Any]:
     """Comprehensive health check endpoint."""
     return {
         "status": "healthy",
@@ -1059,7 +1253,13 @@ async def health_check():
 
 
 @app.get("/status", tags=["System"])
-async def get_service_status():
+@ensure(lambda result: isinstance(result, dict),
+        "Must return status dictionary")
+@ensure(lambda result: "status" in result,
+        "Must include status field")
+@ensure(lambda result: result.get("status") in ["healthy", "initializing", "degraded", "unhealthy", "operational", "error"],
+        "Status must be valid system state")
+async def get_service_status() -> Dict[str, Any]:
     """Get detailed service status and metrics."""
     if not all([semantic_registry, persistence_manager, batch_manager]):
         return {"status": "initializing"}
@@ -1067,22 +1267,22 @@ async def get_service_status():
     try:
         # Registry statistics
         registry_stats = {
-            "concepts_count": len(semantic_registry.concepts),
-            "frames_count": len(semantic_registry.frame_registry.frames),
-            "clusters_trained": semantic_registry.cluster_registry.is_trained,
+            "concepts_count": len(semantic_registry.concepts) if semantic_registry else 0,
+            "frames_count": len(semantic_registry.frame_registry.frames) if semantic_registry and semantic_registry.frame_registry else 0,
+            "clusters_trained": semantic_registry.cluster_registry.is_trained if semantic_registry and semantic_registry.cluster_registry else False,
             "embedding_provider": "semantic"
         }
         
         # Workflow statistics
-        workflows = batch_manager.list_workflows()
+        workflows = batch_manager.list_workflows() if batch_manager else []
         workflow_stats = {}
         for status in WorkflowStatus:
             workflow_stats[status.value] = len([w for w in workflows if w.status == status])
         
         # Storage statistics
         storage_stats = {
-            "storage_path": str(persistence_manager.storage_path),
-            "active_workflows": len(batch_manager.active_workflows)
+            "storage_path": str(persistence_manager.storage_path) if persistence_manager else "not_initialized",
+            "active_workflows": len(batch_manager.active_workflows) if batch_manager else 0
         }
         
         return {
@@ -1100,7 +1300,7 @@ async def get_service_status():
 
 
 @app.get("/docs-overview", tags=["System"])
-async def get_docs_overview():
+async def get_docs_overview() -> Dict[str, Any]:
     """Get API documentation overview."""
     return {
         "api_overview": {
@@ -1131,7 +1331,7 @@ async def get_docs_overview():
 # HELPER FUNCTIONS
 # ============================================================================
 
-async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceManager):
+async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceManager) -> None:
     """Process batch workflow asynchronously."""
     try:
         # Small delay to ensure workflow creation is complete
@@ -1148,7 +1348,7 @@ async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceMana
 # APPLICATION ENTRY POINT
 # ============================================================================
 
-def start_service():
+def start_service() -> None:
     """Start the service layer with appropriate configuration."""
     uvicorn.run(
         "app.service_layer:app",
@@ -1163,7 +1363,7 @@ if __name__ == "__main__":
     start_service()
 
 
-def initialize_services(force_reinit: bool = False):
+def initialize_services(force_reinit: bool = False) -> None:
     """
     Initialize services directly (synchronous version for testing).
     

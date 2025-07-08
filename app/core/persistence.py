@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from dataclasses import asdict
 import logging
 
-from icontract import require, ensure, invariant, ViolationError  # type: ignore[import-untyped]
+from icontract import require, ensure, invariant, ViolationError
 import numpy as np
 import torch
 
