@@ -1097,6 +1097,10 @@ connection_manager = ConnectionManager()
 
 
 @app.websocket("/ws/analogies/stream")
+@require(lambda domain: ServiceConstraints.valid_websocket_domain_filter(domain),
+         "Domain filter must be valid identifier or None")
+@require(lambda min_quality: ServiceConstraints.valid_quality_threshold(min_quality),
+         "Quality threshold must be between 0.0 and 1.0")
 async def stream_analogies_websocket(
     websocket: WebSocket,
     domain: Optional[str] = Query(None),
@@ -1158,6 +1162,8 @@ async def stream_analogies_websocket(
 
 
 @app.websocket("/ws/workflows/{workflow_id}/status")
+@require(lambda workflow_id: ServiceConstraints.valid_workflow_id(workflow_id),
+         "Workflow ID must be valid format (UUID or alphanumeric)")
 async def stream_workflow_status(websocket: WebSocket, workflow_id: str) -> None:
     """Stream real-time workflow status updates."""
     await connection_manager.connect(websocket)
@@ -1300,6 +1306,10 @@ async def get_service_status() -> Dict[str, Any]:
 
 
 @app.get("/docs-overview", tags=["System"])
+@ensure(lambda result: ServiceConstraints.valid_documentation_response(result),
+        "Must return valid documentation structure")
+@ensure(lambda result: isinstance(result, dict),
+        "Must return dictionary response")
 async def get_docs_overview() -> Dict[str, Any]:
     """Get API documentation overview."""
     return {

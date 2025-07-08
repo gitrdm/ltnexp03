@@ -245,6 +245,31 @@ class ServiceConstraints:
             return False
         # Basic path validation - no directory traversal
         return not ('..' in model_path or model_path.startswith('/') or '\\' in model_path)
+    
+    @staticmethod
+    def valid_websocket_domain_filter(domain: Optional[str]) -> bool:
+        """Validate WebSocket domain filter parameter."""
+        if domain is None:
+            return True  # No filter is valid
+        if not isinstance(domain, str):
+            return False
+        # Domain should be a valid identifier
+        return len(domain.strip()) > 0 and len(domain.strip()) <= 50 and domain.replace('_', '').replace('-', '').isalnum()
+    
+    @staticmethod
+    def valid_quality_threshold(quality: Optional[float]) -> bool:
+        """Validate quality threshold for streaming filters."""
+        if quality is None:
+            return True  # No threshold is valid
+        return isinstance(quality, (int, float)) and 0.0 <= quality <= 1.0
+    
+    @staticmethod
+    def valid_documentation_response(response: Dict[str, Any]) -> bool:
+        """Validate documentation endpoint response structure."""
+        if not isinstance(response, dict):
+            return False
+        required_sections = {"api_overview", "endpoints"}
+        return all(section in response for section in required_sections)
         
 
 class ResourceConstraints:
