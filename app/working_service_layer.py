@@ -175,22 +175,25 @@ async def health_check() -> StatusResponse:
 
 
 @app.get("/status", tags=["System"])
-async def get_service_status() -> Dict[str, Any]:
+async def get_service_status(
+    registry: EnhancedHybridRegistry = Depends(get_semantic_registry),
+    pm: ContractEnhancedPersistenceManager = Depends(get_persistence_manager),
+    bm: BatchPersistenceManager = Depends(get_batch_manager)
+) -> Dict[str, Any]:
     """Get detailed service status."""
     try:
-        if not all([semantic_registry, persistence_manager, batch_manager]):
-            return {"status": "initializing"}
+        # The dependency injection system now handles the initialization check.
         
         # Get basic stats safely
         registry_stats = {
-            "concepts_count": len(getattr(semantic_registry, 'frame_aware_concepts', {})) if semantic_registry else 0,
-            "frames_count": len(getattr(semantic_registry.frame_registry, 'frames', {})) if semantic_registry and semantic_registry.frame_registry else 0,
+            "concepts_count": len(getattr(registry, 'frame_aware_concepts', {})) if registry else 0,
+            "frames_count": len(getattr(registry.frame_registry, 'frames', {})) if registry and registry.frame_registry else 0,
             "embedding_provider": "random"
         }
         
         storage_stats = {
-            "storage_path": str(persistence_manager.storage_path) if persistence_manager else "not_initialized",
-            "initialized": persistence_manager is not None
+            "storage_path": str(pm.storage_path) if pm else "not_initialized",
+            "initialized": pm is not None
         }
         
         return {

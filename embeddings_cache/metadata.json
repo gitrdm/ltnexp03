@@ -1015,5 +1015,14 @@
     "source": "computed",
     "confidence": 1.0,
     "update_count": 0
+  },
+  "test_domain:test_service_test_concept": {
+    "concept_id": "test_domain:test_service_test_concept",
+    "embedding_model": "random",
+    "created_at": "2025-07-08T23:33:35",
+    "dimensions": 300,
+    "source": "computed",
+    "confidence": 1.0,
+    "update_count": 0
   }
 }
