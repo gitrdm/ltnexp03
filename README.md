@@ -4,12 +4,15 @@
 
 > **Version:** 1.0.0 — This is the first stable, production-ready release of the Neural-Symbolic AI Platform.
 
+This platform was built using a LLM as a coding partner as part of the research into development of the project of this kind. The use of a LLM includes generation of the docs and the high claims in this readme. However, I do not know if the project works as intended or what kind of bugs remain, so use at your own risk.
+> **Disclaimer:** This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software. Use at your own risk.
+
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![LTNtorch](https://img.shields.io/badge/LTNtorch-1.0+-red.svg)](https://github.com/bmxitalia/LTNtorch)
 [![Z3](https://img.shields.io/badge/Z3_SMT-4.15+-orange.svg)](https://github.com/Z3Prover/z3)
 
-**Combining the best of symbolic reasoning with neural learning** - this platform integrates FrameNet-style semantic frames, clustering-based concept organization, neural training with LTNtorch, and hard logic verification with Z3 SMT solver.
+**Personal experimentation platform for combining symbolic reasoning with neural learning** - this platform integrates FrameNet-style semantic frames, clustering-based concept organization, neural training with LTNtorch, and hard logic verification with Z3 SMT solver.
 
 ## 🚀 What Makes This Special
 
@@ -343,8 +346,8 @@ export ENABLE_CONTRACTS=true
 
 ### 🛡️ **Enterprise Reliability**
 
-- **✅ Type Safety**: 100% mypy compliance with comprehensive contracts
-- **🧪 Test Coverage**: 72 comprehensive tests across all components
+- **Type Safety**: Extensive use of type hints and contract validation 
+- **Test Coverage**: 100+ tests across all components
 - **📊 Monitoring**: Health checks, metrics, and performance tracking
 - **🔒 Validation**: Design by Contract ensures API reliability
 - **📚 Documentation**: Auto-generated API docs + comprehensive tutorials
