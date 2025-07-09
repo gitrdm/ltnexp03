@@ -1359,13 +1359,13 @@ async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceMana
 # APPLICATION ENTRY POINT
 # ============================================================================
 
-def start_service(reload: bool = False) -> None:
+def start_service() -> None:
     """Start the service layer with appropriate configuration."""
     uvicorn.run(
         "app.service_layer:app",
         host="0.0.0.0",
         port=8321,
-        reload=reload,
+        reload=True,
         log_level="info"
     )
 
