@@ -82,6 +82,21 @@ class HybridConceptRegistry(
         self.auto_cluster = True  # Automatically update clusters when embeddings change
         
         self.logger = logging.getLogger(__name__)
+
+    # FrameRegistryProtocol implementation
+    def create_frame(
+        self,
+        name: str,
+        definition: str,
+        core_elements: List[str],
+        peripheral_elements: Optional[List[str]] = None
+    ) -> SemanticFrame:
+        """Create a new semantic frame and return it."""
+        return self.frame_registry.create_frame(name, definition, core_elements, peripheral_elements)
+
+    def get_frame(self, frame_name: str) -> Optional[SemanticFrame]:
+        """Retrieve a frame by its ID."""
+        return self.frame_registry.get_frame(frame_name)
     
     def create_frame_aware_concept(self, name: str, context: str = "default",
                                  synset_id: Optional[str] = None,
@@ -143,7 +158,7 @@ class HybridConceptRegistry(
             concept_bindings: Mapping of frame elements to concepts (by name or object)
             context: Context for the instance
         """
-        # Resolve concept names to objects
+        # Resolve concept names to FrameAwareConcept objects
         resolved_bindings = {}
         for element_name, concept_ref in concept_bindings.items():
             if isinstance(concept_ref, str):
@@ -154,7 +169,6 @@ class HybridConceptRegistry(
                     concept = self.create_frame_aware_concept(concept_ref, context)
             else:
                 concept = concept_ref
-            
             resolved_bindings[element_name] = concept
         
         return self.frame_registry.create_frame_instance(
@@ -173,8 +187,11 @@ class HybridConceptRegistry(
         if self.auto_cluster and len(self.cluster_registry.concept_embeddings) >= self.cluster_registry.n_clusters:
             self.update_clusters()
     
-    def update_clusters(self) -> None:
+    def update_clusters(self, concepts: Optional[List] = None, n_clusters: Optional[int] = None) -> Dict[str, Any]:
         """Update concept clusters based on current embeddings."""
+        if n_clusters:
+            self.cluster_registry.n_clusters = n_clusters
+        
         self.cluster_registry.train_clusters()
         
         # Update cluster memberships for all frame-aware concepts
@@ -188,6 +205,10 @@ class HybridConceptRegistry(
                 concept.primary_cluster = primary_cluster_id
         
         self.logger.info("Updated concept clusters and memberships")
+        return {
+            "n_clusters": self.cluster_registry.n_clusters,
+            "is_trained": self.cluster_registry.is_trained,
+        }
     
     def find_analogous_concepts(self, source_concept: Union[str, FrameAwareConcept],
                               frame_context: Optional[str] = None,
@@ -303,6 +324,111 @@ class HybridConceptRegistry(
             return 0.0
         
         return self.cluster_registry._compute_membership_similarity(memberships1, memberships2)
+
+    # SemanticReasoningProtocol placeholder implementations
+    def complete_analogy(
+        self, 
+        partial_analogy: Dict[str, str], 
+        max_completions: int = 5
+    ) -> List[Dict[str, Any]]:
+        """Complete partial analogies (placeholder)."""
+        self.logger.warning("complete_analogy is not fully implemented.")
+        raise NotImplementedError("complete_analogy is not implemented in HybridConceptRegistry")
+
+    def discover_semantic_fields(
+        self, 
+        min_coherence: float = 0.7
+    ) -> List[Dict[str, Any]]:
+        """Discover coherent semantic fields (placeholder)."""
+        self.logger.warning("discover_semantic_fields is not fully implemented.")
+        raise NotImplementedError("discover_semantic_fields is not implemented in HybridConceptRegistry")
+
+    def find_cross_domain_analogies(
+        self, 
+        source_domain: str,
+        target_domain: str,
+        min_quality: float = 0.5
+    ) -> List[Dict[str, Any]]:
+        """Find structural analogies between different domains (placeholder)."""
+        self.logger.warning("find_cross_domain_analogies is not fully implemented.")
+        raise NotImplementedError("find_cross_domain_analogies is not implemented in HybridConceptRegistry")
+
+    # KnowledgeDiscoveryProtocol placeholder implementations
+    def discover_patterns(
+        self, 
+        domain: str,
+        pattern_types: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """Discover patterns within a specific domain (placeholder)."""
+        self.logger.warning("discover_patterns is not fully implemented.")
+        raise NotImplementedError("discover_patterns is not implemented in HybridConceptRegistry")
+
+    def extract_relationships(
+        self, 
+        concepts: List[str],
+        relationship_types: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """Extract relationships between given concepts (placeholder)."""
+        self.logger.warning("extract_relationships is not fully implemented.")
+        raise NotImplementedError("extract_relationships is not implemented in HybridConceptRegistry")
+
+    def suggest_new_concepts(
+        self,
+        existing_concepts: List[str],
+        domain: str = "default"
+    ) -> List[Dict[str, Any]]:
+        """Suggest new concepts (placeholder)."""
+        self.logger.warning("suggest_new_concepts is not fully implemented.")
+        raise NotImplementedError("suggest_new_concepts is not implemented in HybridConceptRegistry")
+
+    def validate_knowledge_consistency(
+        self,
+        knowledge_base: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Validate knowledge base consistency (placeholder)."""
+        self.logger.warning("validate_knowledge_consistency is not fully implemented.")
+        raise NotImplementedError("validate_knowledge_consistency is not implemented in HybridConceptRegistry")
+
+
+    # ClusterRegistryProtocol implementation
+    def get_cluster_membership(self, concept: FrameAwareConcept) -> Optional[int]:
+        """Get cluster ID for a given concept."""
+        if not concept.cluster_memberships:
+            return None
+        return concept.primary_cluster
+
+    def find_cluster_neighbors(
+        self,
+        concept: FrameAwareConcept,
+        max_neighbors: int = 10
+    ) -> List[Tuple[FrameAwareConcept, float]]:
+        """Find nearest neighbors within the same cluster."""
+        if not concept.primary_cluster:
+            return []
+
+        cluster = self.cluster_registry.clusters.get(concept.primary_cluster)
+        if not cluster:
+            return []
+
+        neighbors = []
+        for member_id, strength in cluster.members.items():
+            if member_id != concept.unique_id:
+                neighbor_concept = self.frame_aware_concepts.get(member_id)
+                if neighbor_concept:
+                    neighbors.append((neighbor_concept, strength))
+
+        neighbors.sort(key=lambda x: x[1], reverse=True)
+        return neighbors[:max_neighbors]
+
+    @property
+    def is_trained(self) -> bool:
+        """Return whether clustering model has been trained."""
+        return self.cluster_registry.is_trained
+
+    @property
+    def cluster_count(self) -> int:
+        """Return number of clusters."""
+        return self.cluster_registry.cluster_count
     
     def create_semantic_frame(self, name: str, definition: str,
                             core_elements: List[str],

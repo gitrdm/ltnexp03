@@ -121,56 +121,30 @@ class FrameRegistry(FrameRegistryProtocol[SemanticFrame, str]):
 
     def create_frame_instance(
         self,
-        frame_id: str,
-        concept_bindings: Dict[str, str]
-    ) -> str:
-        """Create instance of frame with concept bindings and return its ID."""
-        if frame_id not in self.frames:
-            raise ValueError(f"Unknown frame: {frame_id}")
-
-        # NOTE: This is a shim implementation to satisfy the protocol.
-        # It creates dummy concepts and does not have full functionality.
-        # This highlights a dependency gap on a ConceptRegistry.
-        from .abstractions import Concept
-        
-        bindings: Dict[str, Concept] = {
-            element_name: Concept(name=concept_name)
-            for element_name, concept_name in concept_bindings.items()
-        }
-
-        instance_id = str(uuid.uuid4())
-        
-        instance = FrameInstance(
-            frame_name=frame_id,
-            instance_id=instance_id,
-            element_bindings=bindings,
-        )
-        
-        self.frame_instances[instance_id] = instance
-        return instance_id
-    
-    def _create_frame_instance_obj(self, frame_name: str, instance_id: str,
-                            bindings: Dict[str, FrameAwareConcept],
-                            context: str = "default") -> FrameInstance:
+        frame_name: str,
+        instance_id: str,
+        concept_bindings: Dict[str, FrameAwareConcept],
+        context: str = "default"
+    ) -> FrameInstance:
         """Create a specific instance of a frame with concept bindings."""
         if frame_name not in self.frames:
             raise ValueError(f"Unknown frame: {frame_name}")
         
         # FrameAwareConcept inherits from Concept, so this is safe
         from typing import cast
-        concept_bindings = cast(Dict[str, Concept], bindings)
+        concept_bindings_cast = cast(Dict[str, Concept], concept_bindings)
         
         instance = FrameInstance(
             frame_name=frame_name,
             instance_id=instance_id,
-            element_bindings=concept_bindings,
+            element_bindings=concept_bindings_cast,
             context=context
         )
         
         self.frame_instances[instance_id] = instance
         
         # Update concept frame roles
-        for element_name, concept in bindings.items():
+        for element_name, concept in concept_bindings.items():
             concept.add_frame_role(frame_name, element_name)
             if instance_id not in concept.frame_instances:
                 concept.frame_instances.append(instance_id)
