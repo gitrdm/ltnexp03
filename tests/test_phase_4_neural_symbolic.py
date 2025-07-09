@@ -73,6 +73,9 @@ class TestLTNTrainingProvider:
     
     def test_initialization(self):
         """Test LTN training provider initialization."""
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"[TestLTNTrainingProvider] Using device: {device}")
         config = TrainingConfiguration(
             max_epochs=10,
             learning_rate=0.01,
@@ -89,6 +92,9 @@ class TestLTNTrainingProvider:
     
     def test_concept_initialization(self):
         """Test concept initialization with LTN constants."""
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"[TestLTNTrainingProvider] Using device: {device}")
         config = TrainingConfiguration(embedding_dimension=64)
         provider = LTNTrainingProvider(config)
         
@@ -110,6 +116,9 @@ class TestLTNTrainingProvider:
     
     def test_wordnet_embedding_creation(self):
         """Test WordNet-informed embedding creation."""
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"[TestLTNTrainingProvider] Using device: {device}")
         config = TrainingConfiguration(embedding_dimension=64)
         provider = LTNTrainingProvider(config)
         
@@ -145,6 +154,9 @@ class TestLTNTrainingProvider:
         conflicts, consider running the verification script directly or 
         improving the test isolation to avoid mock interference with PyTorch.
         """
+        import torch
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"[TestLTNTrainingProvider] Using device: {device}")
         config = TrainingConfiguration(
             max_epochs=5,
             learning_rate=0.01,
@@ -269,8 +281,7 @@ class TestNeuralSymbolicTrainingManager:
             max_epochs=5,
             learning_rate=0.01,
             embedding_dimension=32,
-            enable_smt_verification=False,  # Disable for testing
-            save_checkpoints=False
+            enable_smt_verification=False  # Disable for testing
         )
     
     def test_initialization(self, mock_registry, mock_persistence, training_config):

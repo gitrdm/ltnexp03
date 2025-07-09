@@ -31,6 +31,7 @@ from enum import Enum
 import torch
 import numpy as np
 from unittest.mock import Mock
+import re
 
 # LTNtorch imports
 import ltn  # type: ignore[import-untyped]
@@ -184,7 +185,22 @@ class LTNTrainingProvider:
     def __init__(self, config: TrainingConfiguration):
         """Initialize LTN training provider."""
         self.config = config
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # Allow device override in config, else auto-detect
+        device_str = getattr(config, 'device', 'auto')
+        if device_str == 'auto':
+            # Use CUDA if available and compatible, else CPU
+            if torch.cuda.is_available():
+                # Try a dummy tensor to trigger any compatibility warning
+                try:
+                    _ = torch.tensor([0.0], device='cuda')
+                except Exception:
+                    self.device = torch.device('cpu')
+                else:
+                    self.device = torch.device('cuda')
+            else:
+                self.device = torch.device('cpu')
+        else:
+            self.device = torch.device(device_str)
         
         # LTN components
         self.constants: Dict[str, Any] = {}  # Concept constants
@@ -391,16 +407,16 @@ class LTNTrainingProvider:
         
         for axiom in axioms:
             axiom_loss, axiom_sat = self._compute_axiom_loss(axiom)
-            total_loss += axiom_loss * self.config.axiom_satisfaction_weight
+            total_loss = total_loss + axiom_loss * self.config.axiom_satisfaction_weight
             satisfiability_scores.append(axiom_sat)
         
         # Add concept consistency loss
         consistency_loss: torch.Tensor = self._compute_concept_consistency_loss(concepts)
-        total_loss += consistency_loss * self.config.concept_consistency_weight
+        total_loss = total_loss + consistency_loss * self.config.concept_consistency_weight
         
         # Add semantic coherence loss
         coherence_loss: torch.Tensor = self._compute_semantic_coherence_loss(concepts)
-        total_loss += coherence_loss * self.config.semantic_coherence_weight
+        total_loss = total_loss + coherence_loss * self.config.semantic_coherence_weight
         
         # Backward pass
         total_loss.backward()  # type: ignore[no-untyped-call]

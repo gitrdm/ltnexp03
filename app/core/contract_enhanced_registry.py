@@ -271,7 +271,7 @@ def demonstrate_contract_validation():
             disambiguation="medieval warrior"
         )
         print(f"✅ Successfully created concept: {concept.concept_id}")
-    except DpcontractsException as e:
+    except ViolationError as e:
         print(f"❌ Contract violation: {e}")
     
     # Test 2: Invalid concept name (contract violation)
@@ -282,7 +282,7 @@ def demonstrate_contract_validation():
             context="default"
         )
         print(f"❌ Should have failed but got: {concept.concept_id}")
-    except DpcontractsException as e:
+    except ViolationError as e:
         print(f"✅ Contract correctly caught violation: {e}")
     
     # Test 3: Invalid context (contract violation)
@@ -293,7 +293,7 @@ def demonstrate_contract_validation():
             context="invalid_context"  # Should violate contract
         )
         print(f"❌ Should have failed but got: {concept.concept_id}")
-    except DpcontractsException as e:
+    except ViolationError as e:
         print(f"✅ Contract correctly caught violation: {e}")
     
     # Test 4: Valid analogical completion
@@ -311,7 +311,7 @@ def demonstrate_contract_validation():
         print(f"✅ Found {len(completions)} analogical completions")
         for comp in completions:
             print(f"   - {comp['completion']} (confidence: {comp['confidence']:.2f})")
-    except DpcontractsException as e:
+    except ViolationError as e:
         print(f"❌ Contract violation: {e}")
     
     # Test 5: Invalid analogy (too few mappings)
@@ -322,7 +322,7 @@ def demonstrate_contract_validation():
             max_completions=3
         )
         print(f"❌ Should have failed but got {len(completions)} completions")
-    except DpcontractsException as e:
+    except ViolationError as e:
         print(f"✅ Contract correctly caught violation: {e}")
     
     # Test 6: Check class invariants

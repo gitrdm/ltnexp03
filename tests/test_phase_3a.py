@@ -22,10 +22,9 @@ def test_protocol_imports():
             FrameRegistryProtocol, ClusterRegistryProtocol
         )
         print("✓ Protocol interfaces imported successfully")
-        return True
     except ImportError as e:
         print(f"✗ Failed to import protocols: {e}")
-        return False
+        assert False, f"Failed to import protocols: {e}"
 
 def test_api_models_imports():
     """Test that API models can be imported."""
@@ -37,10 +36,9 @@ def test_api_models_imports():
             SystemHealthRequest, SystemHealthResponse
         )
         print("✓ API models imported successfully")
-        return True
     except ImportError as e:
         print(f"✗ Failed to import API models: {e}")
-        return False
+        assert False, f"Failed to import API models: {e}"
 
 def test_enhanced_registry_protocols():
     """Test that EnhancedHybridRegistry implements protocols."""
@@ -56,10 +54,9 @@ def test_enhanced_registry_protocols():
         assert isinstance(registry, KnowledgeDiscoveryProtocol), "Must implement KnowledgeDiscoveryProtocol"
         
         print("✓ EnhancedHybridRegistry implements required protocols")
-        return True
     except Exception as e:
         print(f"✗ Protocol implementation test failed: {e}")
-        return False
+        assert False, f"Protocol implementation test failed: {e}"
 
 def test_semantic_reasoning_interface():
     """Test the semantic reasoning protocol interface."""
@@ -90,10 +87,9 @@ def test_semantic_reasoning_interface():
             print(f"✓ complete_analogy handled empty data gracefully: {e}")
         
         print("✓ Semantic reasoning interface working")
-        return True
     except Exception as e:
         print(f"✗ Semantic reasoning interface test failed: {e}")
-        return False
+        assert False, f"Semantic reasoning interface test failed: {e}"
 
 def test_api_model_validation():
     """Test API model type validation."""
@@ -120,10 +116,9 @@ def test_api_model_validation():
         print(f"✓ Valid AnalogyRequest with {len(analogy_req['partial_analogy'])} mappings")
         
         print("✓ API model validation working")
-        return True
     except Exception as e:
         print(f"✗ API model validation test failed: {e}")
-        return False
+        assert False, f"API model validation test failed: {e}"
 
 def run_phase_3a_tests():
     """Run all Phase 3A tests."""
@@ -145,10 +140,8 @@ def run_phase_3a_tests():
     for test in tests:
         print(f"\nRunning {test.__name__}...")
         try:
-            if test():
-                passed += 1
-            else:
-                failed += 1
+            test()
+            passed += 1
         except Exception as e:
             print(f"✗ {test.__name__} crashed: {e}")
             failed += 1

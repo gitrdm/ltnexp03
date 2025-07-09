@@ -33,6 +33,12 @@ def test_neural_symbolic_training():
     
     # Check device availability
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Try to allocate a tensor to check for compatibility
+    try:
+        _ = torch.tensor([0.0], device=device)
+    except Exception as e:
+        print(f"⚠️  CUDA not compatible or not available, falling back to CPU: {e}")
+        device = torch.device("cpu")
     print(f"🔧 Using device: {device}")
     
     # Create training configuration
@@ -51,7 +57,7 @@ def test_neural_symbolic_training():
         print("✅ LTN provider initialized successfully")
     except Exception as e:
         print(f"❌ Failed to initialize LTN provider: {e}")
-        return False
+        assert False, f"Failed to initialize LTN provider: {e}"
     
     # Create test concepts
     concepts = [
@@ -70,7 +76,7 @@ def test_neural_symbolic_training():
             print(f"   - {key}: {type(constants[key])}")
     except Exception as e:
         print(f"❌ Failed to initialize concepts: {e}")
-        return False
+        assert False, f"Failed to initialize concepts: {e}"
     
     # Create a simple axiom for testing
     from unittest.mock import Mock
@@ -94,7 +100,7 @@ def test_neural_symbolic_training():
         print(f"✅ Initialized {len(axioms)} axioms")
     except Exception as e:
         print(f"❌ Failed to initialize axioms: {e}")
-        return False
+        assert False, f"Failed to initialize axioms: {e}"
     
     # Test training epochs
     print("\n🏃 Running training epochs...")
@@ -107,7 +113,7 @@ def test_neural_symbolic_training():
             for key in required_keys:
                 if key not in metrics:
                     print(f"❌ Missing metric: {key}")
-                    return False
+                    assert False, f"Missing metric: {key}"
             
             print(f"  Epoch {epoch + 1}: loss={metrics['loss']:.4f}, "
                   f"satisfiability={metrics['satisfiability']:.4f}")
@@ -115,19 +121,20 @@ def test_neural_symbolic_training():
             # Verify metric ranges
             if metrics["loss"] < 0:
                 print(f"❌ Invalid loss value: {metrics['loss']}")
-                return False
+                assert False, f"Invalid loss value: {metrics['loss']}"
             
             if not (0.0 <= metrics["satisfiability"] <= 1.0):
                 print(f"❌ Invalid satisfiability: {metrics['satisfiability']}")
-                return False
+                assert False, f"Invalid satisfiability: {metrics['satisfiability']}"
         
         print("✅ All training epochs completed successfully")
         
     except Exception as e:
         print(f"❌ Training failed: {e}")
-        return False
+        assert False, f"Training failed: {e}"
     
     # Test device consistency
+    success = True  # Always set to True if training completes
     try:
         print("\n🔧 Checking device consistency...")
         # Get some model parameters to check device
@@ -146,8 +153,8 @@ def test_neural_symbolic_training():
             print("ℹ️  Device check skipped (no constants)")
     except Exception as e:
         print(f"⚠️  Device check failed: {e}")
-    
-    return True
+    # Do not set success = False for skipped device check
+    return success
 
 
 def main():
@@ -156,6 +163,7 @@ def main():
     print("This script verifies LTNtorch integration without test mocks\n")
     
     success = test_neural_symbolic_training()
+    assert success, "Neural-symbolic training test failed"
     
     print("\n" + "=" * 50)
     if success:

@@ -14,6 +14,7 @@ def test_vector_embedding_manager_protocol_compliance():
     assert all(isinstance(v, np.ndarray) for v in batch.values())
     sim = manager.compute_similarity(emb, emb)
     assert isinstance(sim, float)
-    assert 0.0 <= sim <= 1.0
+    # Allow for floating-point tolerance
+    assert 0.0 <= sim <= 1.0 + 1e-6, f"Similarity {sim} out of bounds due to floating-point error"
     assert isinstance(manager.embedding_dimension, int)
     assert isinstance(manager.provider_name, str)
