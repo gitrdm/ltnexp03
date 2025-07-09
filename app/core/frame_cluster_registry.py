@@ -14,6 +14,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
 from dataclasses import asdict
 import uuid
+from icontract import require
 
 from .concept_registry import ConceptRegistry, SynsetInfo
 from .abstractions import Concept
@@ -119,6 +120,13 @@ class FrameRegistry(FrameRegistryProtocol[SemanticFrame, str]):
         frames = self.get_frames_by_lexical_unit(concept)
         return [asdict(frame) for frame in frames]
 
+    @require(
+        lambda self, frame_name, instance_id, concept_bindings, context: (
+            frame_name not in self.frames or
+            all(element.name in concept_bindings for element in self.frames[frame_name].core_elements)
+        ),
+        "All required core elements must be present in concept_bindings"
+    )
     def create_frame_instance(
         self,
         frame_name: str,

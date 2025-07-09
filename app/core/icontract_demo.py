@@ -386,5 +386,60 @@ def demonstrate_contract_validation():
     print("✅ API reliability - service layer will benefit from these contracts")
 
 
+def test_create_frame_instance_contracts():
+    print("\n=== Frame Instance Contract Validation ===")
+    # Setup registry and add a frame
+    registry = ContractEnhancedRegistry()
+    frame_name = "TestFrame"
+    instance_id = "instance_001"
+    # Add a frame to the registry
+    registry.frame_registry.create_frame(
+        name=frame_name,
+        definition="A test frame",
+        core_elements=["Role1", "Role2"]
+    )
+    # Valid concept bindings
+    concept1 = registry.create_concept_with_contracts("concept1", "default")
+    concept2 = registry.create_concept_with_contracts("concept2", "default")
+    bindings = {"Role1": concept1, "Role2": concept2}
+    try:
+        instance = registry.frame_registry.create_frame_instance(
+            frame_name=frame_name,
+            instance_id=instance_id,
+            concept_bindings=bindings,
+            context="default"
+        )
+        print(f"✅ Successfully created frame instance: {instance.instance_id}")
+    except ViolationError as e:
+        print(f"❌ Contract violation (should not happen): {e}")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+
+    # Invalid: unknown frame
+    try:
+        registry.frame_registry.create_frame_instance(
+            frame_name="UnknownFrame",
+            instance_id="bad_instance",
+            concept_bindings=bindings,
+            context="default"
+        )
+        print("❌ Should have failed for unknown frame")
+    except Exception as e:
+        print(f"✅ Correctly failed for unknown frame: {e}")
+
+    # Invalid: missing concept binding (simulate by omitting a required role)
+    try:
+        registry.frame_registry.create_frame_instance(
+            frame_name=frame_name,
+            instance_id="bad_instance2",
+            concept_bindings={"Role1": concept1},  # Missing Role2
+            context="default"
+        )
+        print("❌ Should have failed for missing binding")
+    except Exception as e:
+        print(f"✅ Correctly failed for missing binding: {e}")
+
+
 if __name__ == "__main__":
     demonstrate_contract_validation()
+    test_create_frame_instance_contracts()
