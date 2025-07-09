@@ -23,7 +23,13 @@ from .protocols import (
 )
 
 
-class HybridConceptRegistry(ConceptRegistry):
+class HybridConceptRegistry(
+    ConceptRegistry,
+    FrameRegistryProtocol,
+    ClusterRegistryProtocol,
+    SemanticReasoningProtocol,
+    KnowledgeDiscoveryProtocol
+):
     """
     Advanced concept registry with frame and cluster integration.
     

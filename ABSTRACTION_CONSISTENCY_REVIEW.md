@@ -138,6 +138,12 @@ class EnhancedHybridRegistry(HybridConceptRegistry, SemanticReasoningProtocol, K
 class ConceptRegistry(ConceptRegistryProtocol[Concept, str]):
     """Concept registry with protocol compliance."""
 
+class FrameRegistry(FrameRegistryProtocol[SemanticFrame, str]):
+    """Frame registry with protocol compliance."""
+
+class ClusterRegistry(ClusterRegistryProtocol[Concept, int]):
+    """Cluster registry with protocol compliance."""
+
 class HybridConceptRegistry(ConceptRegistry, FrameRegistryProtocol, ClusterRegistryProtocol):
     """Hybrid registry implementing multiple protocols."""
 ```
@@ -260,9 +266,9 @@ class ReasoningEngineBase(ABC):
 ### Protocol Adoption Rate
 ```
 Total Protocols Defined:     8
-Protocols Actually Used:     2  (25%)
+Protocols Actually Used:     5  (62.5%)
 Classes That Could Use:      12 (estimated)
-Current Adoption Rate:       16.7%
+Current Adoption Rate:       41.7%
 ```
 
 ### Abstraction Pattern Distribution
@@ -292,6 +298,12 @@ Mixin Usage:               0 classes   ❌ (Unused infrastructure)
 # 1. Core Registry Compliance
 class ConceptRegistry(ConceptRegistryProtocol[Concept, str]):
     """Update base registry to implement protocol."""
+
+class FrameRegistry(FrameRegistryProtocol[SemanticFrame, str]):
+    """Update frame registry to implement protocol."""
+
+class ClusterRegistry(ClusterRegistryProtocol[Concept, int]):
+    """Update cluster registry to implement protocol."""
 
 class HybridConceptRegistry(ConceptRegistry, FrameRegistryProtocol, ClusterRegistryProtocol):
     """Add frame and cluster protocol compliance."""
@@ -376,6 +388,8 @@ class PersistenceBase(ABC):
 
 1. **Update Core Classes:**
    - `ConceptRegistry` → implement `ConceptRegistryProtocol`
+   - `FrameRegistry` → implement `FrameRegistryProtocol`
+   - `ClusterRegistry` → implement `ClusterRegistryProtocol`
    - `HybridConceptRegistry` → implement multiple protocols
    - `VectorEmbeddingManager` → implement `EmbeddingProviderProtocol`
 
@@ -433,10 +447,11 @@ The ltnexp03 codebase demonstrates **sophisticated architectural thinking** with
 **Key Findings:**
 - 🏆 **Excellent Foundation:** Well-designed protocols, mixins, and abstractions
 - ⚠️ **Inconsistent Adoption:** Infrastructure exists but isn't fully utilized  
+- ✅ **Improved Adoption:** Protocol adoption has been significantly improved.
 - 🔧 **High ROI Opportunity:** Completing protocol adoption would significantly improve type safety and maintainability
 
 **Priority Actions:**
-1. **Implement protocol compliance** in core classes (high impact, medium effort)
+1. **Implement protocol compliance** in core classes (high impact, medium effort) - **In Progress**
 2. **Simplify mixin strategy** (medium impact, low effort)  
 3. **Standardize data model patterns** (medium impact, medium effort)
 

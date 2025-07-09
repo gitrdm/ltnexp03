@@ -25,7 +25,7 @@ from .frame_cluster_abstractions import (
 )
 
 
-class FrameRegistry(FrameRegistryProtocol):
+class FrameRegistry(FrameRegistryProtocol[SemanticFrame, str]):
     """
     Registry for managing semantic frames and their relationships.
     
@@ -96,16 +96,20 @@ class FrameRegistry(FrameRegistryProtocol):
         definition: str,
         core_elements: List[str],
         peripheral_elements: Optional[List[str]] = None
-    ) -> str:
-        """Create a new semantic frame and return its ID."""
+    ) -> SemanticFrame:
+        """Create a new semantic frame and return it."""
+        
+        core = [FrameElement(name=el, description="", element_type=FrameElementType.CORE) for el in core_elements]
+        peripheral = [FrameElement(name=el, description="", element_type=FrameElementType.PERIPHERAL) for el in (peripheral_elements or [])]
+        
         frame = SemanticFrame(
             name=name,
             definition=definition,
-            core_elements=[FrameElement(name=elem, description="", element_type=FrameElementType.CORE) for elem in core_elements],
-            peripheral_elements=[FrameElement(name=elem, description="", element_type=FrameElementType.PERIPHERAL) for elem in (peripheral_elements or [])]
+            core_elements=core,
+            peripheral_elements=peripheral
         )
-        self.register_frame(frame)
-        return frame.name
+        
+        return self.register_frame(frame)
 
     def find_frames_for_concept(
         self, 
@@ -295,7 +299,7 @@ class FrameRegistry(FrameRegistryProtocol):
         return False
 
 
-class ClusterRegistry(ClusterRegistryProtocol):
+class ClusterRegistry(ClusterRegistryProtocol[Concept, int]):
     """
     Registry for managing concept clusters and embeddings.
     

@@ -88,7 +88,7 @@ class SynsetInfo:
            "concepts must be a dictionary")
 @invariant(lambda self: hasattr(self, 'context_mappings') and isinstance(self.context_mappings, dict),
            "context_mappings must be a dictionary")
-class ConceptRegistry(ConceptRegistryProtocol):
+class ConceptRegistry(ConceptRegistryProtocol[Concept, str]):
     """
     Centralized Concept Management System
     

@@ -94,54 +94,24 @@ class ContractPreservationMixin:
 
 ---
 
-### **Phase 2: Protocol Adoption (High Impact, Medium Risk)**
+### **Phase 2: Protocol Adoption (High Impact, Medium Risk)** - **IN PROGRESS**
 *Duration: 1 week*
 
-#### **2.1 Core Registry Protocol Implementation**
+#### **2.1 Core Registry Protocol Implementation** - **COMPLETE**
 
 **Goal:** Implement `ConceptRegistryProtocol` in base registry classes.
 
 **Implementation Steps:**
 
 ```python
-# Step 1: Update ConceptRegistry to implement protocol
+# Step 1: Update ConceptRegistry to implement protocol - COMPLETE
 # File: app/core/concept_registry.py
 
-from .protocols import ConceptRegistryProtocol
-from .contract_compatibility import ContractPreservationMixin
+# Step 2: Update FrameRegistry to implement protocol - COMPLETE
+# File: app/core/frame_cluster_registry.py
 
-@ContractPreservationMixin.preserve_registry_invariants
-class ConceptRegistry(ConceptRegistryProtocol[Concept, str], ContractPreservationMixin):
-    """Enhanced concept registry with protocol compliance."""
-    
-    # Existing implementation preserved with minimal changes
-    @ContractPreservationMixin.preserve_concept_contracts
-    def create_concept(
-        self, 
-        name: str, 
-        context: str = "default",
-        synset_id: Optional[str] = None,
-        disambiguation: Optional[str] = None,
-        auto_disambiguate: bool = True
-    ) -> Concept:
-        """Create and register a concept - now protocol compliant."""
-        # Existing logic preserved exactly
-        return self._create_concept_impl(name, context, synset_id, disambiguation, auto_disambiguate)
-    
-    # Add missing protocol methods with backward compatibility
-    @property
-    def concept_count(self) -> int:
-        """Protocol-required property."""
-        return len(self.concepts)
-    
-    def find_similar_concepts(
-        self, 
-        concept: Concept, 
-        threshold: float = 0.7
-    ) -> List[Tuple[Concept, float]]:
-        """Protocol-required method - delegates to existing similarity logic."""
-        # Implement using existing similarity infrastructure
-        return self._find_similar_concepts_impl(concept, threshold)
+# Step 3: Update ClusterRegistry to implement protocol - COMPLETE
+# File: app/core/frame_cluster_registry.py
 ```
 
 **DbC Contract Synchronization:**
@@ -182,6 +152,16 @@ class TestConceptRegistryProtocol:
         """Verify registry implements protocol."""
         registry = ConceptRegistry()
         assert isinstance(registry, ConceptRegistryProtocol)
+
+    def test_frame_registry_protocol_compliance(self):
+        """Verify frame registry implements protocol."""
+        registry = FrameRegistry()
+        assert isinstance(registry, FrameRegistryProtocol)
+
+    def test_cluster_registry_protocol_compliance(self):
+        """Verify cluster registry implements protocol."""
+        registry = ClusterRegistry()
+        assert isinstance(registry, ClusterRegistryProtocol)
     
     def test_existing_functionality_preserved(self):
         """Ensure all existing tests still pass."""
@@ -198,7 +178,7 @@ class TestConceptRegistryProtocol:
         assert isinstance(similar, list)
 ```
 
-#### **2.2 HybridRegistry Protocol Enhancement**
+#### **2.2 HybridRegistry Protocol Enhancement** - **NEXT**
 
 ```python
 # File: app/core/hybrid_registry.py

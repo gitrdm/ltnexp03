@@ -33,6 +33,9 @@ from abc import abstractmethod
 T_Concept = TypeVar('T_Concept')
 T_ConceptId = TypeVar('T_ConceptId', bound=str, covariant=True)
 T_Context = TypeVar('T_Context', bound=str)
+T_Frame = TypeVar('T_Frame')
+T_FrameId = TypeVar('T_FrameId', bound=str, covariant=True)
+T_ClusterId = TypeVar('T_ClusterId')
 
 
 @runtime_checkable
@@ -230,7 +233,7 @@ class KnowledgeDiscoveryProtocol(Protocol):
 
 
 @runtime_checkable
-class FrameRegistryProtocol(Protocol):
+class FrameRegistryProtocol(Protocol, Generic[T_Frame, T_FrameId]):
     """
     Protocol for semantic frame management.
     
@@ -244,34 +247,23 @@ class FrameRegistryProtocol(Protocol):
         definition: str,
         core_elements: List[str],
         peripheral_elements: Optional[List[str]] = None
-    ) -> str:
-        """Create a new semantic frame and return its ID."""
+    ) -> T_Frame:
+        """Create a new semantic frame and return it."""
         ...
-    
-    def get_frame(self, frame_id: str) -> Optional[Dict[str, Any]]:
-        """Retrieve frame by ID."""
+
+    def get_frame(self, frame_id: T_FrameId) -> Optional[T_Frame]:
+        """Retrieve a frame by its ID."""
         ...
-    
-    def find_frames_for_concept(
-        self, 
-        concept: str
-    ) -> List[Dict[str, Any]]:
-        """Find all frames that include the given concept."""
-        ...
-    
-    def create_frame_instance(
-        self,
-        frame_id: str,
-        concept_bindings: Dict[str, str]
-    ) -> str:
-        """Create instance of frame with concept bindings."""
+
+    def register_frame(self, frame: T_Frame) -> T_Frame:
+        """Register a semantic frame in the registry."""
         ...
 
 
 @runtime_checkable
-class ClusterRegistryProtocol(Protocol):
+class ClusterRegistryProtocol(Protocol, Generic[T_Concept, T_ClusterId]):
     """
-    Protocol for concept clustering operations.
+    Protocol for managing concept clusters.
     
     Defines interface for clustering concepts based on embeddings
     and managing cluster-based similarity computations.
@@ -279,7 +271,7 @@ class ClusterRegistryProtocol(Protocol):
     
     def update_clusters(
         self,
-        concepts: Optional[List[str]] = None,
+        concepts: Optional[List[T_Concept]] = None,
         n_clusters: Optional[int] = None
     ) -> Dict[str, Any]:
         """Update concept clusters and return clustering metadata."""
@@ -287,16 +279,16 @@ class ClusterRegistryProtocol(Protocol):
     
     def get_cluster_membership(
         self, 
-        concept: str
-    ) -> Optional[Dict[str, float]]:
-        """Get cluster membership probabilities for concept."""
+        concept: T_Concept
+    ) -> Optional[T_ClusterId]:
+        """Get cluster ID for a given concept."""
         ...
     
     def find_cluster_neighbors(
         self,
-        concept: str,
+        concept: T_Concept,
         max_neighbors: int = 10
-    ) -> List[Tuple[str, float]]:
+    ) -> List[Tuple[T_Concept, float]]:
         """Find nearest neighbors within the same cluster."""
         ...
     
