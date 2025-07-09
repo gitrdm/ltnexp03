@@ -377,9 +377,9 @@ This project represents research into hybrid neural-symbolic AI systems. When us
 ```bibtex
 @software{neural_symbolic_ai_platform,
   title={Neural-Symbolic AI Platform: Hybrid Reasoning with LTNtorch and Z3},
-  author={Research Team},
+  author={gitrdm},
   year={2025},
-  url={https://github.com/your-repo/neural-symbolic-ai}
+  url={https://github.com/gitrdm/neural-symbolic-ai}
 }
 ```
 
