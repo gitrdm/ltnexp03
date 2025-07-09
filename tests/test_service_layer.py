@@ -29,6 +29,7 @@ from app.service_layer import app, get_semantic_registry, get_persistence_manage
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.contract_persistence import ContractEnhancedPersistenceManager
 from app.core.batch_persistence import BatchPersistenceManager
+from app.core.protocols import SemanticReasoningProtocol
 
 
 # ============================================================================

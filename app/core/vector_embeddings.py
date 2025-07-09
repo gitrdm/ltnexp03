@@ -17,6 +17,7 @@ from pathlib import Path
 
 # Design by Contract support
 from icontract import require, ensure, invariant, ViolationError
+from app.core.protocols import EmbeddingProviderProtocol
 
 
 @dataclass
@@ -240,9 +241,10 @@ class SemanticEmbeddingProvider(EmbeddingProvider):
            "providers must be a dictionary")
 @invariant(lambda self: hasattr(self, 'default_provider') and self.default_provider in self.providers,
            "default_provider must be a valid provider")
-class VectorEmbeddingManager:
+class VectorEmbeddingManager(EmbeddingProviderProtocol):
     """
     Advanced vector embedding manager for the hybrid semantic system.
+    Implements EmbeddingProviderProtocol for protocol compliance.
     
     Provides sophisticated embedding capabilities including multiple providers,
     embedding persistence, and advanced similarity metrics.
@@ -521,3 +523,24 @@ class VectorEmbeddingManager:
         self.embeddings.clear()
         self.metadata.clear()
         self.logger.info("Cleared embedding cache")
+    
+    # Phase 5: Protocol/ABC adoption for embedding manager
+    # Ensure VectorEmbeddingManager implements EmbeddingProviderProtocol
+
+    # Add required protocol methods and properties
+    def generate_embedding(self, concept: str, context: str = "default") -> NDArray[np.float32]:
+        return self.get_embedding(concept, context)  # Alias to existing method
+
+    def compute_similarity(self, emb1, emb2) -> float:
+        return float(self._cosine_similarity(emb1, emb2))
+
+    def batch_generate_embeddings(self, concepts: List[str], context: str = "default") -> Dict[str, NDArray[np.float32]]:
+        return {c: self.get_embedding(c, context) for c in concepts}
+
+    @property
+    def embedding_dimension(self) -> int:
+        return 300  # Default dimension; could be dynamic if needed
+
+    @property
+    def provider_name(self) -> str:
+        return self.default_provider

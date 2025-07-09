@@ -23,6 +23,7 @@ import torch
 
 from .abstractions import Concept, Axiom, Context
 from .frame_cluster_abstractions import SemanticFrame, FrameInstance, ConceptCluster
+from .protocols import PersistenceProtocol
 
 # Type hint for registry - avoid circular imports
 from typing import TYPE_CHECKING
@@ -70,12 +71,10 @@ class StorageFormat:
 
 @invariant(lambda self: self.storage_path.exists())
 @invariant(lambda self: self.storage_path.is_dir())
-class PersistenceManager:
+class PersistenceManager(PersistenceProtocol):
     """
     Comprehensive persistence management for soft logic system.
-    
-    Provides contract-validated save/load functionality for all semantic
-    structures including concepts, frames, clusters, and analogical mappings.
+    Implements PersistenceProtocol for type safety and interface consistency.
     """
     
     @require(lambda storage_path: isinstance(storage_path, (str, Path)))

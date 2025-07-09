@@ -26,6 +26,8 @@ try:
 except ImportError:
     HAS_FAISS = False
 
+from .protocols import BatchPersistenceProtocol
+
 
 class WorkflowStatus(Enum):
     """Workflow processing status."""
@@ -110,9 +112,10 @@ class DeleteCriteria:
 
 @invariant(lambda self: self.storage_path.exists())
 @invariant(lambda self: self.storage_path.is_dir())
-class BatchPersistenceManager:
+class BatchPersistenceManager(BatchPersistenceProtocol):
     """
     Production-ready persistence manager with batch workflow support.
+    Implements BatchPersistenceProtocol for type safety and interface consistency.
     
     Provides:
     - JSONL streaming for incremental operations
