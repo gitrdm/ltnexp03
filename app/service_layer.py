@@ -858,7 +858,7 @@ async def create_frame_instance(
             bindings[element_name] = concept
         
         # Create frame instance using correct parameters
-        frame_instance = registry.frame_registry.create_frame_instance(
+        frame_instance = registry.frame_registry._create_frame_instance_obj(
             frame_name=frame_id,  # Use frame_name parameter
             instance_id=instance.instance_id,
             bindings=bindings,  # Use bindings parameter

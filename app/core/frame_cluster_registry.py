@@ -12,9 +12,12 @@ from dataclasses import dataclass
 import logging
 from sklearn.cluster import KMeans
 from sklearn.metrics.pairwise import cosine_similarity
+from dataclasses import asdict
+import uuid
 
 from .concept_registry import ConceptRegistry, SynsetInfo
 from .abstractions import Concept
+from .protocols import FrameRegistryProtocol, ClusterRegistryProtocol
 from .frame_cluster_abstractions import (
     SemanticFrame, FrameElement, FrameInstance, ConceptCluster,
     FrameAwareConcept, FrameRelation, AnalogicalMapping,
@@ -22,7 +25,7 @@ from .frame_cluster_abstractions import (
 )
 
 
-class FrameRegistry:
+class FrameRegistry(FrameRegistryProtocol):
     """
     Registry for managing semantic frames and their relationships.
     
@@ -87,7 +90,62 @@ class FrameRegistry:
         frame_names = self.element_index.get(element_name, [])
         return [self.frames[name] for name in frame_names if name in self.frames]
     
-    def create_frame_instance(self, frame_name: str, instance_id: str,
+    def create_frame(
+        self,
+        name: str,
+        definition: str,
+        core_elements: List[str],
+        peripheral_elements: Optional[List[str]] = None
+    ) -> str:
+        """Create a new semantic frame and return its ID."""
+        frame = SemanticFrame(
+            name=name,
+            definition=definition,
+            core_elements=[FrameElement(name=elem, description="", element_type=FrameElementType.CORE) for elem in core_elements],
+            peripheral_elements=[FrameElement(name=elem, description="", element_type=FrameElementType.PERIPHERAL) for elem in (peripheral_elements or [])]
+        )
+        self.register_frame(frame)
+        return frame.name
+
+    def find_frames_for_concept(
+        self, 
+        concept: str
+    ) -> List[Dict[str, Any]]:
+        """Find all frames that can be evoked by a concept (lexical unit)."""
+        frames = self.get_frames_by_lexical_unit(concept)
+        return [asdict(frame) for frame in frames]
+
+    def create_frame_instance(
+        self,
+        frame_id: str,
+        concept_bindings: Dict[str, str]
+    ) -> str:
+        """Create instance of frame with concept bindings and return its ID."""
+        if frame_id not in self.frames:
+            raise ValueError(f"Unknown frame: {frame_id}")
+
+        # NOTE: This is a shim implementation to satisfy the protocol.
+        # It creates dummy concepts and does not have full functionality.
+        # This highlights a dependency gap on a ConceptRegistry.
+        from .abstractions import Concept
+        
+        bindings: Dict[str, Concept] = {
+            element_name: Concept(name=concept_name)
+            for element_name, concept_name in concept_bindings.items()
+        }
+
+        instance_id = str(uuid.uuid4())
+        
+        instance = FrameInstance(
+            frame_name=frame_id,
+            instance_id=instance_id,
+            element_bindings=bindings,
+        )
+        
+        self.frame_instances[instance_id] = instance
+        return instance_id
+    
+    def _create_frame_instance_obj(self, frame_name: str, instance_id: str,
                             bindings: Dict[str, FrameAwareConcept],
                             context: str = "default") -> FrameInstance:
         """Create a specific instance of a frame with concept bindings."""
@@ -150,8 +208,8 @@ class FrameRegistry:
             target_instance=target.instance_id
         )
         
-        source_frame = self.frames.get(source.frame_name)
-        target_frame = self.frames.get(target.frame_name)
+        source_frame = self.get_frame(source.frame_name)
+        target_frame = self.get_frame(target.frame_name)
         
         if not source_frame or not target_frame:
             return mapping
@@ -237,7 +295,7 @@ class FrameRegistry:
         return False
 
 
-class ClusterRegistry:
+class ClusterRegistry(ClusterRegistryProtocol):
     """
     Registry for managing concept clusters and embeddings.
     
@@ -256,7 +314,7 @@ class ClusterRegistry:
         
         # Clustering model
         self.clustering_model = KMeans(n_clusters=n_clusters, random_state=42)
-        self.is_trained = False
+        self.is_trained_flag = False
         
         self.logger = logging.getLogger(__name__)
     
@@ -266,7 +324,7 @@ class ClusterRegistry:
             raise ValueError(f"Embedding dimension mismatch: expected {self.embedding_dim}, got {embedding.shape[0]}")
         
         self.concept_embeddings[concept_id] = embedding
-        self.is_trained = False  # Need to retrain clustering
+        self.is_trained_flag = False  # Need to retrain clustering
     
     def train_clusters(self) -> None:
         """Train clustering model on current embeddings."""
@@ -285,7 +343,7 @@ class ClusterRegistry:
         # Create cluster objects and assign memberships
         self._create_clusters_from_model(concept_ids, embeddings)
         
-        self.is_trained = True
+        self.is_trained_flag = True
         self.logger.info(f"Trained clustering with {len(concept_ids)} concepts into {self.n_clusters} clusters")
     
     def _create_clusters_from_model(self, concept_ids: List[str], embeddings: NDArray[np.float32]) -> None:
@@ -344,7 +402,7 @@ class ClusterRegistry:
         if concept_id not in self.concept_embeddings:
             return {}
         
-        if not self.is_trained:
+        if not self.is_trained_flag:
             return {}
         
         embedding = self.concept_embeddings[concept_id].reshape(1, -1)
@@ -397,3 +455,67 @@ class ClusterRegistry:
             return 0.0
         
         return float(np.dot(vec1, vec2) / (norm1 * norm2))
+
+    # Protocol Compliance Implementations
+    def update_clusters(
+        self,
+        concepts: Optional[List[str]] = None,
+        n_clusters: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Update concept clusters and return clustering metadata."""
+        if n_clusters:
+            self.n_clusters = n_clusters
+            self.clustering_model = KMeans(n_clusters=n_clusters, random_state=42)
+
+        self.train_clusters()
+        return {
+            "n_clusters": self.n_clusters,
+            "n_concepts": len(self.concept_embeddings),
+            "is_trained": self.is_trained_flag,
+            "coherence_scores": {cid: c.coherence_score for cid, c in self.clusters.items()}
+        }
+
+    def get_cluster_membership(
+        self, 
+        concept: str
+    ) -> Optional[Dict[str, float]]:
+        """Get cluster membership probabilities for a concept."""
+        memberships = self.get_concept_cluster_memberships(concept)
+        if not memberships:
+            return None
+        # Convert cluster IDs (int) to string keys to match protocol
+        return {str(cid): score for cid, score in memberships.items()}
+
+    def find_cluster_neighbors(
+        self,
+        concept: str,
+        max_neighbors: int = 10
+    ) -> List[Tuple[str, float]]:
+        """Find nearest neighbors within the same primary cluster."""
+        memberships = self.get_concept_cluster_memberships(concept)
+        if not memberships:
+            return []
+
+        primary_cluster = max(memberships, key=lambda k: memberships[k])
+        
+        cluster_members = self.clusters.get(primary_cluster)
+        if not cluster_members:
+            return []
+
+        neighbors = []
+        for member_id, strength in cluster_members.members.items():
+            if member_id != concept:
+                neighbors.append((member_id, strength))
+        
+        neighbors.sort(key=lambda x: x[1], reverse=True)
+        return neighbors[:max_neighbors]
+
+    @property
+    def is_trained(self) -> bool:
+        """Return whether clustering model has been trained."""
+        return self.is_trained_flag
+    
+    @property
+    def cluster_count(self) -> int:
+        """Return number of clusters."""
+        return self.n_clusters

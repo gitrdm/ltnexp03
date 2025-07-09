@@ -36,8 +36,10 @@ UNIQUE ID STRATEGY:
 """
 
 import re
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Design by Contract support
 from icontract import require, ensure, invariant, ViolationError
@@ -56,6 +58,7 @@ except ImportError:
     WORDNET_AVAILABLE = False
 
 from .abstractions import Concept
+from .protocols import ConceptRegistryProtocol
 
 
 @dataclass
@@ -85,7 +88,7 @@ class SynsetInfo:
            "concepts must be a dictionary")
 @invariant(lambda self: hasattr(self, 'context_mappings') and isinstance(self.context_mappings, dict),
            "context_mappings must be a dictionary")
-class ConceptRegistry:
+class ConceptRegistry(ConceptRegistryProtocol):
     """
     Centralized Concept Management System
     
@@ -533,6 +536,42 @@ class ConceptRegistry:
             return list(self.context_mappings.get(context, {}).values())
         return list(self.concepts.values())
     
+    def find_similar_concepts(
+        self, 
+        concept: Concept, 
+        threshold: float = 0.7
+    ) -> List[Tuple[Concept, float]]:
+        """Find concepts with similar embeddings using cosine similarity."""
+        if concept.embedding is None:
+            return []
+
+        similar = []
+        
+        # Prepare source embedding
+        embedding1 = concept.embedding.reshape(1, -1)
+
+        for other_concept in self.concepts.values():
+            if other_concept.unique_id == concept.unique_id or other_concept.embedding is None:
+                continue
+            
+            # Prepare target embedding
+            embedding2 = other_concept.embedding.reshape(1, -1)
+            
+            # Compute cosine similarity
+            sim = cosine_similarity(embedding1, embedding2)[0][0]
+            
+            if sim >= threshold:
+                similar.append((other_concept, float(sim)))
+        
+        # Sort by similarity score in descending order
+        similar.sort(key=lambda x: x[1], reverse=True)
+        return similar
+
+    @property
+    def concept_count(self) -> int:
+        """Return total number of registered concepts."""
+        return len(self.concepts)
+
     def get_concept_stats(self) -> Dict[str, int]:
         """Get statistics about registered concepts."""
         stats = {
