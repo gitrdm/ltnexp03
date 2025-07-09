@@ -187,9 +187,18 @@ class ContractEnhancedRegistry(BaseRegistry):
         # Call existing implementation
         fields = self.discover_semantic_fields(min_coherence=min_coherence)
         
+        # Accept both dict and list return types
+        if isinstance(fields, dict):
+            field_iter = fields.items()
+        elif isinstance(fields, list):
+            # Already a list of structured fields
+            return fields[:max_fields]
+        else:
+            raise TypeError("discover_semantic_fields must return dict or list")
+        
         # Convert to structured format
         structured_fields = []
-        for field_name, field_data in fields.items():
+        for field_name, field_data in field_iter:
             structured_fields.append({
                 'field_name': field_name,
                 'coherence': field_data.get('coherence', min_coherence),
@@ -197,7 +206,6 @@ class ContractEnhancedRegistry(BaseRegistry):
                 'related_concepts': field_data.get('related_concepts', {}),
                 'discovery_metadata': field_data.get('metadata', {})
             })
-        
         # Apply limit
         return structured_fields[:max_fields]
     
@@ -264,12 +272,17 @@ def demonstrate_contract_validation():
     # Initialize contract-enhanced registry
     kwargs = {
         'download_wordnet': False,
-        'n_clusters': 4,
+        'n_clusters': 1,  # Set to 1 to avoid n_samples < n_clusters error
         'enable_cross_domain': True,
         'embedding_provider': 'semantic'
     } if IMPORTS_AVAILABLE else {}
     
     registry = ContractEnhancedRegistry(**kwargs)
+    
+    # Add more concepts to avoid clustering errors
+    registry.create_concept_with_contracts(name="knight", context="default")
+    registry.create_concept_with_contracts(name="wizard", context="default")
+    registry.create_concept_with_contracts(name="dragon", context="default")
     
     # Test 1: Valid concept creation
     print("1. Testing valid concept creation...")
@@ -318,8 +331,13 @@ def demonstrate_contract_validation():
             max_fields=3
         )
         print(f"✅ Discovered {len(fields)} semantic fields")
-        for field in fields:
-            print(f"   - {field['field_name']}: coherence={field['coherence']:.2f}")
+        # Handle both dict and list return types for fields
+        if isinstance(fields, dict):
+            field_iter = fields.values()
+        else:
+            field_iter = fields
+        for field in field_iter:
+            print(f"   - {field.get('field_name', str(field))}: coherence={field.get('coherence', 0.0):.2f}")
     except ViolationError as e:
         print(f"❌ Contract violation: {e}")
     except Exception as e:
@@ -438,8 +456,3 @@ def test_create_frame_instance_contracts():
         print("❌ Should have failed for missing binding")
     except Exception as e:
         print(f"✅ Correctly failed for missing binding: {e}")
-
-
-if __name__ == "__main__":
-    demonstrate_contract_validation()
-    test_create_frame_instance_contracts()
