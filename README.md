@@ -2,6 +2,8 @@
 
 **A production-ready microservice for hybrid neural-symbolic reasoning**
 
+> **Version:** 1.0.0 — This is the first stable, production-ready release of the Neural-Symbolic AI Platform.
+
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![LTNtorch](https://img.shields.io/badge/LTNtorch-1.0+-red.svg)](https://github.com/bmxitalia/LTNtorch)
