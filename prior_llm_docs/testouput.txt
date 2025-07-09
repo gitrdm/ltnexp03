@@ -1,0 +1,629 @@
+\033[0;32mRunning unit tests...\033[0m 
+\033[1;33mTesting core abstractions...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-8.4.0, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+configfile: pyproject.toml
+plugins: anyio-3.7.1, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+
+tests/test_core/test_abstractions.py::TestConcept::test_concept_creation PASSED [  5%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_normalization PASSED [ 11%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_unique_id PASSED [ 16%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_equality PASSED [ 22%]
+tests/test_core/test_abstractions.py::TestConcept::test_concept_validation PASSED [ 27%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_formula_creation PASSED [ 33%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_formula_validation PASSED [ 38%]
+tests/test_core/test_abstractions.py::TestFormulaNode::test_get_concepts PASSED [ 44%]
+tests/test_core/test_abstractions.py::TestAxiom::test_axiom_creation PASSED [ 50%]
+tests/test_core/test_abstractions.py::TestAxiom::test_axiom_concept_extraction PASSED [ 55%]
+tests/test_core/test_abstractions.py::TestContext::test_context_creation PASSED [ 61%]
+tests/test_core/test_abstractions.py::TestContext::test_context_axiom_management PASSED [ 66%]
+tests/test_core/test_abstractions.py::TestContext::test_context_concept_retrieval PASSED [ 72%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_concept_registration PASSED [ 77%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_homonym_handling PASSED [ 83%]
+tests/test_core/test_abstractions.py::TestConceptRegistry::test_pattern_search PASSED [ 88%]
+tests/test_core/test_abstractions.py::TestAxiomParser::test_yaml_parsing PASSED [ 94%]
+tests/test_core/test_abstractions.py::TestAxiomParser::test_json_parsing PASSED [100%]
+
+============================== 18 passed in 0.37s ==============================
+\033[0;32mUnit tests completed!\033[0m 
+\033[0;32mRunning integration tests...\033[0m 
+\033[1;33mTesting API endpoints...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-8.4.0, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+configfile: pyproject.toml
+plugins: anyio-3.7.1, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+tests/test_main.py::test_health_check PASSED                             [ 50%]
+tests/test_main.py::test_root_endpoint PASSED                            [100%]
+
+============================== 2 passed in 1.33s ===============================
+\033[0;32mIntegration tests completed!\033[0m 
+\033[0;32mRunning demonstration scripts...\033[0m 
+\033[1;33mRunning demo_abstractions.py...\033[0m 
+🚀 SOFT LOGIC CORE ABSTRACTIONS DEMO
+============================================================
+🏗️  Building Word Analogy Knowledge Base
+==================================================
+
+📝 Creating concepts...
+✅ Created 10 concepts
+
+⚖️  Creating axioms...
+✅ Created 4 axioms
+
+🌍 Creating context...
+✅ Created context with 4 axioms and 9 concepts
+
+🔍 Analyzing Knowledge Base
+==================================================
+
+📊 Context: word_analogies
+   Description: Knowledge base for word analogies, synonyms, and antonyms
+   Total axioms: 4
+   Core axioms: 4
+   Soft axioms: 0
+   Total concepts: 9
+
+📜 Axioms by type:
+   analogy: 1
+   synonym: 1
+   antonym: 1
+   dissimilarity: 1
+
+🏷️  Concepts by context:
+   royal: 4
+   transport: 2
+   weather: 2
+   finance: 1
+   geography: 1
+
+🎯 Example concepts:
+   king(king.n.01) - male monarch
+   man(man.n.01) - adult male
+   woman(woman.n.01) - adult female
+   queen(queen.n.01) - female monarch
+   car(car.n.01) - motor vehicle
+
+🔄 Homonym examples:
+   bank(bank.n.01) - financial institution
+   bank(bank.n.09) - land beside water
+
+🧪 Testing Knowledge Queries
+==================================================
+
+🔍 Concept retrieval tests:
+   Bank (finance): bank(bank.n.01)
+   Bank (geography): bank(bank.n.09)
+
+🎯 Pattern matching tests:
+   Royal concepts (king/queen): ['king(king.n.01)', 'queen(queen.n.01)']
+
+⚖️  Axiom analysis:
+   gender_analogy: analogy - core
+      Formula: similar(((king(king.n.01) - man(man.n.01)) + woman(woman.n.01)), queen(queen.n.01))
+      Concepts: ['king', 'man', 'woman', 'queen']
+
+   vehicle_synonym: synonym - core
+      Formula: similar(car(car.n.01), automobile(car.n.01))
+      Concepts: ['car', 'automobile']
+
+   temperature_antonym: antonym - core
+      Formula: dissimilar(hot(hot.a.01), cold(cold.a.01))
+      Concepts: ['hot', 'cold']
+
+   bank_disambiguation: dissimilarity - core
+      Formula: dissimilar(bank(bank.n.01), bank(bank.n.09))
+      Concepts: ['bank', 'bank']
+
+💾 Save/Load Demo
+==================================================
+
+📝 Axiom summaries:
+   gender_analogy:
+      Type: analogy
+      Classification: core
+      Description: Gender analogy: king is to man as queen is to woman
+      Concepts: 4
+
+   vehicle_synonym:
+      Type: synonym
+      Classification: core
+      Description: Car and automobile are synonyms
+      Concepts: 2
+
+   temperature_antonym:
+      Type: antonym
+      Classification: core
+      Description: Hot and cold are antonyms
+      Concepts: 2
+
+   bank_disambiguation:
+      Type: dissimilarity
+      Classification: core
+      Description: Different meanings of bank should be distinct
+      Concepts: 2
+
+
+🧮 Demonstrating Generalized Vector Arithmetic
+============================================================
+
+📝 Creating concepts for complex arithmetic...
+✅ Created 9 concepts
+
+🔧 Building complex nested vector arithmetic formulas...
+
+📐 Generated formulas:
+
+   Multi-term transformation:
+   Formula: similar(((((emperor - king) + queen) - male) + female), empress)
+   Involves 6 concepts: ['emperor', 'king', 'queen', 'male', 'female', 'empress']
+
+   Hierarchical composition:
+   Formula: similar((((king + power) - (prince + youth)) + female), mature_queen)
+   Involves 6 concepts: ['king', 'power', 'prince', 'youth', 'female', 'mature_queen']
+
+   Linear chain (5+ terms):
+   Formula: similar(((((king - male) + female) - youth) + power), wise_queen)
+   Involves 6 concepts: ['king', 'male', 'female', 'youth', 'power', 'wise_queen']
+
+✅ Created 3 complex arithmetic axioms
+
+🔍 Demonstrating arbitrary nesting depth...
+   Deep nested formula (6 levels): similar(((((((king - male) + female) - youth) + power) - complexity) + wisdom), ultimate_ruler)
+   Total concepts involved: 8
+
+🎉 Demo complete!
+
+Next steps:
+- Phase 2: Add SMT verification for core axioms
+- Phase 3: Add LTN training for soft axioms
+- Phase 4: Add REST API endpoints
+
+\033[1;33mRunning demo_hybrid_system.py...\033[0m 
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float32(0.4178595)), (0, np.float32(0.16228816))]
+   cat: [(2, np.float32(0.41422927)), (1, np.float32(0.1601024))]
+   lion: [(2, np.float32(0.43041408)), (1, np.float32(0.16395362))]
+   king: [(0, np.float32(0.42953488)), (1, np.float32(0.15953635))]
+   queen: [(0, np.float32(0.4096599)), (1, np.float32(0.17695552))]
+   man: [(0, np.float32(0.41996935)), (2, np.float32(0.16373344))]
+   woman: [(0, np.float32(0.39964524)), (1, np.float32(0.1719845))]
+   car: [(3, np.float32(0.43742454)), (2, np.float32(0.17390224))]
+   bike: [(3, np.float32(0.43590808)), (2, np.float32(0.15996423))]
+   plane: [(3, np.float32(0.46783957)), (1, np.float32(0.1523573))]
+   money: [(4, np.float32(0.7244475))]
+   dollar: [(1, np.float32(0.4555032)), (2, np.float32(0.15627727))]
+   price: [(1, np.float32(0.41816628)), (0, np.float32(0.16108361))]
+============================================================
+HYBRID CONCEPT REGISTRY DEMONSTRATION
+============================================================
+
+1. Creating hybrid concept registry...
+
+2. Creating frame-aware concepts with embeddings...
+   Created: default:dog
+   Created: default:cat
+   Created: default:lion
+   Created: default:king
+   Created: default:queen
+   Created: default:man
+   Created: default:woman
+   Created: default:car
+   Created: default:bike
+   Created: default:plane
+   Created: default:money
+   Created: default:dollar
+   Created: default:price
+
+3. Training concept clusters...
+
+4. Cluster memberships:
+   dog: [(2, np.float32(0.4178595)), (0, np.float32(0.16228816))]
+   cat: [(2, np.float32(0.41422927)), (1, np.float32(0.1601024))]
+   lion: [(2, np.float32(0.43041408)), (1, np.float32(0.16395362))]
+   king: [(0, np.float32(0.42953488)), (1, np.float32(0.15953635))]
+   queen: [(0, np.float32(0.4096599)), (1, np.float32(0.17695552))]
+   man: [(0, np.float32(0.41996935)), (2, np.float32(0.16373344))]
+   woman: [(0, np.float32(0.39964524)), (1, np.float32(0.1719845))]
+   car: [(3, np.float32(0.43742454)), (2, np.float32(0.17390224))]
+   bike: [(3, np.float32(0.43590808)), (2, np.float32(0.15996423))]
+   plane: [(3, np.float32(0.46783957)), (1, np.float32(0.1523573))]
+   money: [(4, np.float32(0.7244475))]
+   dollar: [(1, np.float32(0.4555032)), (2, np.float32(0.15627727))]
+   price: [(1, np.float32(0.41816628)), (0, np.float32(0.16108361))]
+
+============================================================
+SEMANTIC FRAME DEMONSTRATION
+============================================================
+
+1. Creating Commercial_transaction frame...
+   Created frame: Commercial_transaction
+   Core elements: ['Buyer', 'Seller', 'Goods', 'Money']
+
+2. Creating Gift_giving frame...
+   Created frame: Gift_giving
+
+3. Creating frame instances...
+
+Error during demonstration: FrameRegistry.create_frame_instance() takes 3 positional arguments but 5 were given
+\033[0;31mdemo_hybrid_system.py failed\033[0m 
+
+\033[1;33mRunning demo_enhanced_system.py...\033[0m 
+Starting Enhanced Hybrid Semantic Reasoning Demonstration...
+
+================================================================================
+ENHANCED HYBRID SEMANTIC REASONING SYSTEM
+================================================================================
+
+1. Creating Enhanced Hybrid Registry...
+
+2. Creating Rich Concept Set...
+   Created: animal:lion
+   Created: animal:tiger
+   Created: animal:wolf
+   Created: animal:eagle
+   Created: animal:shark
+   Created: royalty:king
+   Created: royalty:queen
+   Created: royalty:prince
+   Created: royalty:princess
+   Created: royalty:emperor
+   Created: military:general
+   Created: military:colonel
+   Created: military:captain
+   Created: military:sergeant
+   Created: military:soldier
+   Created: business:ceo
+   Created: business:manager
+   Created: business:director
+   Created: business:supervisor
+   Created: business:employee
+   Created: sports:quarterback
+   Created: sports:striker
+   Created: sports:captain_sports
+   Created: sports:coach
+   Created: sports:player
+
+3. Training Concept Clusters...
+
+================================================================================
+SEMANTIC FIELD DISCOVERY
+================================================================================
+
+1. Discovering Semantic Fields...
+
+2. Discovered 7 semantic fields:
+
+   Field: field_0
+   Description: Semantic field with coherence 0.582
+   Core concepts: []
+   Related concepts: 24
+   Associated frames: []
+
+   Field: field_1
+   Description: Semantic field with coherence 0.902
+   Core concepts: []
+   Related concepts: 5
+   Associated frames: []
+
+   Field: field_3
+   Description: Semantic field with coherence 0.789
+   Core concepts: []
+   Related concepts: 20
+   Associated frames: []
+
+   Field: field_4
+   Description: Semantic field with coherence 0.664
+   Core concepts: []
+   Related concepts: 22
+   Associated frames: []
+
+   Field: field_5
+   Description: Semantic field with coherence 0.871
+   Core concepts: []
+   Related concepts: 19
+   Associated frames: []
+
+   Field: field_6
+   Description: Semantic field with coherence 0.582
+   Core concepts: []
+   Related concepts: 24
+   Associated frames: []
+
+   Field: field_7
+   Description: Semantic field with coherence 0.718
+   Core concepts: []
+   Related concepts: 21
+   Associated frames: []
+
+================================================================================
+CROSS-DOMAIN ANALOGY DISCOVERY
+================================================================================
+
+1. Creating Domain-Specific Frames...
+
+2. Creating Frame Instances...
+Error during demonstration: FrameRegistry.create_frame_instance() takes 3 positional arguments but 5 were given
+\033[0;31mdemo_enhanced_system.py failed\033[0m 
+
+\033[1;33mRunning demo_comprehensive_system.py...\033[0m 
+COMPREHENSIVE HYBRID FRAMENET-CLUSTERING DEMONSTRATION
+Building Medieval Fantasy Knowledge Base with Advanced Semantic Reasoning
+
+================================================================================
+BUILDING MEDIEVAL FANTASY KNOWLEDGE BASE
+================================================================================
+
+1. Creating Enhanced Semantic Registry...
+
+2. Creating Rich Concept Set...
+
+   Creating royalty domain:
+     • royalty:king
+     • royalty:queen
+     • royalty:prince
+     • royalty:princess
+     • royalty:duke
+     • royalty:duchess
+     • royalty:baron
+     • royalty:knight
+
+   Creating magic domain:
+     • magic:wizard
+     • magic:sorcerer
+     • magic:witch
+     • magic:enchanter
+     • magic:alchemist
+     • magic:druid
+     • magic:cleric
+     • magic:paladin
+
+   Creating creatures domain:
+     • creatures:dragon
+     • creatures:griffin
+     • creatures:unicorn
+     • creatures:phoenix
+     • creatures:basilisk
+     • creatures:hydra
+     • creatures:wyvern
+     • creatures:pegasus
+
+   Creating military domain:
+     • military:general
+     • military:captain
+     • military:sergeant
+     • military:soldier
+     • military:archer
+     • military:cavalry
+     • military:infantry
+     • military:guard
+
+   Creating locations domain:
+     • locations:castle
+     • locations:tower
+     • locations:dungeon
+     • locations:fortress
+     • locations:temple
+     • locations:monastery
+     • locations:village
+     • locations:city
+
+   Creating artifacts domain:
+     • artifacts:sword
+     • artifacts:shield
+     • artifacts:crown
+     • artifacts:scepter
+     • artifacts:orb
+     • artifacts:tome
+     • artifacts:staff
+     • artifacts:amulet
+
+   Updating clusters with all concepts...
+
+3. Training Semantic Clustering...
+
+================================================================================
+CREATING STORY FRAMES
+================================================================================
+
+1. Creating Quest narrative frame...
+2. Creating Magical_Conflict frame...
+3. Creating Royal_Court political frame...
+4. Creating Dragon_Encounter frame...
+
+================================================================================
+CREATING STORY INSTANCES
+================================================================================
+
+1. Creating 'Knight's Dragon Quest' instance...
+Error during demonstration: FrameRegistry.create_frame_instance() takes 3 positional arguments but 5 were given
+\033[0;31mdemo_comprehensive_system.py failed\033[0m 
+
+\033[0;32mAll demonstrations completed!\033[0m 
+\033[0;32mRunning Design by Contract demonstrations...\033[0m 
+=== icontract Design by Contract Demonstration ===
+Testing contract validation with your soft logic system...
+
+1. Testing valid concept creation...
+✅ Successfully created concept: knight in default
+
+2. Testing invalid concept name (empty)...
+✅ Contract correctly caught invalid name: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 129 in ContractEnhancedRegistry:
+Concept name must be valid (non-empty, reasonable length): SoftLogicContracts.valid_concept_name(name):
+SoftLogicContracts.valid_concept_name(name) was False
+context was 'default'
+disambiguation was None
+name was ''
+self was <__main__.ContractEnhancedRegistry object at 0x7f7435375610>
+synset_id was None
+
+3. Testing invalid context...
+✅ Contract correctly caught invalid context: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 131 in ContractEnhancedRegistry:
+Context must be one of the valid context types: SoftLogicContracts.valid_context(context):
+SoftLogicContracts.valid_context(context) was False
+context was 'invalid_context'
+disambiguation was None
+name was 'wizard'
+self was <__main__.ContractEnhancedRegistry object at 0x7f7435375610>
+synset_id was None
+
+4. Testing valid semantic field discovery...
+❌ Unexpected error: n_samples=1 should be >= n_clusters=4.
+
+5. Testing invalid coherence score...
+✅ Contract correctly caught invalid coherence: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 165 in ContractEnhancedRegistry:
+Coherence score must be between 0.0 and 1.0: SoftLogicContracts.valid_coherence_score(min_coherence):
+SoftLogicContracts.valid_coherence_score(min_coherence) was False
+max_fields was 3
+min_coherence was 1.5
+self was <__main__.ContractEnhancedRegistry object at 0x7f7435375610>
+
+6. Testing valid analogical completion...
+✅ Found 0 analogical completions
+
+7. Testing invalid analogy (too few mappings)...
+✅ Contract correctly caught invalid analogy: File /home/rdmerrio/gits/ltnexp03/app/core/icontract_demo.py, line 204 in ContractEnhancedRegistry:
+Partial analogy must have at least 2 mappings and contain '?' for completion: SoftLogicContracts.valid_analogy_mapping(partial_analogy):
+SoftLogicContracts.valid_analogy_mapping(partial_analogy) was False
+max_completions was 3
+partial_analogy was {'king': 'queen'}
+self was <__main__.ContractEnhancedRegistry object at 0x7f7435375610>
+
+8. Checking operation statistics...
+✅ Registry statistics:
+   - Total operations: 3
+   - Total concepts: 1
+   - Contracts enabled: True
+   - Contract library: icontract
+
+=== Contract validation demonstration complete ===
+
+Key Benefits Demonstrated:
+✅ Early error detection - invalid inputs caught before processing
+✅ Clear error messages - contracts provide specific violation details
+✅ Maintained functionality - existing code works with added safety
+✅ API reliability - service layer will benefit from these contracts
+\033[0;32mContract demonstrations completed!\033[0m 
+\033[0;32mRunning Phase 3A type safety tests...\033[0m 
+==================================================
+PHASE 3A TYPE SAFETY FOUNDATION TESTS
+==================================================
+
+Running test_protocol_imports...
+✓ Protocol interfaces imported successfully
+
+Running test_api_models_imports...
+✓ API models imported successfully
+
+Running test_enhanced_registry_protocols...
+✓ EnhancedHybridRegistry implements required protocols
+
+Running test_semantic_reasoning_interface...
+✓ discover_semantic_fields returned 0 fields
+✓ complete_analogy returned 0 results
+✓ Semantic reasoning interface working
+
+Running test_api_model_validation...
+✓ Valid ConceptCreateRequest: test_concept
+✓ Valid AnalogyRequest with 2 mappings
+✓ API model validation working
+
+==================================================
+RESULTS: 5 passed, 0 failed
+==================================================
+\033[0;32mPhase 3A tests completed!\033[0m 
+\033[1;33mRunning persistence layer tests...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-8.4.0, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+configfile: pyproject.toml
+plugins: anyio-3.7.1, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 20 items
+
+tests/test_core/test_persistence.py::TestStorageFormat::test_validate_format_valid PASSED [  5%]
+tests/test_core/test_persistence.py::TestStorageFormat::test_validate_format_invalid PASSED [ 10%]
+tests/test_core/test_persistence.py::TestStorageFormat::test_get_file_extension PASSED [ 15%]
+tests/test_core/test_persistence.py::TestPersistenceManager::test_initialization PASSED [ 20%]
+tests/test_core/test_persistence.py::TestPersistenceManager::test_save_registry_state_json PASSED [ 25%]
+tests/test_core/test_persistence.py::TestPersistenceManager::test_save_registry_state_invalid_format PASSED [ 30%]
+tests/test_core/test_persistence.py::TestPersistenceManager::test_save_load_roundtrip PASSED [ 35%]
+tests/test_core/test_persistence.py::TestPersistenceManager::test_contract_validation_invalid_context PASSED [ 40%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_initialization PASSED [ 45%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_create_analogy_batch PASSED [ 50%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_process_analogy_batch PASSED [ 55%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_delete_analogies_batch PASSED [ 60%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_stream_analogies PASSED [ 65%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_compact_analogies_jsonl PASSED [ 70%]
+tests/test_core/test_persistence.py::TestBatchPersistenceManager::test_workflow_management PASSED [ 75%]
+tests/test_core/test_persistence.py::TestBatchWorkflow::test_workflow_creation PASSED [ 80%]
+tests/test_core/test_persistence.py::TestBatchWorkflow::test_workflow_serialization PASSED [ 85%]
+tests/test_core/test_persistence.py::TestDeleteCriteria::test_criteria_creation PASSED [ 90%]
+tests/test_core/test_persistence.py::TestIntegrationPersistence::test_full_workflow_integration PASSED [ 95%]
+tests/test_core/test_persistence.py::TestPerformancePersistence::test_large_batch_performance PASSED [100%]
+
+============================= 20 passed in 10.55s ==============================
+\033[0;32mPersistence tests completed\033[0m 
+\033[0;32mRunning service layer tests...\033[0m 
+\033[1;33mTesting FastAPI service layer components...\033[0m 
+============================= test session starts ==============================
+platform linux -- Python 3.11.13, pytest-8.4.0, pluggy-1.6.0 -- /home/rdmerrio/miniconda3/envs/ltnexp03/bin/python
+cachedir: .pytest_cache
+rootdir: /home/rdmerrio/gits/ltnexp03
+configfile: pyproject.toml
+plugins: anyio-3.7.1, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 27 items
+
+tests/test_service_layer.py::TestConceptManagement::test_create_concept_success PASSED [  3%]
+tests/test_service_layer.py::TestConceptManagement::test_create_concept_validation_error PASSED [  7%]
+tests/test_service_layer.py::TestConceptManagement::test_get_concept_success PASSED [ 11%]
+tests/test_service_layer.py::TestConceptManagement::test_get_concept_not_found PASSED [ 14%]
+tests/test_service_layer.py::TestConceptManagement::test_search_concepts_success PASSED [ 18%]
+tests/test_service_layer.py::TestConceptManagement::test_compute_concept_similarity PASSED [ 22%]
+tests/test_service_layer.py::TestSemanticReasoning::test_complete_analogy_success PASSED [ 25%]
+tests/test_service_layer.py::TestSemanticReasoning::test_discover_semantic_fields PASSED [ 29%]
+tests/test_service_layer.py::TestSemanticReasoning::test_cross_domain_analogies PASSED [ 33%]
+tests/test_service_layer.py::TestFrameOperations::test_create_frame_success PASSED [ 37%]
+tests/test_service_layer.py::TestFrameOperations::test_create_frame_instance PASSED [ 40%]
+tests/test_service_layer.py::TestFrameOperations::test_query_frames PASSED [ 44%]
+tests/test_service_layer.py::TestBatchOperations::test_create_analogy_batch PASSED [ 48%]
+tests/test_service_layer.py::TestBatchOperations::test_list_workflows PASSED [ 51%]
+tests/test_service_layer.py::TestBatchOperations::test_get_workflow_by_id 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/rdmerrio/miniconda3/envs/ltnexp03/lib/python3.11/threading.py:327: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+============================== 14 passed in 3.43s ==============================

@@ -6,6 +6,13 @@ This module defines the fundamental data structures and abstractions that form
 the foundation of our soft logic microservice. These abstractions bridge the
 gap between symbolic logical reasoning and neural learning systems.
 
+MODEL USAGE POLICY (Phase 4):
+=============================
+- Use **dataclasses** for all core logic and internal data structures (e.g., Concept, FrameInstance).
+- Use **Pydantic models** only at API boundaries (request/response validation).
+- Use **TypedDict** for static type hints in API request/response models, not for runtime objects.
+- Conversion utilities between dataclass and Pydantic models are provided (see: concept_from_pydantic, concept_to_pydantic).
+
 DESIGN PHILOSOPHY:
 ==================
 
@@ -54,6 +61,12 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
 import uuid
+from typing import Optional, Dict, Any
+from dataclasses import asdict
+try:
+    from pydantic import BaseModel
+except ImportError:
+    BaseModel = object
 
 
 class AxiomType(Enum):
@@ -802,11 +815,11 @@ class Context:
             concept.context = self.name
             self.concepts[concept.name] = concept
     
-    def get_core_axioms(self) -> List[Axiom]:
+    def get_core_axioms(self) -> List['Axiom']:
         """Get all core axioms in this context."""
         return [axiom for axiom in self.axioms if axiom.is_core_axiom()]
     
-    def get_soft_axioms(self) -> List[Axiom]:
+    def get_soft_axioms(self) -> List['Axiom']:
         """Get all soft axioms in this context."""
         return [axiom for axiom in self.axioms if not axiom.is_core_axiom()]
     
@@ -817,3 +830,18 @@ class Context:
     def __str__(self) -> str:
         parent_info = f" (inherits from {self.parent})" if self.parent else ""
         return f"Context '{self.name}'{parent_info}: {len(self.axioms)} axioms, {len(self.concepts)} concepts"
+
+
+def concept_from_pydantic(pydantic_obj) -> 'Concept':
+    """Convert a Pydantic ConceptCreate or ConceptResponse to a dataclass Concept."""
+    return Concept(
+        name=pydantic_obj.name,
+        context=getattr(pydantic_obj, 'context', 'default'),
+        synset_id=getattr(pydantic_obj, 'synset_id', None),
+        disambiguation=getattr(pydantic_obj, 'disambiguation', None),
+        metadata=getattr(pydantic_obj, 'metadata', {})
+    )
+
+def concept_to_pydantic(concept, pydantic_cls):
+    """Convert a dataclass Concept to a Pydantic model (ConceptCreate or ConceptResponse)."""
+    return pydantic_cls(**asdict(concept))

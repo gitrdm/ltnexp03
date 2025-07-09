@@ -34,7 +34,7 @@ from app.core.neural_symbolic_integration import (
 )
 from app.core.enhanced_semantic_reasoning import EnhancedHybridRegistry
 from app.core.contract_persistence import ContractEnhancedPersistenceManager
-from app.core.abstractions import Concept, Axiom, FormulaNode
+from app.core.abstractions import Concept, Axiom, FormulaNode, AxiomType, AxiomClassification
 
 # Configure demonstration
 import logging
@@ -190,22 +190,22 @@ class Phase4Demonstrator:
         test_axioms = [
             Axiom(
                 axiom_id="gender_analogy_royalty",
-                type="analogy",
-                classification="core",
+                axiom_type=AxiomType.ANALOGY,
+                classification=AxiomClassification.CORE,
                 description="Gender analogy in royalty domain",
                 formula=FormulaNode("analogy", ["king", "queen", "prince", "princess"])
             ),
             Axiom(
                 axiom_id="gender_analogy_animals",
-                type="analogy", 
-                classification="core",
+                axiom_type=AxiomType.ANALOGY, 
+                classification=AxiomClassification.CORE,
                 description="Gender analogy in animal domain",
                 formula=FormulaNode("analogy", ["lion", "lioness", "cat", "dog"])
             ),
             Axiom(
                 axiom_id="similarity_royalty",
-                type="similarity",
-                classification="core",
+                axiom_type=AxiomType.SIMILARITY,
+                classification=AxiomClassification.CORE,
                 description="Similarity within royalty",
                 formula=FormulaNode("similarity", ["king", "prince"])
             )

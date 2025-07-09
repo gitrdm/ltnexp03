@@ -7,10 +7,33 @@ decorators with your existing EnhancedHybridRegistry for robust validation.
 
 Run this example to see contract validation in action:
 python app/core/icontract_demo.py
+
+---
+
+# DATA MODEL STANDARDIZATION PLAN (Phase 4)
+# -----------------------------------------
+# Model usage policy:
+#   - Pydantic models: for API boundaries and external data validation only
+#   - dataclasses: for all core logic and internal data structures
+#   - TypedDict: for type hints and static typing only (not for runtime objects)
+# Conversion utilities for Concept (dataclass <-> Pydantic) are in app/core/abstractions.py.
+# FrameInstance uses only dataclasses in core logic; API uses TypedDict for request/response.
+#
+# Steps for this file and related modules:
+#   1. Identify all usages of Pydantic, dataclass, and TypedDict models.
+#   2. Refactor to use dataclasses for all core logic in this demo and supporting modules.
+#   3. Remove or replace any duplicate or redundant model definitions.
+#   4. Add conversion utilities if needed (e.g., dataclass <-> Pydantic).
+#   5. Update tests and contract checks to use the standardized models.
+#   6. Ensure all tests, mypy, and icontract validation pass after each change.
+#
+# All core logic in this demo now uses dataclasses for Concept and FrameInstance.
+#
 """
 
 from typing import List, Dict, Optional, Any
 from icontract import require, ensure, invariant, ViolationError
+from dataclasses import dataclass, field
 import os
 import sys
 
@@ -68,20 +91,31 @@ class SoftLogicContracts:
 
 
 # Mock implementations for when core modules aren't available
-class MockConcept:
-    def __init__(self, name: str, context: str = "default"):
-        self.name = name
-        self.context = context
-        self.unique_id = f"{context}:{name}"
+@dataclass
+class Concept:
+    name: str
+    context: str = "default"
+    unique_id: str = field(init=False)
+
+    def __post_init__(self):
+        self.unique_id = f"{self.context}:{self.name}"
+
+@dataclass
+class FrameInstance:
+    frame_name: str
+    instance_id: str
+    concept_bindings: Dict[str, Concept]
+    context: str = "default"
 
 
 class MockRegistry:
     def __init__(self):
         self.frame_aware_concepts = {}
         self._operation_count = 0
+        self.frame_instances = {}
     
     def create_frame_aware_concept_with_advanced_embedding(self, **kwargs):
-        concept = MockConcept(kwargs['name'], kwargs.get('context', 'default'))
+        concept = Concept(kwargs['name'], kwargs.get('context', 'default'))
         self.frame_aware_concepts[concept.unique_id] = concept
         return concept
     
@@ -103,6 +137,16 @@ class MockRegistry:
                 'source_evidence': ['frame_based', 'cluster_based']
             }
         ]
+    
+    def create_frame_instance(self, frame_name, instance_id, concept_bindings, context="default"):
+        instance = FrameInstance(
+            frame_name=frame_name,
+            instance_id=instance_id,
+            concept_bindings=concept_bindings,
+            context=context
+        )
+        self.frame_instances[instance_id] = instance
+        return instance
 
 
 # Contract-enhanced registry
@@ -187,9 +231,18 @@ class ContractEnhancedRegistry(BaseRegistry):
         # Call existing implementation
         fields = self.discover_semantic_fields(min_coherence=min_coherence)
         
+        # Accept both dict and list return types
+        if isinstance(fields, dict):
+            field_iter = fields.items()
+        elif isinstance(fields, list):
+            # Already a list of structured fields
+            return fields[:max_fields]
+        else:
+            raise TypeError("discover_semantic_fields must return dict or list")
+        
         # Convert to structured format
         structured_fields = []
-        for field_name, field_data in fields.items():
+        for field_name, field_data in field_iter:
             structured_fields.append({
                 'field_name': field_name,
                 'coherence': field_data.get('coherence', min_coherence),
@@ -197,7 +250,6 @@ class ContractEnhancedRegistry(BaseRegistry):
                 'related_concepts': field_data.get('related_concepts', {}),
                 'discovery_metadata': field_data.get('metadata', {})
             })
-        
         # Apply limit
         return structured_fields[:max_fields]
     
@@ -264,12 +316,17 @@ def demonstrate_contract_validation():
     # Initialize contract-enhanced registry
     kwargs = {
         'download_wordnet': False,
-        'n_clusters': 4,
+        'n_clusters': 1,  # Set to 1 to avoid n_samples < n_clusters error
         'enable_cross_domain': True,
         'embedding_provider': 'semantic'
     } if IMPORTS_AVAILABLE else {}
     
     registry = ContractEnhancedRegistry(**kwargs)
+    
+    # Add more concepts to avoid clustering errors
+    registry.create_concept_with_contracts(name="knight", context="default")
+    registry.create_concept_with_contracts(name="wizard", context="default")
+    registry.create_concept_with_contracts(name="dragon", context="default")
     
     # Test 1: Valid concept creation
     print("1. Testing valid concept creation...")
@@ -318,8 +375,13 @@ def demonstrate_contract_validation():
             max_fields=3
         )
         print(f"✅ Discovered {len(fields)} semantic fields")
-        for field in fields:
-            print(f"   - {field['field_name']}: coherence={field['coherence']:.2f}")
+        # Handle both dict and list return types for fields
+        if isinstance(fields, dict):
+            field_iter = fields.values()
+        else:
+            field_iter = fields
+        for field in field_iter:
+            print(f"   - {field.get('field_name', str(field))}: coherence={field.get('coherence', 0.0):.2f}")
     except ViolationError as e:
         print(f"❌ Contract violation: {e}")
     except Exception as e:
@@ -386,5 +448,94 @@ def demonstrate_contract_validation():
     print("✅ API reliability - service layer will benefit from these contracts")
 
 
+def test_create_frame_instance_contracts():
+    print("\n=== Frame Instance Contract Validation ===")
+    # Setup registry and add a frame
+    registry = ContractEnhancedRegistry()
+    frame_name = "TestFrame"
+    instance_id = "instance_001"
+    # Add a frame to the registry (mock registry does not have frame_registry, so use create_frame_instance directly if needed)
+    if hasattr(registry, 'frame_registry'):
+        registry.frame_registry.create_frame(
+            name=frame_name,
+            definition="A test frame",
+            core_elements=["Role1", "Role2"]
+        )
+    # Valid concept bindings
+    concept1 = registry.create_concept_with_contracts("concept1", "default")
+    concept2 = registry.create_concept_with_contracts("concept2", "default")
+    bindings = {"Role1": concept1, "Role2": concept2}
+    try:
+        if hasattr(registry, 'frame_registry'):
+            instance = registry.frame_registry.create_frame_instance(
+                frame_name=frame_name,
+                instance_id=instance_id,
+                concept_bindings=bindings,
+                context="default"
+            )
+        else:
+            instance = registry.create_frame_instance(
+                frame_name=frame_name,
+                instance_id=instance_id,
+                concept_bindings=bindings,
+                context="default"
+            )
+        print(f"✅ Successfully created frame instance: {instance.instance_id}")
+    except ViolationError as e:
+        print(f"❌ Contract violation (should not happen): {e}")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+
+    # Invalid: unknown frame (only test if frame_registry exists)
+    if hasattr(registry, 'frame_registry'):
+        try:
+            registry.frame_registry.create_frame_instance(
+                frame_name="UnknownFrame",
+                instance_id="bad_instance",
+                concept_bindings=bindings,
+                context="default"
+            )
+            print("❌ Should have failed for unknown frame")
+        except Exception as e:
+            print(f"✅ Correctly failed for unknown frame: {e}")
+
+        # Invalid: missing concept binding (simulate by omitting a required role)
+        try:
+            registry.frame_registry.create_frame_instance(
+                frame_name=frame_name,
+                instance_id="bad_instance2",
+                concept_bindings={"Role1": concept1},  # Missing Role2
+                context="default"
+            )
+            print("❌ Should have failed for missing binding")
+        except Exception as e:
+            print(f"✅ Correctly failed for missing binding: {e}")
+    else:
+        # For mock registry, simulate error cases
+        try:
+            # Simulate unknown frame by passing a frame_name not tracked (mock does not check, so just print info)
+            instance = registry.create_frame_instance(
+                frame_name="UnknownFrame",
+                instance_id="bad_instance",
+                concept_bindings=bindings,
+                context="default"
+            )
+            print(f"(Mock) Created instance for unknown frame: {instance.instance_id}")
+        except Exception as e:
+            print(f"(Mock) Error for unknown frame: {e}")
+        try:
+            # Simulate missing binding (mock does not check, so just print info)
+            instance = registry.create_frame_instance(
+                frame_name=frame_name,
+                instance_id="bad_instance2",
+                concept_bindings={"Role1": concept1},
+                context="default"
+            )
+            print(f"(Mock) Created instance with missing binding: {instance.instance_id}")
+        except Exception as e:
+            print(f"(Mock) Error for missing binding: {e}")
+
+
 if __name__ == "__main__":
     demonstrate_contract_validation()
+    test_create_frame_instance_contracts()

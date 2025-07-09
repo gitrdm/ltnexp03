@@ -268,13 +268,17 @@ async def contract_violation_handler(request: Request, exc: ViolationError) -> J
 # DEPENDENCY INJECTION
 # ============================================================================
 
-def get_semantic_registry() -> EnhancedHybridRegistry:
-    """Dependency injection for semantic registry."""
+from app.core.protocols import SemanticReasoningProtocol, KnowledgeDiscoveryProtocol
+
+def get_semantic_registry() -> SemanticReasoningProtocol:
+    """Dependency injection for protocol-compliant semantic registry."""
     if semantic_registry is None:
         logger.info("Auto-initializing services for semantic registry access")
         initialize_services()
     if semantic_registry is None:
         raise HTTPException(status_code=503, detail="Semantic registry not initialized")
+    # Enforce protocol compliance at runtime
+    assert isinstance(semantic_registry, SemanticReasoningProtocol)
     return semantic_registry
 
 
@@ -325,11 +329,11 @@ async def get_or_create_batch_manager() -> BatchPersistenceManager:
         "Result must maintain name validity")
 async def create_concept(
     concept: ConceptCreate,
-    registry: EnhancedHybridRegistry = Depends(get_semantic_registry)
+    registry: SemanticReasoningProtocol = Depends(get_semantic_registry)
 ) -> Dict[str, Any]:
     """Create a new concept with automatic disambiguation."""
     try:
-        # Use the correct method from EnhancedHybridRegistry
+        # Use the protocol interface for concept creation
         concept_obj = registry.create_frame_aware_concept_with_advanced_embedding(
             name=concept.name,
             context=concept.context,
@@ -337,10 +341,8 @@ async def create_concept(
             disambiguation=concept.disambiguation,
             use_semantic_embedding=True
         )
-        
-        # Return safe serializable data (no numpy arrays)
         return {
-            "concept_id": concept_obj.unique_id,  # Use the string ID, not the object
+            "concept_id": concept_obj.unique_id,
             "name": concept_obj.name,
             "synset_id": concept_obj.synset_id,
             "disambiguation": concept_obj.disambiguation,
@@ -349,7 +351,6 @@ async def create_concept(
             "metadata": concept.metadata or {},
             "embedding_size": len(getattr(concept_obj, 'embedding', [])) if getattr(concept_obj, 'embedding', None) is not None else 0
         }
-        
     except Exception as e:
         logger.error(f"Error creating concept: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -857,11 +858,11 @@ async def create_frame_instance(
             )
             bindings[element_name] = concept
         
-        # Create frame instance using correct parameters
+        # Create frame instance using the unified public method
         frame_instance = registry.frame_registry.create_frame_instance(
             frame_name=frame_id,  # Use frame_name parameter
             instance_id=instance.instance_id,
-            bindings=bindings,  # Use bindings parameter
+            concept_bindings=bindings,  # Use bindings parameter
             context=instance.context
         )
         
@@ -1358,13 +1359,13 @@ async def _process_batch_async(workflow_id: str, batch_mgr: BatchPersistenceMana
 # APPLICATION ENTRY POINT
 # ============================================================================
 
-def start_service() -> None:
+def start_service(reload: bool = False) -> None:
     """Start the service layer with appropriate configuration."""
     uvicorn.run(
         "app.service_layer:app",
         host="0.0.0.0",
         port=8321,
-        reload=True,
+        reload=reload,
         log_level="info"
     )
 

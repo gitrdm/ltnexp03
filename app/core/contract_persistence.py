@@ -330,7 +330,8 @@ class ContractEnhancedPersistenceManager:
                 "total_workflows": len(self._batch_manager.active_workflows),
                 "workflow_status_counts": {},
                 "storage_size_mb": 0.0,
-                "last_updated": datetime.now(timezone.utc).isoformat()
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "status": "ok"
             }
             
             # Count workflows by status
@@ -357,7 +358,8 @@ class ContractEnhancedPersistenceManager:
             self.logger.error(f"Failed to get storage statistics: {e}")
             return {
                 "error": str(e),
-                "last_updated": datetime.now(timezone.utc).isoformat()
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "status": "error"
             }
     
     @ensure(lambda result: isinstance(result, dict))

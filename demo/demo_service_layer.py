@@ -36,8 +36,8 @@ class ServiceLayerDemo:
     
     def __init__(self, base_url: str = "http://localhost:8321"):
         self.base_url = base_url
-        self.api_base = f"{base_url}/api"
-        self.ws_base = "ws://localhost:8321/api/ws"
+        self.api_base = base_url  # Remove '/api' to match FastAPI endpoints
+        self.ws_base = "ws://localhost:8321/ws"
         self.session = None
         self.server_process = None
         
