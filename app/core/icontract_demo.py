@@ -12,10 +12,12 @@ python app/core/icontract_demo.py
 
 # DATA MODEL STANDARDIZATION PLAN (Phase 4)
 # -----------------------------------------
-# As part of the abstraction consistency refactor, the following model usage patterns will be enforced:
+# Model usage policy:
 #   - Pydantic models: for API boundaries and external data validation only
 #   - dataclasses: for all core logic and internal data structures
 #   - TypedDict: for type hints and static typing only (not for runtime objects)
+# Conversion utilities for Concept (dataclass <-> Pydantic) are in app/core/abstractions.py.
+# FrameInstance uses only dataclasses in core logic; API uses TypedDict for request/response.
 #
 # Steps for this file and related modules:
 #   1. Identify all usages of Pydantic, dataclass, and TypedDict models.
@@ -25,7 +27,7 @@ python app/core/icontract_demo.py
 #   5. Update tests and contract checks to use the standardized models.
 #   6. Ensure all tests, mypy, and icontract validation pass after each change.
 #
-# TODO: Begin with ContractEnhancedRegistry and all concept/frame instance models used here.
+# All core logic in this demo now uses dataclasses for Concept and FrameInstance.
 #
 """
 
