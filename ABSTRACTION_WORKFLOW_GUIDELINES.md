@@ -71,6 +71,14 @@ This document provides a standardized workflow and set of guidelines for future 
 
 ---
 
+## 🚀 Immediate Script Usage Guidelines
+- All demo scripts are now in the `demo/` directory (e.g., `demo/demo_abstractions.py`).
+- Example and persistence scripts are in the `examples/` directory (e.g., `examples/persistence_examples_overview.py`).
+- Update all usage instructions and code snippets to use the correct script paths.
+- REST API endpoints do not use the `/api` prefix (e.g., `/concepts`, `/health`).
+
+---
+
 **For onboarding and future contributors:**
 - Follow this workflow and these guidelines to maintain the architectural integrity, type safety, and maintainability of the ltnexp03 codebase.
 - When in doubt, prefer explicit protocol/ABC usage and dataclass-based models for all new core logic.

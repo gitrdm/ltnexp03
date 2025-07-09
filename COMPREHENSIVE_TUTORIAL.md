@@ -1793,3 +1793,15 @@ This tutorial has covered the complete Soft Logic Microservice system, from basi
 For additional support and advanced usage patterns, refer to the extensive documentation in the `documentation/` directory.
 
 Happy reasoning! 🧠✨
+
+---
+
+## Important Note on Script Locations
+
+To improve organization and usability:
+
+- All demo scripts are now located in the `demo/` directory (e.g., `demo/demo_abstractions.py`).
+- Example and persistence scripts are in the `examples/` directory (e.g., `examples/persistence_examples_overview.py`).
+- Update all usage instructions and code snippets to use the correct script paths.
+- REST API endpoints do not use the `/api` prefix (e.g., `/concepts`, `/health`).
+- For a full list of scripts, see the new table in the README above.

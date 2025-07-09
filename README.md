@@ -170,6 +170,29 @@ Once the service is running:
 - **📊 Service Status**: `http://localhost:8321/status`
 - **🌐 OpenAPI Spec**: `http://localhost:8321/openapi.json`
 
+## 📜 Demo and Example Scripts
+
+Below is a list of all available demo and example scripts in this project. Use these scripts to explore, test, and demonstrate the platform's capabilities.
+
+| Script Path | Description |
+|------------|-------------|
+| demo/demo_abstractions.py | Core abstractions and concept management demo |
+| demo/demo_comprehensive_system.py | Comprehensive system demonstration |
+| demo/demo_enhanced_system.py | Enhanced semantic field discovery demo |
+| demo/demo_hybrid_system.py | Hybrid semantic reasoning system demo |
+| demo/demo_persistence_layer.py | Complete persistence layer demonstration |
+| demo/demo_phase4_neural_symbolic.py | Neural-symbolic integration demo |
+| demo/demo_production_readiness.py | Production readiness demonstration |
+| demo/demo_service_layer.py | Service layer (FastAPI) comprehensive demo |
+| examples/explore_abstractions.py | Example: exploring abstractions programmatically |
+| examples/multi_format_persistence_example.py | Multi-format persistence demonstration |
+| examples/persistence_examples_overview.py | Overview and launcher for persistence examples |
+| examples/persistence_strategy_example.py | Persistence strategy demonstration |
+| examples/basic_analogy.yaml | Example: YAML format for analogies |
+| examples/core_axioms.json | Example: JSON format for core axioms |
+
+> **Usage:** Run any Python demo with `python <script_path>`. For YAML/JSON, see referenced scripts for usage.
+
 ## 🏛️ Architecture Overview
 
 ### Core Components
@@ -267,6 +290,8 @@ python scripts/generate_docs.py
 ```
 
 ## 🚀 Production Deployment
+
+> **Note:** A production-ready `Dockerfile` is now included in this repository. You can build and run the container as described below. Kubernetes deployment instructions are provided for future extensibility, but Kubernetes manifests are not included by default.
 
 ### Docker Deployment
 ```bash
