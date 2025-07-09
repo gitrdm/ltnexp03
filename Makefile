@@ -11,12 +11,12 @@ POETRY := poetry
 PROJECT_DIR := .
 SRC_DIR := app
 TEST_DIR := tests
-DEMO_DIR := .
+DEMO_DIR := demo
 
 # Python files
 CORE_MODULES := $(shell find $(SRC_DIR)/core -name "*.py" -not -name "__*")
 TEST_FILES := $(shell find $(TEST_DIR) -name "test_*.py")
-DEMO_FILES := demo_abstractions.py demo_hybrid_system.py demo_enhanced_system.py demo_comprehensive_system.py
+DEMO_FILES := $(shell find $(DEMO_DIR) -name "demo_*.py")
 CONTRACT_DEMO := app/core/icontract_demo.py
 PHASE_3A_TEST := test_phase_3a.py
 
@@ -441,6 +441,40 @@ docs:
 	@echo "$(GREEN)Generating documentation...$(NC)"
 	@echo "$(YELLOW)API documentation available at /docs when server is running$(NC)"
 	@echo "$(GREEN)Documentation generation completed!$(NC)"
+
+# Demo scripts
+
+demo_scripts = $(wildcard demo/demo_*.py)
+
+# Individual demo targets (auto-generated for each demo script)
+demo-abstractions:
+	python demo/demo_abstractions.py
+
+demo-comprehensive:
+	python demo/demo_comprehensive_system.py
+
+demo-enhanced:
+	python demo/demo_enhanced_system.py
+
+demo-hybrid:
+	python demo/demo_hybrid_system.py
+
+demo-persistence:
+	python demo/demo_persistence_layer.py
+
+demo-phase4-neural-symbolic:
+	python demo/demo_phase4_neural_symbolic.py
+
+demo-production:
+	python demo/demo_production_readiness.py
+
+demo-service:
+	python demo/demo_service_layer.py
+
+# List all demos
+demo-list:
+	@echo "Available demo scripts:"
+	@ls demo/demo_*.py
 
 # Error handling
 .ONESHELL:
