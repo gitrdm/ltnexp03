@@ -18,7 +18,7 @@ CORE_MODULES := $(shell find $(SRC_DIR)/core -name "*.py" -not -name "__*")
 TEST_FILES := $(shell find $(TEST_DIR) -name "test_*.py")
 DEMO_FILES := $(shell find $(DEMO_DIR) -name "demo_*.py")
 CONTRACT_DEMO := app/core/icontract_demo.py
-PHASE_3A_TEST := test_phase_3a.py
+PHASE_3A_TEST := tests/test_phase_3a.py
 
 # Persistence demo files
 PERSISTENCE_DEMOS := demo_persistence_layer.py persistence_strategy_example.py multi_format_persistence_example.py persistence_examples_overview.py
