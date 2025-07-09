@@ -61,7 +61,7 @@ def main():
     
     scripts = [
         {
-            "name": "demo_persistence_layer.py",
+            "name": "demo/demo_persistence_layer.py",
             "title": "Complete Persistence Demo",
             "description": "Comprehensive demonstration of all persistence features",
             "highlights": [
@@ -74,7 +74,7 @@ def main():
             ]
         },
         {
-            "name": "persistence_strategy_example.py", 
+            "name": "examples/persistence_strategy_example.py", 
             "title": "Strategy Implementation Showcase",
             "description": "Focused demonstration of strategy document recommendations",
             "highlights": [
@@ -86,7 +86,7 @@ def main():
             ]
         },
         {
-            "name": "multi_format_persistence_example.py",
+            "name": "examples/multi_format_persistence_example.py",
             "title": "Multi-Format Storage Demo", 
             "description": "Concrete examples of each storage format",
             "highlights": [
@@ -174,7 +174,7 @@ def main():
                     print(f"\n✅ {script_name} completed successfully!")
                 else:
                     print(f"\n❌ {script_name} encountered an error")
-                    
+                
             else:
                 print("❌ Invalid choice. Please select 1-4.")
                 
